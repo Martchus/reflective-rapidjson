@@ -8,9 +8,17 @@ set(LINK_TESTS_AGAINST_APP_TARGET ON)
 # add project files
 set(HEADER_FILES
     generator.h
+    frontendaction.h
+    consumer.h
+    visitor.h
+    clangversionabstraction.h
 )
 set(SRC_FILES
     generator.cpp
+    frontendaction.cpp
+    consumer.cpp
+    clangversionabstraction.cpp
+    visitor.cpp
     main.cpp
 )
 set(TEST_HEADER_FILES
@@ -26,13 +34,9 @@ use_cpp_utilities()
 
 # find libclang
 find_package(Clang REQUIRED)
-list(APPEND PRIVATE_LIBRARIES libclang)
-#list(APPEND PRIVATE_LIBRARIES clangFrontend clangLex clangAST)
-if(STATIC_LINKAGE)
-    #list(APPEND PRIVATE_LIBRARIES clangAST)
-else()
-    #list(APPEND PRIVATE_LIBRARIES libclang)
-endif()
+list(APPEND PRIVATE_LIBRARIES clangTooling)
+
+# also add reflective_rapidjson
 list(APPEND PRIVATE_LIBRARIES reflective_rapidjson)
 
 # include modules to apply configuration

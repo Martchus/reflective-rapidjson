@@ -38,14 +38,17 @@ int main(int argc, char *argv[])
 
     // parse arguments
     parser.parseArgsOrExit(argc, argv);
-    if (!helpArg.isPresent() && !inputFilesArg.isPresent()) {
+    if (helpArg.isPresent()) {
+        return 0;
+    }
+    if (!inputFilesArg.isPresent()) {
         cerr << Phrases::Error << "No input file specified." << Phrases::EndFlush;
-        return -2;
+        return -1;
     }
 
     // setup output stream
+    ostream *os = nullptr;
     try {
-        ostream *os;
         ofstream outputFile;
         if (outputFileArg.isPresent()) {
             outputFile.exceptions(ios_base::badbit | ios_base::failbit);
@@ -55,12 +58,33 @@ int main(int argc, char *argv[])
             os = &cout;
         }
 
-        // process input files
-        return generateReflectionCode(inputFilesArg.values(0), *os) ? 0 : 1;
+        // configure code generator
+        CodeFactory factory(parser.executable(), inputFilesArg.values(0), *os);
+        // TODO: make code generator configurable, eg.
+        // factory.addGenerator(...);
+
+        // read AST elements from input files
+        if (!factory.readAST()) {
+            cerr << Phrases::Error << "Errors occured when parsing the input files." << Phrases::EndFlush;
+            return -2;
+        }
+
+        // run the code generator
+        if (!factory.generate()) {
+            cerr << Phrases::Error << "Errors occured when during code generation." << Phrases::EndFlush;
+            return -3;
+        }
+
     } catch (...) {
         catchIoFailure();
-        cerr << Phrases::Error << "An IO error occured." << Phrases::EndFlush;
-        return -3;
+        const char *errorMessage;
+        if (os) {
+            errorMessage = os->fail() || os->bad() ? "An IO error occured when writing to the output stream." : "An IO error occured.";
+        } else {
+            errorMessage = "An IO error when opening output stream.";
+        }
+        cerr << Phrases::Error << errorMessage << Phrases::EndFlush;
+        return -4;
     }
 
     return 0;

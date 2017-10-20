@@ -1,27 +1,13 @@
 #include "./generator.h"
+#include "./frontendaction.h"
 
 #include <c++utilities/application/global.h>
 #include <c++utilities/conversion/stringbuilder.h>
 
-//#include <clang/Basic/LangOptions.h>
-//#include <clang/Basic/TargetInfo.h>
-//#include <clang/Basic/Diagnostic.h>
-//#include <clang/Frontend/TextDiagnosticPrinter.h>
-//#include <clang/Lex/HeaderSearch.h>
-//#include <clang/Lex/Preprocessor.h>
-//#include <clang/AST/ASTContext.h>
-//#include <clang/AST/ASTConsumer.h>
-//#include <clang/Sema/Sema.h>
-//#include <clang/Parse/ParseAST.h>
-
-//#include <clang/AST/AST.h>
-//#include <clang/AST/RecursiveASTVisitor.h>
-
-//#include <clang/Frontend/FrontendActions.h>
-//#include <clang/Frontend/CompilerInstance.h>
-//#include <clang/Tooling/Tooling.h>
-
-#include <clang-c/Index.h>
+#include <clang/AST/DeclCXX.h>
+#include <clang/Basic/FileManager.h>
+#include <clang/Frontend/FrontendActions.h>
+#include <clang/Tooling/Tooling.h>
 
 #include <iostream>
 #include <memory>
@@ -31,64 +17,173 @@ using namespace ConversionUtilities;
 
 namespace ReflectiveRapidJSON {
 
-ostream &operator<<(ostream &stream, const CXString &str)
+/*!
+ * \brief Prints an LLVM string reference without instantiating a std::string first.
+ */
+ostream &operator<<(ostream &os, llvm::StringRef str)
 {
-    stream << clang_getCString(str);
-    clang_disposeString(str);
-    return stream;
+    os.write(str.data(), static_cast<streamsize>(str.size()));
+    return os;
 }
 
-struct Struct {
-    string ns;
-    string name;
-    vector<Struct> members;
-};
-
-bool generateReflectionCode(const vector<const char *> &sourceFiles, ostream &os)
+CodeGenerator::~CodeGenerator()
 {
-    bool noErrors = true;
+}
 
-    for (const char *sourceFile : sourceFiles) {
-        CXIndex index = clang_createIndex(0, 0);
-        const char *const args[] = { "-x", "c++" };
-        CXTranslationUnit unit = nullptr;
-        CXErrorCode parseRes = clang_parseTranslationUnit2(index, sourceFile, args, 2, nullptr, 0, CXTranslationUnit_None, &unit);
-        if (!unit && parseRes != CXError_Success) {
-            clang_disposeIndex(index);
-            throw runtime_error(argsToString("Unable to parse translation unit: ", sourceFile));
+/*!
+ * \brief Adds the specified \a decl to the code generator. The generator might ignore irrelevant declarations.
+ */
+void CodeGenerator::addDeclaration(clang::Decl *decl)
+{
+    VAR_UNUSED(decl)
+}
+
+/*!
+ * \brief Returns whether the specified \a record inherits from an instantiation of the specified \a templateClass.
+ * \remarks The specified \a record must be defined (not only forward-declared).
+ */
+bool CodeGenerator::inheritsFromInstantiationOf(clang::CXXRecordDecl *const record, const char *const templateClass)
+{
+    for (const clang::CXXBaseSpecifier &base : record->bases()) {
+        const clang::CXXRecordDecl *const baseDecl = base.getType()->getAsCXXRecordDecl();
+        if (baseDecl && baseDecl->getQualifiedNameAsString() == templateClass) {
+            return true;
         }
+    }
+    return false;
+}
 
-        CXCursor cursor = clang_getTranslationUnitCursor(unit);
-        clang_visitChildren(cursor,
-            [](CXCursor c, CXCursor parent, CXClientData client_data) {
-                VAR_UNUSED(parent)
-                auto &os = *reinterpret_cast<ostream *>(client_data);
-                os << "Cursor kind '" << clang_getCursorKindSpelling(clang_getCursorKind(c)) << "\' ";
-                os << clang_getCursorSpelling(c) << '\n';
-                os << "type: " << clang_getTypeSpelling(clang_getCursorType(c)) << '\n';
-                return CXChildVisit_Recurse;
-            },
-            &os);
-        os.flush();
-
-        for (unsigned int index = 0, diagnosticCount = clang_getNumDiagnostics(unit); index != diagnosticCount; ++index) {
-            noErrors = false;
-            CXDiagnostic diagnostic = clang_getDiagnostic(unit, index);
-            clang_getDiagnosticCategory(diagnostic);
-
-            CXString diagnosticSpelling = clang_formatDiagnostic(
-                diagnostic, CXDiagnostic_DisplaySourceLocation | CXDiagnostic_DisplayColumn | CXDiagnostic_DisplaySourceRanges);
-            cerr << clang_getCString(diagnosticSpelling) << '\n';
-            clang_disposeString(diagnosticSpelling);
-            clang_disposeDiagnostic(diagnostic);
+void JSONSerializationCodeGenerator::addDeclaration(clang::Decl *decl)
+{
+    switch (decl->getKind()) {
+    case clang::Decl::Kind::CXXRecord: {
+        auto *const record = static_cast<clang::CXXRecordDecl *>(decl);
+        // skip forward declarations
+        if (!record->hasDefinition()) {
+            return;
         }
-        cerr.flush();
+        // add classes derived from any instantiation of "ReflectiveRapidJSON::Reflectable"
+        if (inheritsFromInstantiationOf(record, "ReflectiveRapidJSON::Reflectable")) {
+            m_relevantClasses.emplace_back(record->getQualifiedNameAsString(), record);
+        }
+        break;
+    }
+    case clang::Decl::Kind::Enum:
+        // TODO: add enums
+        break;
+    default:;
+    }
+}
 
-        clang_disposeTranslationUnit(unit);
-        clang_disposeIndex(index);
+void JSONSerializationCodeGenerator::generate(ostream &os) const
+{
+    if (m_relevantClasses.empty()) {
+        return;
     }
 
-    return noErrors;
+    // put everything into ReflectiveRapidJSON::Reflector
+    os << "namespace ReflectiveRapidJSON {\n"
+          "namespace Reflector {\n";
+
+    // add push and pull functions for each class, for an example of the resulting
+    // output, see ../lib/tests/reflector.cpp (code under comment "pretend serialization code...")
+    for (const RelevantClass &relevantClass : m_relevantClasses) {
+        // print push method
+        os << "template <> inline void push<::" << relevantClass.qualifiedName << ">(const " << relevantClass.qualifiedName
+           << " &reflectable, Value::Object &value, Document::AllocatorType &allocator)\n{\n";
+        for (const clang::FieldDecl *field : relevantClass.record->fields()) {
+            os << "    push(reflectable." << field->getName() << ", \"" << field->getName() << "\", value, allocator);\n";
+        }
+        os << "}\n";
+
+        // print pull method
+        os << "template <> inline void pull<::" << relevantClass.qualifiedName << ">(" << relevantClass.qualifiedName
+           << " &reflectable, const GenericValue<UTF8<char>>::ConstObject &value)\n{\n";
+        for (const clang::FieldDecl *field : relevantClass.record->fields()) {
+            os << "    pull(reflectable." << field->getName() << ", \"" << field->getName() << "\", value);\n";
+        }
+        os << "}\n\n";
+    }
+
+    // close namespace ReflectiveRapidJSON::Reflector
+    os << "} // namespace Reflector\n"
+          "} // namespace ReflectiveRapidJSON\n";
+}
+
+struct CodeFactory::ToolInvocation {
+    ToolInvocation(CodeFactory &factory);
+
+    clang::FileManager fileManager;
+    clang::tooling::ToolInvocation invocation;
+};
+
+CodeFactory::ToolInvocation::ToolInvocation(CodeFactory &factory)
+    : fileManager({ "." })
+    , invocation(factory.makeClangArgs(), new FrontendAction(factory), &fileManager)
+{
+    fileManager.Retain();
+}
+
+CodeFactory::CodeFactory(const char *applicationPath, const std::vector<const char *> &sourceFiles, std::ostream &os)
+    : m_applicationPath(applicationPath)
+    , m_sourceFiles(sourceFiles)
+    , m_os(os)
+{
+    // for now, add the code generator for JSON (de)serialization by default
+    m_generators.emplace_back(std::make_unique<JSONSerializationCodeGenerator>());
+}
+
+CodeFactory::~CodeFactory()
+{
+}
+
+/*!
+ * \brief Constructs arguments for the Clang tool invocation.
+ */
+std::vector<string> CodeFactory::makeClangArgs() const
+{
+    static const initializer_list<const char *> flags
+        = { m_applicationPath, "-x", "c++", "-fPIE", "-fPIC", "-Wno-microsoft", "-Wno-pragma-once-outside-header", "-std=c++14", "-fsyntax-only" };
+    vector<string> clangArgs;
+    clangArgs.reserve(flags.size() + m_sourceFiles.size());
+    clangArgs.insert(clangArgs.end(), flags.begin(), flags.end());
+    clangArgs.insert(clangArgs.end(), m_sourceFiles.cbegin(), m_sourceFiles.cend());
+    return clangArgs;
+}
+
+/*!
+ * \brief Adds the specified \a decl to all underlying code generators. The generators might ignore irrelevant declarations.
+ * \remarks Supposed to be called by assigned generators inside readAST().
+ */
+void CodeFactory::addDeclaration(clang::Decl *decl)
+{
+    for (const auto &generator : m_generators) {
+        generator->addDeclaration(decl);
+    }
+}
+
+/*!
+ * \brief Reads (relevent) AST elements using Clang.
+ */
+bool CodeFactory::readAST()
+{
+    // lazy initialize Clang tool invocation
+    if (!m_toolInvocation) {
+        m_toolInvocation = make_unique<ToolInvocation>(*this);
+    }
+    // run Clang
+    return m_toolInvocation->invocation.run();
+}
+
+/*!
+ * \brief Generates code based on the AST elements which have been read by invoking readAST().
+ */
+bool CodeFactory::generate() const
+{
+    for (const auto &generator : m_generators) {
+        generator->generate(m_os);
+    }
+    return true;
 }
 
 } // namespace ReflectiveRapidJSON

@@ -2,17 +2,13 @@
 #define SOME_STRUCTS_H
 
 //#include <string>
+#include "../../lib/reflectable.h"
 
 namespace TestNamespace1 {
 
 #define SOME_MACRO
 
-struct Reflectable
-{
-
-};
-
-struct Person : public Reflectable
+struct Person : public ReflectiveRapidJSON::Reflectable<Person>
 {
     SOME_MACRO
     //std::string name;
@@ -20,6 +16,14 @@ struct Person : public Reflectable
     bool alive;
 };
 
+struct NonReflectableClass
+{
+    int foo;
+}
+
+struct SomeOtherNonReflectableClass : public NonReflectableClass
+{
+    int bar;
 }
 
 namespace TestNamespace2 {

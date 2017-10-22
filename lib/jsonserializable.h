@@ -1,7 +1,7 @@
-#ifndef REFLECTIVE_RAPIDJSON_REFLECTABLE_H
-#define REFLECTIVE_RAPIDJSON_REFLECTABLE_H
+#ifndef REFLECTIVE_RAPIDJSON_JSON_SERIALIZABLE_H
+#define REFLECTIVE_RAPIDJSON_JSON_SERIALIZABLE_H
 
-#include "./reflect.h"
+#include "./jsonreflector.h"
 
 #include <rapidjson/document.h>
 
@@ -19,6 +19,8 @@ template <typename Type> struct JSONSerializable {
     static Type fromJson(const char *json, std::size_t jsonSize);
     static Type fromJson(const char *json);
     static Type fromJson(const std::string &json);
+
+    static constexpr const char *qualifiedName = "ReflectiveRapidJSON::JSONSerializable";
 };
 
 template <typename Type> void JSONSerializable<Type>::push(RAPIDJSON_NAMESPACE::Value &container)
@@ -53,4 +55,4 @@ template <typename Type> Type JSONSerializable<Type>::fromJson(const std::string
 
 } // namespace ReflectiveRapidJSON
 
-#endif // REFLECTIVE_RAPIDJSON_REFLECTABLE_H
+#endif // REFLECTIVE_RAPIDJSON_JSON_SERIALIZABLE_H

@@ -1,5 +1,5 @@
-#ifndef REFLECTIVE_RAPIDJSON_REFLECT_H
-#define REFLECTIVE_RAPIDJSON_REFLECT_H
+#ifndef REFLECTIVE_RAPIDJSON_JSON_REFLECTOR_H
+#define REFLECTIVE_RAPIDJSON_JSON_REFLECTOR_H
 
 #include <c++utilities/conversion/types.h>
 #include <c++utilities/misc/traits.h>
@@ -27,7 +27,7 @@ constexpr ErrorFlags operator|(ErrorFlags lhs, ErrorFlags rhs)
     return static_cast<ErrorFlags>(static_cast<unsigned char>(lhs) | static_cast<unsigned char>(rhs));
 }
 
-template <typename Type> struct Reflectable;
+template <typename Type> struct JSONSerializable;
 
 inline RAPIDJSON_NAMESPACE::StringBuffer documentToString(RAPIDJSON_NAMESPACE::Document &document)
 {
@@ -226,7 +226,7 @@ inline void pull(Type &reflectable, const char *name, const rapidjson::GenericVa
 
 // define functions providing high-level JSON serialization
 
-template <typename Type, Traits::EnableIfAny<std::is_base_of<Reflectable<Type>, Type>>...>
+template <typename Type, Traits::EnableIfAny<std::is_base_of<JSONSerializable<Type>, Type>>...>
 RAPIDJSON_NAMESPACE::StringBuffer toJson(const Type &reflectable)
 {
     RAPIDJSON_NAMESPACE::Document document(RAPIDJSON_NAMESPACE::kObjectType);
@@ -260,7 +260,7 @@ template <typename Type, Traits::EnableIfAny<std::is_same<Type, const char *>>..
 
 // define functions providing high-level JSON deserialization
 
-template <typename Type, Traits::EnableIfAny<std::is_base_of<Reflectable<Type>, Type>>...> Type fromJson(const char *json, std::size_t jsonSize)
+template <typename Type, Traits::EnableIfAny<std::is_base_of<JSONSerializable<Type>, Type>>...> Type fromJson(const char *json, std::size_t jsonSize)
 {
     RAPIDJSON_NAMESPACE::Document document(RAPIDJSON_NAMESPACE::kObjectType);
     document.Parse(json, jsonSize);
@@ -290,19 +290,6 @@ template <typename Type> Type fromJson(const std::string &json)
 }
 
 } // namespace Reflector
-
 } // namespace ReflectiveRapidJSON
 
-#define REFLECT(Type)                                                                                                                                \
-    namespace Reflector {                                                                                                                            \
-    template <>                                                                                                                                      \
-    void push<Type>(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator);            \
-    template <>                                                                                                                                      \
-    void add<Type>(                                                                                                                                  \
-        const Type &reflectable, const char *name, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator);      \
-    template <> std::string toJson<Type>(const Type &reflectable);                                                                                   \
-    template <> Type fromJson<Type>(const char *json, std::size_t jsonSize);                                                                         \
-    template <> Type fromJson<Type>(const std::string &json);                                                                                        \
-    }
-
-#endif // REFLECTIVE_RAPIDJSON_REFLECT_H
+#endif // REFLECTIVE_RAPIDJSON_JSON_REFLECTOR_H

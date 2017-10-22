@@ -36,7 +36,8 @@ inline CodeGenerator::CodeGenerator()
 }
 
 /*!
- * \brief The JSONSerializationCodeGenerator class generates code for JSON (de)serialization.
+ * \brief The JSONSerializationCodeGenerator class generates code for JSON (de)serialization
+ *        of objects inheriting from an instantiation of JSONSerializable.
  */
 class JSONSerializationCodeGenerator : public CodeGenerator {
 public:

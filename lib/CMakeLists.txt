@@ -5,17 +5,16 @@ set(META_PROJECT_TYPE library)
 
 # add project files
 set(HEADER_FILES
-    reflect.h
-    reflectable.h
+    jsonreflector.h
+    jsonserializable.h
 )
 set(SRC_FILES
-    reflect.cpp
 )
 set(TEST_HEADER_FILES
 )
 set(TEST_SRC_FILES
     tests/cppunit.cpp
-    tests/reflector.cpp
+    tests/jsonreflector.cpp
 )
 set(DOC_FILES
     README.md

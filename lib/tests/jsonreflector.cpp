@@ -1,6 +1,5 @@
-#include "../reflectable.h"
-
-#include "resources/config.h"
+#include "../jsonreflector.h"
+#include "../jsonserializable.h"
 
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/conversion/stringconversion.h>
@@ -31,7 +30,7 @@ using namespace ReflectiveRapidJSON;
 /// \cond
 
 // define some structs for testing serialization
-struct TestObject : public Reflectable<TestObject> {
+struct TestObject : public JSONSerializable<TestObject> {
     int number;
     double number2;
     vector<int> numbers;
@@ -39,12 +38,12 @@ struct TestObject : public Reflectable<TestObject> {
     bool boolean;
 };
 
-struct NestingObject : public Reflectable<NestingObject> {
+struct NestingObject : public JSONSerializable<NestingObject> {
     string name;
     TestObject testObj;
 };
 
-struct NestingArray : public Reflectable<NestingArray> {
+struct NestingArray : public JSONSerializable<NestingArray> {
     string name;
     vector<TestObject> testObjects;
 };
@@ -104,8 +103,8 @@ template <> inline void pull<NestingArray>(NestingArray &reflectable, const Gene
  * \brief The ReflectorTests class tests RapidJSON wrapper which is used to ease code generation.
  * \remarks In this tests, no reflection or code generation is involved yet.
  */
-class ReflectorTests : public TestFixture {
-    CPPUNIT_TEST_SUITE(ReflectorTests);
+class JSONReflectorTests : public TestFixture {
+    CPPUNIT_TEST_SUITE(JSONReflectorTests);
     CPPUNIT_TEST(experiment);
     CPPUNIT_TEST(testSerializePrimitives);
     CPPUNIT_TEST(testSerializeSimpleObjects);
@@ -130,20 +129,20 @@ public:
 private:
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(ReflectorTests);
+CPPUNIT_TEST_SUITE_REGISTRATION(JSONReflectorTests);
 
-void ReflectorTests::setUp()
+void JSONReflectorTests::setUp()
 {
 }
 
-void ReflectorTests::tearDown()
+void JSONReflectorTests::tearDown()
 {
 }
 
 /*!
  * \brief Not a real test, just some assertions for experimenting with the RapidJSON library.
  */
-void ReflectorTests::experiment()
+void JSONReflectorTests::experiment()
 {
     Document doc(kArrayType);
     Document::AllocatorType &alloc = doc.GetAllocator();
@@ -170,7 +169,7 @@ void ReflectorTests::experiment()
 /*!
  * \brief Tests serializing strings, numbers, arrays and boolean.
  */
-void ReflectorTests::testSerializePrimitives()
+void JSONReflectorTests::testSerializePrimitives()
 {
     Document doc(kArrayType);
     Document::AllocatorType &alloc = doc.GetAllocator();
@@ -201,7 +200,7 @@ void ReflectorTests::testSerializePrimitives()
 /*!
  * \brief Tests serializing objects.
  */
-void ReflectorTests::testSerializeSimpleObjects()
+void JSONReflectorTests::testSerializeSimpleObjects()
 {
     TestObject testObj;
     testObj.number = 42;
@@ -216,7 +215,7 @@ void ReflectorTests::testSerializeSimpleObjects()
 /*!
  * \brief Tests serializing nested object and arrays.
  */
-void ReflectorTests::testSerializeNestedObjects()
+void JSONReflectorTests::testSerializeNestedObjects()
 {
     NestingObject nestingObj;
     nestingObj.name = "nesting";
@@ -242,7 +241,7 @@ void ReflectorTests::testSerializeNestedObjects()
 /*!
  * \brief Tests deserializing strings, numbers (int, float, double) and boolean.
  */
-void ReflectorTests::testDeserializePrimitives()
+void JSONReflectorTests::testDeserializePrimitives()
 {
     Document doc(kArrayType);
 
@@ -274,7 +273,7 @@ void ReflectorTests::testDeserializePrimitives()
 /*!
  * \brief Tests deserializing simple objects.
  */
-void ReflectorTests::testDeserializeSimpleObjects()
+void JSONReflectorTests::testDeserializeSimpleObjects()
 {
     const TestObject testObj(
         TestObject::fromJson("{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false}"));
@@ -289,7 +288,7 @@ void ReflectorTests::testDeserializeSimpleObjects()
 /*!
  * \brief Tests deserializing nested objects and arrays.
  */
-void ReflectorTests::testDeserializeNestedObjects()
+void JSONReflectorTests::testDeserializeNestedObjects()
 {
     const NestingObject nestingObj(NestingObject::fromJson("{\"name\":\"nesting\",\"testObj\":{\"number\":42,\"number2\":3.141592653589793,"
                                                            "\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false}}"));

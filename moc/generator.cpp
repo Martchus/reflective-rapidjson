@@ -1,6 +1,8 @@
 #include "./generator.h"
 #include "./frontendaction.h"
 
+#include "../lib/jsonserializable.h"
+
 #include <c++utilities/application/global.h>
 #include <c++utilities/conversion/stringbuilder.h>
 
@@ -62,8 +64,8 @@ void JSONSerializationCodeGenerator::addDeclaration(clang::Decl *decl)
         if (!record->hasDefinition()) {
             return;
         }
-        // add classes derived from any instantiation of "ReflectiveRapidJSON::Reflectable"
-        if (inheritsFromInstantiationOf(record, "ReflectiveRapidJSON::Reflectable")) {
+        // add classes derived from any instantiation of "ReflectiveRapidJSON::JSONSerializable"
+        if (inheritsFromInstantiationOf(record, JSONSerializable<void>::qualifiedName)) {
             m_relevantClasses.emplace_back(record->getQualifiedNameAsString(), record);
         }
         break;
@@ -86,7 +88,7 @@ void JSONSerializationCodeGenerator::generate(ostream &os) const
           "namespace Reflector {\n";
 
     // add push and pull functions for each class, for an example of the resulting
-    // output, see ../lib/tests/reflector.cpp (code under comment "pretend serialization code...")
+    // output, see ../lib/tests/jsonserializable.cpp (code under comment "pretend serialization code...")
     for (const RelevantClass &relevantClass : m_relevantClasses) {
         // print push method
         os << "template <> inline void push<::" << relevantClass.qualifiedName << ">(const " << relevantClass.qualifiedName

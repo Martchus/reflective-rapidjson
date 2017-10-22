@@ -45,5 +45,6 @@ include(WindowsResources)
 include(AppTarget)
 include(TestTarget)
 include(ShellCompletion)
+include(Doxygen)
 include(ConfigHeader)
 

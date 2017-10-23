@@ -19,11 +19,13 @@ struct Person : public ReflectiveRapidJSON::JSONSerializable<Person>
 struct NonReflectableClass
 {
     int foo;
-}
+};
 
 struct SomeOtherNonReflectableClass : public NonReflectableClass
 {
     int bar;
+};
+
 }
 
 namespace TestNamespace2 {

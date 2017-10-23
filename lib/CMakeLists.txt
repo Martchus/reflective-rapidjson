@@ -16,6 +16,9 @@ set(TEST_SRC_FILES
     tests/cppunit.cpp
     tests/jsonreflector.cpp
 )
+set(CMAKE_MODULE_FILES
+    cmake/modules/ReflectionGenerator.cmake
+)
 set(DOC_FILES
     README.md
 )

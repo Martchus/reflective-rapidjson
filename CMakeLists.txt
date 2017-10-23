@@ -27,8 +27,10 @@ else()
     message(FATAL_ERROR "Specified directory for c++utilities sources \"${BUNDLED_CPP_UTILITIES_PATH}\" does not exist.")
 endif()
 
-# add helper library for using RapidJSON
+# add header-only library containing JSONSerializable and helper for using RapidJSON
 add_subdirectory(lib)
+# allow inclusion of CMake modules from that lib in other parts of the project
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lib/cmake/modules" "${CMAKE_MODULE_PATH}")
 
 # add code generator
 add_subdirectory(moc)

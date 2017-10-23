@@ -1,5 +1,7 @@
 #include "../generator.h"
 
+#include "../../lib/jsonserializable.h"
+
 #include "resources/config.h"
 
 #include <c++utilities/conversion/stringbuilder.h>
@@ -23,12 +25,23 @@ using namespace ConversionUtilities;
 using namespace ReflectiveRapidJSON;
 
 /*!
+ * \brief The TestStruct struct inherits from JSONSerializable and should hence have functional fromJson()
+ *        and toJson() methods. This is asserted in OverallTests::testIncludingGeneratedHeader();
+ */
+struct TestStruct : public JSONSerializable<TestStruct> {
+    int someInt = 0;
+    string someString = "foo";
+    string yetAnotherString = "bar";
+};
+
+/*!
  * \brief The OverallTests class tests the overall functionality of the code generator (CLI and generator itself).
  */
 class OverallTests : public TestFixture {
     CPPUNIT_TEST_SUITE(OverallTests);
     CPPUNIT_TEST(testGeneratorItself);
     CPPUNIT_TEST(testCLI);
+    CPPUNIT_TEST(testIncludingGeneratedHeader);
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -37,6 +50,7 @@ public:
 
     void testGeneratorItself();
     void testCLI();
+    void testIncludingGeneratedHeader();
 
 private:
     vector<string> m_expectedCode;
@@ -81,19 +95,28 @@ void OverallTests::tearDown()
 {
 }
 
+/*!
+ * \brief Tests whether the generator works by using it directly.
+ */
 void OverallTests::testGeneratorItself()
 {
     const string inputFilePath(testFilePath("some_structs.h"));
     const vector<const char *> inputFiles{ inputFilePath.data() };
+    const vector<const char *> clangOptions{};
 
     stringstream buffer;
-    CodeFactory factory(TestApplication::appPath(), inputFiles, buffer);
-    factory.generators().emplace_back(make_unique<JSONSerializationCodeGenerator>());
+    CodeFactory factory(TestApplication::appPath(), inputFiles, clangOptions, buffer);
+    factory.addGenerator<JSONSerializationCodeGenerator>();
     CPPUNIT_ASSERT(factory.readAST());
     CPPUNIT_ASSERT(factory.generate());
     assertEqualityLinewise(m_expectedCode, toArrayOfLines(buffer.str()));
 }
 
+/*!
+ * \brief Test the generator via CLI.
+ * \remarks Only available under UNIX (like) systems so far, because TESTUTILS_ASSERT_EXEC has not been implemented
+ *          for other platforms.
+ */
 void OverallTests::testCLI()
 {
 #ifdef PLATFORM_UNIX
@@ -105,3 +128,28 @@ void OverallTests::testCLI()
     assertEqualityLinewise(m_expectedCode, toArrayOfLines(stdout));
 #endif
 }
+
+/*!
+ * \brief Tests whether the generated reflection code actually works.
+ */
+void OverallTests::testIncludingGeneratedHeader()
+{
+    TestStruct test;
+    test.someInt = 42;
+    test.someString = "the answer";
+    test.yetAnotherString = "but what was the question";
+    const string expectedJSON("{\"someInt\":42,\"someString\":\"the answer\",\"yetAnotherString\":\"but what was the question\"}");
+
+    // test serialization
+    CPPUNIT_ASSERT_EQUAL(expectedJSON, string(test.toJson().GetString()));
+
+    // test deserialization
+    const TestStruct parsedTest(TestStruct::fromJson(expectedJSON));
+    CPPUNIT_ASSERT_EQUAL(test.someInt, parsedTest.someInt);
+    CPPUNIT_ASSERT_EQUAL(test.someString, parsedTest.someString);
+    CPPUNIT_ASSERT_EQUAL(test.yetAnotherString, parsedTest.yetAnotherString);
+}
+
+// include file required for reflection of TestStruct; generation of this header is triggered using
+// the CMake function add_reflection_generator_invocation()
+#include "reflection.h"

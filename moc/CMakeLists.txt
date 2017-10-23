@@ -39,6 +39,14 @@ list(APPEND PRIVATE_LIBRARIES clangTooling)
 # also add reflective_rapidjson
 list(APPEND PRIVATE_LIBRARIES reflective_rapidjson)
 
+# trigger code generator for tests
+include(ReflectionGenerator)
+add_reflection_generator_invocation(
+    INPUT_FILES tests/overall.cpp
+    GENERATORS json
+    OUTPUT_LISTS TEST_SRC_FILES
+)
+
 # include modules to apply configuration
 include(BasicConfig)
 include(WindowsResources)
@@ -47,4 +55,3 @@ include(TestTarget)
 include(ShellCompletion)
 include(Doxygen)
 include(ConfigHeader)
-

@@ -83,24 +83,24 @@ void JSONSerializationCodeGenerator::generate(ostream &os) const
         return;
     }
 
-    // put everything into ReflectiveRapidJSON::Reflector
+    // put everything into namespace ReflectiveRapidJSON::Reflector
     os << "namespace ReflectiveRapidJSON {\n"
-          "namespace Reflector {\n";
+          "namespace Reflector {\n\n";
 
     // add push and pull functions for each class, for an example of the resulting
     // output, see ../lib/tests/jsonserializable.cpp (code under comment "pretend serialization code...")
     for (const RelevantClass &relevantClass : m_relevantClasses) {
         // print push method
-        os << "template <> inline void push<::" << relevantClass.qualifiedName << ">(const " << relevantClass.qualifiedName
-           << " &reflectable, Value::Object &value, Document::AllocatorType &allocator)\n{\n";
+        os << "template <> inline void push<::" << relevantClass.qualifiedName << ">(const ::" << relevantClass.qualifiedName
+           << " &reflectable, ::RAPIDJSON_NAMESPACE::Value::Object &value, ::RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)\n{\n";
         for (const clang::FieldDecl *field : relevantClass.record->fields()) {
             os << "    push(reflectable." << field->getName() << ", \"" << field->getName() << "\", value, allocator);\n";
         }
         os << "}\n";
 
         // print pull method
-        os << "template <> inline void pull<::" << relevantClass.qualifiedName << ">(" << relevantClass.qualifiedName
-           << " &reflectable, const GenericValue<UTF8<char>>::ConstObject &value)\n{\n";
+        os << "template <> inline void pull<::" << relevantClass.qualifiedName << ">(::" << relevantClass.qualifiedName
+           << " &reflectable, const ::RAPIDJSON_NAMESPACE::GenericValue<::RAPIDJSON_NAMESPACE::UTF8<char>>::ConstObject &value)\n{\n";
         for (const clang::FieldDecl *field : relevantClass.record->fields()) {
             os << "    pull(reflectable." << field->getName() << ", \"" << field->getName() << "\", value);\n";
         }
@@ -126,10 +126,13 @@ CodeFactory::ToolInvocation::ToolInvocation(CodeFactory &factory)
     fileManager.Retain();
 }
 
-CodeFactory::CodeFactory(const char *applicationPath, const std::vector<const char *> &sourceFiles, std::ostream &os)
+CodeFactory::CodeFactory(
+    const char *applicationPath, const std::vector<const char *> &sourceFiles, const std::vector<const char *> &clangOptions, std::ostream &os)
     : m_applicationPath(applicationPath)
     , m_sourceFiles(sourceFiles)
+    , m_clangOptions(clangOptions)
     , m_os(os)
+    , m_compilerInstance(nullptr)
 {
 }
 
@@ -145,8 +148,9 @@ std::vector<string> CodeFactory::makeClangArgs() const
     static const initializer_list<const char *> flags
         = { m_applicationPath, "-x", "c++", "-fPIE", "-fPIC", "-Wno-microsoft", "-Wno-pragma-once-outside-header", "-std=c++14", "-fsyntax-only" };
     vector<string> clangArgs;
-    clangArgs.reserve(flags.size() + m_sourceFiles.size());
+    clangArgs.reserve(flags.size() + m_clangOptions.size() + m_sourceFiles.size());
     clangArgs.insert(clangArgs.end(), flags.begin(), flags.end());
+    clangArgs.insert(clangArgs.end(), m_clangOptions.cbegin(), m_clangOptions.cend());
     clangArgs.insert(clangArgs.end(), m_sourceFiles.cbegin(), m_sourceFiles.cend());
     return clangArgs;
 }

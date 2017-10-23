@@ -1,5 +1,6 @@
 #include "./frontendaction.h"
 #include "./consumer.h"
+#include "./generator.h"
 
 #include <c++utilities/application/global.h>
 
@@ -17,11 +18,13 @@ FrontendAction::CreateASTConsumer(clang::CompilerInstance &compilerInstance, llv
 {
     VAR_UNUSED(inputFile)
 
+    // propagate compiler instance to factory
+    m_factory.setCompilerInstance(&compilerInstance);
+
+    // configure frontent, preporocessor and language options
     clang::FrontendOptions &frontendOpts = compilerInstance.getFrontendOpts();
     clang::Preprocessor &pp = compilerInstance.getPreprocessor();
     clang::LangOptions &lngOpts = compilerInstance.getLangOpts();
-
-    // configure frontent, preporocessor and language options
     frontendOpts.SkipFunctionBodies = true;
     pp.enableIncrementalProcessing(true);
     pp.SetSuppressIncludeNotFoundError(true);

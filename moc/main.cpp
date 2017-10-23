@@ -29,17 +29,16 @@ int main(int argc, char *argv[])
     Argument inputFilesArg("input-files", 'i', "specifies the input files");
     inputFilesArg.setValueNames({ "path" });
     inputFilesArg.setRequiredValueCount(Argument::varValueCount);
-    Argument outputFileArg("output-file", 'o', "specifies the output file");
-    outputFileArg.setValueNames({ "path" });
-    outputFileArg.setRequiredValueCount(1);
-    outputFileArg.setCombinable(true);
-    Argument generatorsArgs("generators", 'g', "specifies the generators (by default all generators are enabled)");
-    generatorsArgs.setValueNames({ "json" });
-    generatorsArgs.setRequiredValueCount(Argument::varValueCount);
-    generatorsArgs.setCombinable(true);
+    ConfigValueArgument outputFileArg("output-file", 'o', "specifies the output file", { "path" });
+    Argument generatorsArg("generators", 'g', "specifies the generators (by default all generators are enabled)");
+    generatorsArg.setValueNames({ "json" });
+    generatorsArg.setPreDefinedCompletionValues({ "json" });
+    generatorsArg.setRequiredValueCount(Argument::varValueCount);
+    generatorsArg.setCombinable(true);
+    ConfigValueArgument clangOptionsArg("clang-opt", 'c', "specifies an argument to be passed to Clang", { "option" });
     HelpArgument helpArg(parser);
     NoColorArgument noColorArg;
-    parser.setMainArguments({ &inputFilesArg, &outputFileArg, &noColorArg, &helpArg });
+    parser.setMainArguments({ &inputFilesArg, &outputFileArg, &generatorsArg, &clangOptionsArg, &noColorArg, &helpArg });
 
     // parse arguments
     parser.parseArgsOrExit(argc, argv);
@@ -57,21 +56,22 @@ int main(int argc, char *argv[])
         ofstream outputFile;
         if (outputFileArg.isPresent()) {
             outputFile.exceptions(ios_base::badbit | ios_base::failbit);
-            outputFile.open(outputFileArg.values(0).front(), ios_base::out | ios_base::binary);
+            outputFile.open(outputFileArg.values(0).front(), ios_base::out | ios_base::trunc | ios_base::binary);
             os = &outputFile;
         } else {
             os = &cout;
         }
 
         // configure code generator
-        CodeFactory factory(parser.executable(), inputFilesArg.values(0), *os);
-        auto &generators(factory.generators());
+        vector<const char *> defaultClangOptions;
+        CodeFactory factory(
+            parser.executable(), inputFilesArg.values(0), clangOptionsArg.isPresent() ? clangOptionsArg.values(0) : defaultClangOptions, *os);
         // add only specified generators if the --generator argument is present
-        if (generatorsArgs.isPresent()) {
+        if (generatorsArg.isPresent()) {
             // find and construct generators by name
-            for (vector<const char *> generatorName : generatorsArgs.values(0)) {
+            for (const char *generatorName : generatorsArg.values(0)) {
                 if (!strcmp(generatorName, "json")) {
-                    generators.emplace_back(std::make_unique<JSONSerializationCodeGenerator>());
+                    factory.addGenerator<JSONSerializationCodeGenerator>();
                 } else {
                     cerr << Phrases::Error << "The specified generator \"" << generatorName << "\" does not exist." << Phrases::EndFlush;
                     return -5;
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
             }
         } else {
             // add default generators
-            generators.emplace_back(std::make_unique<JSONSerializationCodeGenerator>());
+            factory.addGenerator<JSONSerializationCodeGenerator>();
         }
 
         // read AST elements from input files

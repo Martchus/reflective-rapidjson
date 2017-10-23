@@ -131,8 +131,6 @@ CodeFactory::CodeFactory(const char *applicationPath, const std::vector<const ch
     , m_sourceFiles(sourceFiles)
     , m_os(os)
 {
-    // for now, add the code generator for JSON (de)serialization by default
-    m_generators.emplace_back(std::make_unique<JSONSerializationCodeGenerator>());
 }
 
 CodeFactory::~CodeFactory()

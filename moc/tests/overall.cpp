@@ -88,6 +88,7 @@ void OverallTests::testGeneratorItself()
 
     stringstream buffer;
     CodeFactory factory(TestApplication::appPath(), inputFiles, buffer);
+    factory.generators().emplace_back(make_unique<JSONSerializationCodeGenerator>());
     CPPUNIT_ASSERT(factory.readAST());
     CPPUNIT_ASSERT(factory.generate());
     assertEqualityLinewise(m_expectedCode, toArrayOfLines(buffer.str()));

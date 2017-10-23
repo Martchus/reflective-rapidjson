@@ -9,6 +9,7 @@
 #include <c++utilities/io/catchiofailure.h>
 #include <c++utilities/io/misc.h>
 
+#include <cstring>
 #include <fstream>
 #include <iostream>
 
@@ -32,6 +33,10 @@ int main(int argc, char *argv[])
     outputFileArg.setValueNames({ "path" });
     outputFileArg.setRequiredValueCount(1);
     outputFileArg.setCombinable(true);
+    Argument generatorsArgs("generators", 'g', "specifies the generators (by default all generators are enabled)");
+    generatorsArgs.setValueNames({ "json" });
+    generatorsArgs.setRequiredValueCount(Argument::varValueCount);
+    generatorsArgs.setCombinable(true);
     HelpArgument helpArg(parser);
     NoColorArgument noColorArg;
     parser.setMainArguments({ &inputFilesArg, &outputFileArg, &noColorArg, &helpArg });
@@ -60,8 +65,22 @@ int main(int argc, char *argv[])
 
         // configure code generator
         CodeFactory factory(parser.executable(), inputFilesArg.values(0), *os);
-        // TODO: make code generator configurable, eg.
-        // factory.addGenerator(...);
+        auto &generators(factory.generators());
+        // add only specified generators if the --generator argument is present
+        if (generatorsArgs.isPresent()) {
+            // find and construct generators by name
+            for (vector<const char *> generatorName : generatorsArgs.values(0)) {
+                if (!strcmp(generatorName, "json")) {
+                    generators.emplace_back(std::make_unique<JSONSerializationCodeGenerator>());
+                } else {
+                    cerr << Phrases::Error << "The specified generator \"" << generatorName << "\" does not exist." << Phrases::EndFlush;
+                    return -5;
+                }
+            }
+        } else {
+            // add default generators
+            generators.emplace_back(std::make_unique<JSONSerializationCodeGenerator>());
+        }
 
         // read AST elements from input files
         if (!factory.readAST()) {

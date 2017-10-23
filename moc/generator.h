@@ -78,6 +78,9 @@ public:
     CodeFactory(const char *applicationPath, const std::vector<const char *> &sourceFiles, std::ostream &os);
     ~CodeFactory();
 
+    std::vector<std::unique_ptr<CodeGenerator>> &generators();
+    const std::vector<std::unique_ptr<CodeGenerator>> &generators() const;
+
     void addDeclaration(clang::Decl *decl);
     bool readAST();
     bool generate() const;
@@ -93,6 +96,16 @@ private:
     std::vector<std::unique_ptr<CodeGenerator>> m_generators;
     std::unique_ptr<ToolInvocation> m_toolInvocation;
 };
+
+inline std::vector<std::unique_ptr<CodeGenerator>> &CodeFactory::generators()
+{
+    return m_generators;
+}
+
+inline const std::vector<std::unique_ptr<CodeGenerator>> &CodeFactory::generators() const
+{
+    return m_generators;
+}
 
 } // namespace ReflectiveRapidJSON
 

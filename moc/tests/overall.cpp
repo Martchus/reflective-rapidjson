@@ -35,6 +35,40 @@ struct TestStruct : public JSONSerializable<TestStruct> {
 };
 
 /*!
+ * \brief The AnotherTestStruct struct inherits from JSONSerializable and should hence have functional fromJson()
+ *        and toJson() methods. This is asserted in OverallTests::testInheritence();
+ */
+struct AnotherTestStruct : public JSONSerializable<AnotherTestStruct> {
+    vector<string> arrayOfStrings{ "a", "b", "cd" };
+};
+
+/*!
+ * \brief The DerivedTestStruct struct inherits from JSONSerializable and should hence have functional fromJson()
+ *        and toJson() methods. This is asserted in OverallTests::testInheritence();
+ */
+struct DerivedTestStruct : public TestStruct, public JSONSerializable<DerivedTestStruct> {
+    bool someBool = true;
+};
+
+/*!
+ * \brief The NonSerializable struct should be ignored when used as base class because it isn't serializable.
+ */
+struct NonSerializable {
+    int ignored = 25;
+};
+
+/*!
+ * \brief The MultipleDerivedTestStruct struct inherits from JSONSerializable and should hence have functional fromJson()
+ *        and toJson() methods. This is asserted in OverallTests::testInheritence();
+ */
+struct MultipleDerivedTestStruct : public TestStruct,
+                                   public AnotherTestStruct,
+                                   public NonSerializable,
+                                   public JSONSerializable<MultipleDerivedTestStruct> {
+    bool someBool = false;
+};
+
+/*!
  * \brief The OverallTests class tests the overall functionality of the code generator (CLI and generator itself).
  */
 class OverallTests : public TestFixture {
@@ -42,6 +76,8 @@ class OverallTests : public TestFixture {
     CPPUNIT_TEST(testGeneratorItself);
     CPPUNIT_TEST(testCLI);
     CPPUNIT_TEST(testIncludingGeneratedHeader);
+    CPPUNIT_TEST(testSingleInheritence);
+    CPPUNIT_TEST(testMultipleInheritence);
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -51,6 +87,8 @@ public:
     void testGeneratorItself();
     void testCLI();
     void testIncludingGeneratedHeader();
+    void testSingleInheritence();
+    void testMultipleInheritence();
 
 private:
     vector<string> m_expectedCode;
@@ -148,6 +186,58 @@ void OverallTests::testIncludingGeneratedHeader()
     CPPUNIT_ASSERT_EQUAL(test.someInt, parsedTest.someInt);
     CPPUNIT_ASSERT_EQUAL(test.someString, parsedTest.someString);
     CPPUNIT_ASSERT_EQUAL(test.yetAnotherString, parsedTest.yetAnotherString);
+}
+
+/*!
+ * \brief Like testIncludingGeneratedHeader() but also tests single inheritence.
+ */
+void OverallTests::testSingleInheritence()
+{
+    DerivedTestStruct test;
+    test.someInt = 42;
+    test.someString = "the answer";
+    test.yetAnotherString = "but what was the question";
+    test.someBool = false;
+    const string expectedJSONForBase("{\"someInt\":42,\"someString\":\"the answer\",\"yetAnotherString\":\"but what was the question\"}");
+    const string expectedJSONForDerived(
+        "{\"someInt\":42,\"someString\":\"the answer\",\"yetAnotherString\":\"but what was the question\",\"someBool\":false}");
+
+    // test serialization
+    CPPUNIT_ASSERT_EQUAL(expectedJSONForBase, string(static_cast<const JSONSerializable<TestStruct> &>(test).toJson().GetString()));
+    CPPUNIT_ASSERT_EQUAL(expectedJSONForDerived, string(static_cast<const JSONSerializable<DerivedTestStruct> &>(test).toJson().GetString()));
+
+    // test deserialization
+    const DerivedTestStruct parsedTest(JSONSerializable<DerivedTestStruct>::fromJson(expectedJSONForDerived));
+    CPPUNIT_ASSERT_EQUAL(test.someInt, parsedTest.someInt);
+    CPPUNIT_ASSERT_EQUAL(test.someString, parsedTest.someString);
+    CPPUNIT_ASSERT_EQUAL(test.yetAnotherString, parsedTest.yetAnotherString);
+    CPPUNIT_ASSERT_EQUAL(test.someBool, parsedTest.someBool);
+}
+
+/*!
+ * \brief Like testIncludingGeneratedHeader() but also tests multiple inheritence.
+ */
+void OverallTests::testMultipleInheritence()
+{
+    MultipleDerivedTestStruct test;
+    test.someInt = 42;
+    test.someString = "the answer";
+    test.yetAnotherString = "but what was the question";
+    test.someBool = false;
+    test.arrayOfStrings = { "array", "of", "strings" };
+    const string expectedJSONForDerived("{\"someInt\":42,\"someString\":\"the answer\",\"yetAnotherString\":\"but what was the "
+                                        "question\",\"arrayOfStrings\":[\"array\",\"of\",\"strings\"],\"someBool\":false}");
+
+    // test serialization
+    CPPUNIT_ASSERT_EQUAL(expectedJSONForDerived, string(static_cast<const JSONSerializable<MultipleDerivedTestStruct> &>(test).toJson().GetString()));
+
+    // test deserialization
+    const MultipleDerivedTestStruct parsedTest(JSONSerializable<MultipleDerivedTestStruct>::fromJson(expectedJSONForDerived));
+    CPPUNIT_ASSERT_EQUAL(test.someInt, parsedTest.someInt);
+    CPPUNIT_ASSERT_EQUAL(test.someString, parsedTest.someString);
+    CPPUNIT_ASSERT_EQUAL(test.yetAnotherString, parsedTest.yetAnotherString);
+    CPPUNIT_ASSERT_EQUAL(test.someBool, parsedTest.someBool);
+    CPPUNIT_ASSERT_EQUAL(test.arrayOfStrings, parsedTest.arrayOfStrings);
 }
 
 // include file required for reflection of TestStruct; generation of this header is triggered using

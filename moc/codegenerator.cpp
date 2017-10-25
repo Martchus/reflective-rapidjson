@@ -84,9 +84,18 @@ void JSONSerializationCodeGenerator::generate(ostream &os) const
     // add push and pull functions for each class, for an example of the resulting
     // output, see ../lib/tests/jsonserializable.cpp (code under comment "pretend serialization code...")
     for (const RelevantClass &relevantClass : m_relevantClasses) {
+        // write comment
+        os << "// define code for (de)serializing " << relevantClass.qualifiedName << " objects\n";
+
+        // find relevant base classes
+        const vector<const RelevantClass *> relevantBases = findRelevantBaseClasses(relevantClass);
+
         // print push method
         os << "template <> inline void push<::" << relevantClass.qualifiedName << ">(const ::" << relevantClass.qualifiedName
            << " &reflectable, ::RAPIDJSON_NAMESPACE::Value::Object &value, ::RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)\n{\n";
+        for (const RelevantClass *baseClass : relevantBases) {
+            os << "    push(static_cast<const ::" << baseClass->qualifiedName << " &>(reflectable), value, allocator);\n";
+        }
         for (const clang::FieldDecl *field : relevantClass.record->fields()) {
             os << "    push(reflectable." << field->getName() << ", \"" << field->getName() << "\", value, allocator);\n";
         }
@@ -95,6 +104,9 @@ void JSONSerializationCodeGenerator::generate(ostream &os) const
         // print pull method
         os << "template <> inline void pull<::" << relevantClass.qualifiedName << ">(::" << relevantClass.qualifiedName
            << " &reflectable, const ::RAPIDJSON_NAMESPACE::GenericValue<::RAPIDJSON_NAMESPACE::UTF8<char>>::ConstObject &value)\n{\n";
+        for (const RelevantClass *baseClass : relevantBases) {
+            os << "    pull(static_cast<::" << baseClass->qualifiedName << " &>(reflectable), value);\n";
+        }
         for (const clang::FieldDecl *field : relevantClass.record->fields()) {
             os << "    pull(reflectable." << field->getName() << ", \"" << field->getName() << "\", value);\n";
         }
@@ -104,6 +116,18 @@ void JSONSerializationCodeGenerator::generate(ostream &os) const
     // close namespace ReflectiveRapidJSON::Reflector
     os << "} // namespace Reflector\n"
           "} // namespace ReflectiveRapidJSON\n";
+}
+
+std::vector<const JSONSerializationCodeGenerator::RelevantClass *> JSONSerializationCodeGenerator::findRelevantBaseClasses(
+    const RelevantClass &relevantClass) const
+{
+    vector<const RelevantClass *> relevantBaseClasses;
+    for (const RelevantClass &otherClass : m_relevantClasses) {
+        if (relevantClass.record->isDerivedFrom(otherClass.record)) {
+            relevantBaseClasses.push_back(&otherClass);
+        }
+    }
+    return relevantBaseClasses;
 }
 
 } // namespace ReflectiveRapidJSON

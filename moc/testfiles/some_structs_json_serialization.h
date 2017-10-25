@@ -1,6 +1,7 @@
 namespace ReflectiveRapidJSON {
 namespace Reflector {
 
+// define code for (de)serializing TestNamespace1::Person objects
 template <> inline void push<::TestNamespace1::Person>(const ::TestNamespace1::Person &reflectable, ::RAPIDJSON_NAMESPACE::Value::Object &value, ::RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     push(reflectable.age, "age", value, allocator);

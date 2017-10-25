@@ -65,6 +65,8 @@ private:
         clang::CXXRecordDecl *record;
     };
 
+    std::vector<const RelevantClass *> findRelevantBaseClasses(const RelevantClass &relevantClass) const;
+
     std::vector<RelevantClass> m_relevantClasses;
 };
 

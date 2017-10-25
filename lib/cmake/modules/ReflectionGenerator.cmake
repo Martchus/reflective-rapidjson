@@ -7,7 +7,7 @@ endif()
 set(REFLECTION_GENERATOR_MODULE_LOADED YES)
 
 # find code generator
-set(REFLECTION_GENERATOR_EXECUTABLE reflective_rapidjson_moc)
+set(REFLECTION_GENERATOR_EXECUTABLE reflective_rapidjson_generator)
 if(CMAKE_CROSSCOMPILING OR NOT TARGET "${REFLECTION_GENERATOR_EXECUTABLE}")
     # find "reflective_rapidjson_moc" from path
     find_program(REFLECTION_GENERATOR_EXECUTABLE "${REFLECTION_GENERATOR_EXECUTABLE}")

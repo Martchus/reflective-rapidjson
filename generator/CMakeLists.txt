@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 
 # metadata
-set(META_PROJECT_NAME reflective_rapidjson_moc)
+set(META_PROJECT_NAME reflective_rapidjson_generator)
 set(META_PROJECT_TYPE application)
 set(LINK_TESTS_AGAINST_APP_TARGET ON)
 

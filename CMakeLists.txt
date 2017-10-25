@@ -33,4 +33,4 @@ add_subdirectory(lib)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lib/cmake/modules" "${CMAKE_MODULE_PATH}")
 
 # add code generator
-add_subdirectory(moc)
+add_subdirectory(generator)

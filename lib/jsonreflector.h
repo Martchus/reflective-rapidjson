@@ -1,6 +1,12 @@
 #ifndef REFLECTIVE_RAPIDJSON_JSON_REFLECTOR_H
 #define REFLECTIVE_RAPIDJSON_JSON_REFLECTOR_H
 
+/*!
+ * \file jsonreflector.h
+ * \brief Contains functions to (de)serialize basic types such as int, double, bool, std::string,
+ *        std::vector, ... with RapidJSON.
+ */
+
 #include <c++utilities/conversion/types.h>
 #include <c++utilities/misc/traits.h>
 

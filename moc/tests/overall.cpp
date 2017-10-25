@@ -240,6 +240,9 @@ void OverallTests::testMultipleInheritence()
     CPPUNIT_ASSERT_EQUAL(test.arrayOfStrings, parsedTest.arrayOfStrings);
 }
 
-// include file required for reflection of TestStruct; generation of this header is triggered using
+// include file required for reflection of TestStruct and other structs; generation of this header is triggered using
 // the CMake function add_reflection_generator_invocation()
-#include "reflection.h"
+#include "reflection/overall.h"
+
+// this file should also be generated and hence includeable, but empty because it doesn't contain relevant classes
+#include "reflection/cppunit.h"

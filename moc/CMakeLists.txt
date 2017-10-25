@@ -44,9 +44,9 @@ list(APPEND PRIVATE_LIBRARIES reflective_rapidjson)
 # trigger code generator for tests
 include(ReflectionGenerator)
 add_reflection_generator_invocation(
-    INPUT_FILES tests/overall.cpp
+    INPUT_FILES tests/overall.cpp tests/cppunit.cpp
     GENERATORS json
-    OUTPUT_LISTS TEST_SRC_FILES
+    OUTPUT_LISTS TEST_HEADER_FILES
 )
 
 # include modules to apply configuration

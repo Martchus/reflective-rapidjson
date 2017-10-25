@@ -26,9 +26,8 @@ int main(int argc, char *argv[])
 
     // setup argument parser
     ArgumentParser parser;
-    Argument inputFilesArg("input-files", 'i', "specifies the input files");
-    inputFilesArg.setValueNames({ "path" });
-    inputFilesArg.setRequiredValueCount(Argument::varValueCount);
+    ConfigValueArgument inputFileArg("input-file", 'i', "specifies the input file", { "path" });
+    inputFileArg.setRequired(true);
     ConfigValueArgument outputFileArg("output-file", 'o', "specifies the output file", { "path" });
     Argument generatorsArg("generators", 'g', "specifies the generators (by default all generators are enabled)");
     generatorsArg.setValueNames({ "json" });
@@ -38,16 +37,12 @@ int main(int argc, char *argv[])
     ConfigValueArgument clangOptionsArg("clang-opt", 'c', "specifies an argument to be passed to Clang", { "option" });
     HelpArgument helpArg(parser);
     NoColorArgument noColorArg;
-    parser.setMainArguments({ &inputFilesArg, &outputFileArg, &generatorsArg, &clangOptionsArg, &noColorArg, &helpArg });
+    parser.setMainArguments({ &inputFileArg, &outputFileArg, &generatorsArg, &clangOptionsArg, &noColorArg, &helpArg });
 
     // parse arguments
     parser.parseArgsOrExit(argc, argv);
     if (helpArg.isPresent()) {
         return 0;
-    }
-    if (!inputFilesArg.isPresent()) {
-        cerr << Phrases::Error << "No input file specified." << Phrases::EndFlush;
-        return -1;
     }
 
     // setup output stream
@@ -65,7 +60,7 @@ int main(int argc, char *argv[])
         // configure code generator
         vector<const char *> defaultClangOptions;
         CodeFactory factory(
-            parser.executable(), inputFilesArg.values(0), clangOptionsArg.isPresent() ? clangOptionsArg.values(0) : defaultClangOptions, *os);
+            parser.executable(), inputFileArg.values(0), clangOptionsArg.isPresent() ? clangOptionsArg.values(0) : defaultClangOptions, *os);
         // add only specified generators if the --generator argument is present
         if (generatorsArg.isPresent()) {
             // find and construct generators by name
@@ -84,7 +79,7 @@ int main(int argc, char *argv[])
 
         // read AST elements from input files
         if (!factory.readAST()) {
-            cerr << Phrases::Error << "Errors occured when parsing the input files." << Phrases::EndFlush;
+            cerr << Phrases::Error << "Errors occured when parsing the input file." << Phrases::EndFlush;
             return -2;
         }
 

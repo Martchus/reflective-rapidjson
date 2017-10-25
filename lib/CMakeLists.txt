@@ -6,6 +6,7 @@ set(META_PROJECT_TYPE library)
 # add project files
 set(HEADER_FILES
     jsonreflector.h
+    jsonreflector-boosthana.h
     jsonserializable.h
 )
 set(SRC_FILES
@@ -15,6 +16,7 @@ set(TEST_HEADER_FILES
 set(TEST_SRC_FILES
     tests/cppunit.cpp
     tests/jsonreflector.cpp
+    tests/jsonreflector-boosthana.cpp
 )
 set(CMAKE_MODULE_FILES
     cmake/modules/ReflectionGenerator.cmake

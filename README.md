@@ -3,8 +3,12 @@
 The main goal of this project is to provide a code generator for serializing/deserializing C++ objects to/from JSON
 using Clang and RapidJSON.
 
-However, extending the generator to generate code for other applications of reflection or provide generic
-functionallity would be possible as well.
+However, extending the generator to generate code for other applications of reflection or to provide generic
+reflection functionallity would be possible as well.
+
+This repository also contains a small, additional header to use RapidJSON with Boost.Hana. This allows to serialize
+or dezerialize simple data structures using the `BOOST_HANA_DEFINE_STRUCT` macro rather than requiring the code
+generator.
 
 ## Usage
 This example shows how the library can be used to make a `struct` serializable:

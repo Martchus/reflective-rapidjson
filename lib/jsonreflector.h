@@ -202,6 +202,9 @@ template <> inline void pull<std::string>(std::string &reflectable, const RAPIDJ
 template <typename Type, Traits::EnableIf<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>...>
 void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ValueIterator &value)
 {
+    // clear previous contents of the array (TODO: make this configurable)
+    reflectable.clear();
+    // pull all array elements of the specified value
     for (const auto &item : value->GetArray()) {
         reflectable.emplace_back();
         pull(reflectable.back(), item);
@@ -212,6 +215,9 @@ void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<c
 template <typename Type, Traits::EnableIf<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>...>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value)
 {
+    // clear previous contents of the array (TODO: make this configurable)
+    reflectable.clear();
+    // pull all array elements of the specified value
     for (const auto &item : value.GetArray()) {
         reflectable.emplace_back();
         pull(reflectable.back(), item);

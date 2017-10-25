@@ -24,10 +24,12 @@ set(SRC_FILES
     main.cpp
 )
 set(TEST_HEADER_FILES
+    tests/structs.h
+    tests/helper.h
 )
 set(TEST_SRC_FILES
     tests/cppunit.cpp
-    tests/overall.cpp
+    tests/jsongenerator.cpp
 )
 
 # find c++utilities
@@ -44,7 +46,7 @@ list(APPEND PRIVATE_LIBRARIES reflective_rapidjson)
 # trigger code generator for tests
 include(ReflectionGenerator)
 add_reflection_generator_invocation(
-    INPUT_FILES tests/overall.cpp tests/cppunit.cpp
+    INPUT_FILES tests/structs.h tests/cppunit.cpp
     GENERATORS json
     OUTPUT_LISTS TEST_HEADER_FILES
 )

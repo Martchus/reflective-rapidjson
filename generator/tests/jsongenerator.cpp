@@ -1,72 +1,23 @@
-#include "../codefactory.h"
+#include "./structs.h"
+#include "./helper.h"
 
-#include "../../lib/jsonserializable.h"
+#include "../codefactory.h"
 
 #include "resources/config.h"
 
-#include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/io/misc.h>
 #include <c++utilities/tests/testutils.h>
 
-using TestUtilities::operator<<; // must be visible prior to the call site
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <iostream>
-#include <string>
-#include <vector>
 
-using namespace std;
 using namespace CPPUNIT_NS;
 using namespace IoUtilities;
 using namespace TestUtilities;
 using namespace ConversionUtilities;
-using namespace ReflectiveRapidJSON;
-
-/*!
- * \brief The TestStruct struct inherits from JSONSerializable and should hence have functional fromJson()
- *        and toJson() methods. This is asserted in OverallTests::testIncludingGeneratedHeader();
- */
-struct TestStruct : public JSONSerializable<TestStruct> {
-    int someInt = 0;
-    string someString = "foo";
-    string yetAnotherString = "bar";
-};
-
-/*!
- * \brief The AnotherTestStruct struct inherits from JSONSerializable and should hence have functional fromJson()
- *        and toJson() methods. This is asserted in OverallTests::testInheritence();
- */
-struct AnotherTestStruct : public JSONSerializable<AnotherTestStruct> {
-    vector<string> arrayOfStrings{ "a", "b", "cd" };
-};
-
-/*!
- * \brief The DerivedTestStruct struct inherits from JSONSerializable and should hence have functional fromJson()
- *        and toJson() methods. This is asserted in OverallTests::testInheritence();
- */
-struct DerivedTestStruct : public TestStruct, public JSONSerializable<DerivedTestStruct> {
-    bool someBool = true;
-};
-
-/*!
- * \brief The NonSerializable struct should be ignored when used as base class because it isn't serializable.
- */
-struct NonSerializable {
-    int ignored = 25;
-};
-
-/*!
- * \brief The MultipleDerivedTestStruct struct inherits from JSONSerializable and should hence have functional fromJson()
- *        and toJson() methods. This is asserted in OverallTests::testInheritence();
- */
-struct MultipleDerivedTestStruct : public TestStruct,
-                                   public AnotherTestStruct,
-                                   public NonSerializable,
-                                   public JSONSerializable<MultipleDerivedTestStruct> {
-    bool someBool = false;
-};
 
 /*!
  * \brief The OverallTests class tests the overall functionality of the code generator (CLI and generator itself).
@@ -95,34 +46,6 @@ private:
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(OverallTests);
-
-/*!
- * \brief Asserts equality of two iteratables printing the differing indices.
- */
-template <typename Iteratable, Traits::EnableIf<Traits::IsIteratable<Iteratable>, Traits::Not<Traits::IsString<Iteratable>>>...>
-inline void assertEqualityLinewise(const Iteratable &iteratable1, const Iteratable &iteratable2)
-{
-    std::vector<std::string> differentLines;
-    std::size_t currentLine = 0;
-
-    for (auto i1 = iteratable1.cbegin(), i2 = iteratable2.cbegin(); i1 != iteratable1.cend() || i2 != iteratable2.cend(); ++currentLine) {
-        if (i1 != iteratable1.cend() && i2 != iteratable2.cend()) {
-            if (*i1 != *i2) {
-                differentLines.push_back(numberToString(currentLine));
-            }
-            ++i1, ++i2;
-        } else if (i1 != iteratable1.cend()) {
-            differentLines.push_back(numberToString(currentLine));
-            ++i1;
-        } else if (i2 != iteratable1.cend()) {
-            differentLines.push_back(numberToString(currentLine));
-            ++i2;
-        }
-    }
-    if (!differentLines.empty()) {
-        CPPUNIT_ASSERT_EQUAL_MESSAGE("the following lines differ: " + joinStrings(differentLines, ", "), iteratable1, iteratable2);
-    }
-}
 
 void OverallTests::setUp()
 {
@@ -240,9 +163,11 @@ void OverallTests::testMultipleInheritence()
     CPPUNIT_ASSERT_EQUAL(test.arrayOfStrings, parsedTest.arrayOfStrings);
 }
 
-// include file required for reflection of TestStruct and other structs; generation of this header is triggered using
-// the CMake function add_reflection_generator_invocation()
-#include "reflection/overall.h"
+// include file required for reflection of TestStruct and other structs defined in structs.h
+// NOTE: * generation of this header is triggered using the CMake function add_reflection_generator_invocation()
+//       * the include must happen in exactly one translation unit of the project at a point where the structs are defined
+#include "reflection/structs.h"
 
-// this file should also be generated and hence includeable, but empty because it doesn't contain relevant classes
+// this file should also be generated via add_reflection_generator_invocation() and hence includeable
+// it is included to test the "empty" case when a unit doesn't contain relevant classes
 #include "reflection/cppunit.h"

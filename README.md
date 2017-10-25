@@ -40,6 +40,7 @@ TODO
 * the CMake build system
 * LibTooling from Clang for the code generator
 * RapidJSON for JSON (de)serialization
+* Boost.Hana for using `BOOST_HANA_DEFINE_STRUCT` instead of code generator
 * `c++utilities` for various helper functions
 
 Optional:

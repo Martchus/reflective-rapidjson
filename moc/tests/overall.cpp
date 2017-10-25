@@ -1,4 +1,4 @@
-#include "../generator.h"
+#include "../codefactory.h"
 
 #include "../../lib/jsonserializable.h"
 

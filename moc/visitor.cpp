@@ -1,5 +1,5 @@
 #include "./visitor.h"
-#include "./generator.h"
+#include "./codefactory.h"
 
 #include <c++utilities/application/global.h>
 

@@ -7,14 +7,16 @@ set(LINK_TESTS_AGAINST_APP_TARGET ON)
 
 # add project files
 set(HEADER_FILES
-    generator.h
+    codegenerator.h
+    codefactory.h
     frontendaction.h
     consumer.h
     visitor.h
     clangversionabstraction.h
 )
 set(SRC_FILES
-    generator.cpp
+    codegenerator.cpp
+    codefactory.cpp
     frontendaction.cpp
     consumer.cpp
     clangversionabstraction.cpp

@@ -1,6 +1,6 @@
 #include "./frontendaction.h"
+#include "./codefactory.h"
 #include "./consumer.h"
-#include "./generator.h"
 
 #include <c++utilities/application/global.h>
 

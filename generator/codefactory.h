@@ -14,6 +14,9 @@ class CompilerInstance;
 
 namespace ReflectiveRapidJSON {
 
+class Consumer;
+class Visitor;
+
 /*!
  * \brief The CodeFactory class produces additional (reflection) code for a specified list of C++ source files.
  * \remarks
@@ -21,6 +24,9 @@ namespace ReflectiveRapidJSON {
  * - The CodeFactory class is constituted by its underlying CodeGenerator instances.
  */
 class CodeFactory {
+    friend class Consumer;
+    friend class Visitor;
+
 public:
     CodeFactory(
         const char *applicationPath, const std::vector<const char *> &sourceFiles, const std::vector<const char *> &clangOptions, std::ostream &os);
@@ -29,15 +35,15 @@ public:
     const std::vector<std::unique_ptr<CodeGenerator>> &generators() const;
     template <typename GeneratorType> void addGenerator();
 
-    void addDeclaration(clang::Decl *decl);
-    bool readAST();
-    bool generate() const;
+    bool run();
     clang::CompilerInstance *compilerInstance();
     void setCompilerInstance(clang::CompilerInstance *compilerInstance);
 
 private:
     struct ToolInvocation;
 
+    void addDeclaration(clang::Decl *decl);
+    bool generate() const;
     std::vector<std::string> makeClangArgs() const;
 
     const char *const m_applicationPath;

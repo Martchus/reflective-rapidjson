@@ -1,4 +1,5 @@
 #include "./consumer.h"
+#include "./codefactory.h"
 
 #include <clang/AST/ASTContext.h>
 #include <clang/AST/DeclCXX.h>
@@ -27,6 +28,12 @@ bool Consumer::HandleTopLevelDecl(clang::DeclGroupRef groupRefDecl)
         }
     }
     return clang::ASTConsumer::HandleTopLevelDecl(groupRefDecl);
+}
+
+void Consumer::HandleTranslationUnit(clang::ASTContext &context)
+{
+    m_visitor.TraverseDecl(context.getTranslationUnitDecl());
+    m_factory.generate();
 }
 
 void DiagConsumer::BeginSourceFile(const clang::LangOptions &langOpts, const clang::Preprocessor *pp)

@@ -44,11 +44,6 @@ inline Consumer::Consumer(CodeFactory &factory, clang::CompilerInstance &compile
 {
 }
 
-inline void Consumer::HandleTranslationUnit(clang::ASTContext &context)
-{
-    m_visitor.TraverseDecl(context.getTranslationUnitDecl());
-}
-
 /*!
  * \brief The DiagConsumer class changes most errors into warnings.
  * \remarks This class is based on MocDiagConsumer from https://github.com/woboq/moc-ng.

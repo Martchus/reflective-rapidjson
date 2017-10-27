@@ -77,16 +77,10 @@ int main(int argc, char *argv[])
             factory.addGenerator<JSONSerializationCodeGenerator>();
         }
 
-        // read AST elements from input files
-        if (!factory.readAST()) {
-            cerr << Phrases::Error << "Errors occured when parsing the input file." << Phrases::EndFlush;
+        // read AST elements from input files and run the code generator
+        if (!factory.run()) {
+            cerr << Phrases::Error << "Errors occured." << Phrases::EndFlush;
             return -2;
-        }
-
-        // run the code generator
-        if (!factory.generate()) {
-            cerr << Phrases::Error << "Errors occured when during code generation." << Phrases::EndFlush;
-            return -3;
         }
 
     } catch (...) {

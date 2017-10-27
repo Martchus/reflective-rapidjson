@@ -123,7 +123,7 @@ std::vector<const JSONSerializationCodeGenerator::RelevantClass *> JSONSerializa
 {
     vector<const RelevantClass *> relevantBaseClasses;
     for (const RelevantClass &otherClass : m_relevantClasses) {
-        if (relevantClass.record->isDerivedFrom(otherClass.record)) {
+        if (relevantClass.record != otherClass.record && relevantClass.record->isDerivedFrom(otherClass.record)) {
             relevantBaseClasses.push_back(&otherClass);
         }
     }

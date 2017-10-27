@@ -66,20 +66,7 @@ void CodeFactory::addDeclaration(clang::Decl *decl)
 }
 
 /*!
- * \brief Reads (relevent) AST elements using Clang.
- */
-bool CodeFactory::readAST()
-{
-    // lazy initialize Clang tool invocation
-    if (!m_toolInvocation) {
-        m_toolInvocation = make_unique<ToolInvocation>(*this);
-    }
-    // run Clang
-    return m_toolInvocation->invocation.run();
-}
-
-/*!
- * \brief Generates code based on the AST elements which have been read by invoking readAST().
+ * \brief Generates code based on the added declarations.
  */
 bool CodeFactory::generate() const
 {
@@ -87,6 +74,19 @@ bool CodeFactory::generate() const
         generator->generate(m_os);
     }
     return true;
+}
+
+/*!
+ * \brief Reads (relevent) AST elements using Clang and generates code.
+ */
+bool CodeFactory::run()
+{
+    // lazy initialize Clang tool invocation
+    if (!m_toolInvocation) {
+        m_toolInvocation = make_unique<ToolInvocation>(*this);
+    }
+    // run Clang
+    return m_toolInvocation->invocation.run();
 }
 
 } // namespace ReflectiveRapidJSON

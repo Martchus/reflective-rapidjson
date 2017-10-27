@@ -126,7 +126,7 @@ void OverallTests::testSingleInheritence()
         "{\"someInt\":42,\"someString\":\"the answer\",\"yetAnotherString\":\"but what was the question\",\"someBool\":false}");
 
     // test serialization
-    CPPUNIT_ASSERT_EQUAL(expectedJSONForBase, string(static_cast<const JSONSerializable<TestStruct> &>(test).toJson().GetString()));
+    CPPUNIT_ASSERT_EQUAL(expectedJSONForBase, string(test.toJsonAs<TestStruct>().GetString()));
     CPPUNIT_ASSERT_EQUAL(expectedJSONForDerived, string(static_cast<const JSONSerializable<DerivedTestStruct> &>(test).toJson().GetString()));
 
     // test deserialization

@@ -29,6 +29,9 @@ template <typename Type> struct JSONSerializable {
     static Type fromJson(const char *json);
     static Type fromJson(const std::string &json);
 
+    template<typename ViewType, Traits::EnableIf<std::is_same<ViewType, Type>>...>
+    RAPIDJSON_NAMESPACE::StringBuffer toJsonAs() const;
+
     static constexpr const char *qualifiedName = "ReflectiveRapidJSON::JSONSerializable";
 };
 
@@ -79,6 +82,13 @@ template <typename Type> Type JSONSerializable<Type>::fromJson(const char *json)
 template <typename Type> Type JSONSerializable<Type>::fromJson(const std::string &json)
 {
     return Reflector::fromJson<Type>(json.data(), json.size());
+}
+
+template<typename Type>
+template<typename ViewType, Traits::EnableIf<std::is_same<ViewType, Type>>...>
+RAPIDJSON_NAMESPACE::StringBuffer JSONSerializable<Type>::toJsonAs() const
+{
+    return static_cast<const ViewType *>(this)->toJson();
 }
 
 } // namespace ReflectiveRapidJSON

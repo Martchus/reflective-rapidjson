@@ -43,6 +43,16 @@ inline RAPIDJSON_NAMESPACE::StringBuffer documentToString(RAPIDJSON_NAMESPACE::D
     return buffer;
 }
 
+inline RAPIDJSON_NAMESPACE::Document parseDocumentFromString(const char *json, std::size_t jsonSize)
+{
+    RAPIDJSON_NAMESPACE::Document document(RAPIDJSON_NAMESPACE::kObjectType);
+    const RAPIDJSON_NAMESPACE::ParseResult parseRes = document.Parse(json, jsonSize);
+    if (parseRes.IsError()) {
+        throw parseRes;
+    }
+    return document;
+}
+
 namespace Reflector {
 
 // define functions to "push" values to a RapidJSON array or object
@@ -192,12 +202,18 @@ template <typename Type,
         Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>>...>
 void pull(Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value)
 {
+    if (!value.IsObject()) {
+        return; // TODO: handle type mismatch
+    }
     pull<Type>(reflectable, value.GetObject());
 }
 
 template <typename Type, Traits::EnableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>>...>
 inline void pull(Type &reflectable, RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ValueIterator &value)
 {
+    if (!value->Is<Type>()) {
+        return; // TODO: handle type mismatch
+    }
     reflectable = value->Get<Type>();
     ++value;
 }
@@ -205,18 +221,27 @@ inline void pull(Type &reflectable, RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_
 template <typename Type, Traits::EnableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>>...>
 inline void pull(Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value)
 {
+    if (!value.Is<Type>()) {
+        return; // TODO: handle type mismatch
+    }
     reflectable = value.Get<Type>();
 }
 
 template <>
 inline void pull<std::string>(std::string &reflectable, RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ValueIterator &value)
 {
+    if (!value->IsString()) {
+        return; // TODO: handle type mismatch
+    }
     reflectable = value->GetString();
     ++value;
 }
 
 template <> inline void pull<std::string>(std::string &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value)
 {
+    if (!value.IsString()) {
+        return; // TODO: handle type mismatch
+    }
     reflectable = value.GetString();
 }
 
@@ -228,6 +253,9 @@ template <typename Type,
         Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>...>
 void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ValueIterator &value)
 {
+    if (!value->IsArray()) {
+        return; // TODO: handle type mismatch
+    }
     pull(reflectable, value->GetArray());
     ++value;
 }
@@ -236,6 +264,9 @@ template <typename Type,
     Traits::EnableIf<Traits::IsIteratable<Type>, Traits::IsReservable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>...>
 void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ValueIterator &value)
 {
+    if (!value->IsArray()) {
+        return; // TODO: handle type mismatch
+    }
     auto array = value->GetArray();
     reflectable.reserve(array.Size());
     pull(reflectable, array);
@@ -247,6 +278,9 @@ template <typename Type,
         Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>...>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value)
 {
+    if (!value.IsArray()) {
+        return; // TODO: handle type mismatch
+    }
     pull(reflectable, value.GetArray());
 }
 
@@ -254,6 +288,9 @@ template <typename Type,
     Traits::EnableIf<Traits::IsIteratable<Type>, Traits::IsReservable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>...>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value)
 {
+    if (!value.IsArray()) {
+        return; // TODO: handle type mismatch
+    }
     auto array = value.GetArray();
     reflectable.reserve(array.Size());
     pull(reflectable, array);
@@ -274,6 +311,10 @@ void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<c
 template <typename Type>
 inline void pull(Type &reflectable, const char *name, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstObject &value)
 {
+    auto member = value.FindMember(name);
+    if (member == value.MemberEnd()) {
+        return; // TODO: handle member missing
+    }
     pull<Type>(reflectable, value.FindMember(name)->value);
 }
 
@@ -315,26 +356,35 @@ template <typename Type, Traits::EnableIfAny<std::is_same<Type, const char *>>..
 
 template <typename Type, Traits::EnableIfAny<std::is_base_of<JSONSerializable<Type>, Type>>...> Type fromJson(const char *json, std::size_t jsonSize)
 {
-    RAPIDJSON_NAMESPACE::Document document(RAPIDJSON_NAMESPACE::kObjectType);
-    document.Parse(json, jsonSize);
+    RAPIDJSON_NAMESPACE::Document doc(parseDocumentFromString(json, jsonSize));
+    if (!doc.IsObject()) {
+        return Type();
+    }
+
     Type res;
-    pull<Type>(res, document.GetObject());
+    pull<Type>(res, doc.GetObject());
     return res;
 }
 
 template <typename Type, Traits::EnableIfAny<std::is_integral<Type>, std::is_floating_point<Type>>...>
 Type fromJson(const char *json, std::size_t jsonSize)
 {
-    RAPIDJSON_NAMESPACE::Document document(RAPIDJSON_NAMESPACE::kObjectType);
-    document.Parse(json, jsonSize);
-    return document.Get<Type>();
+    RAPIDJSON_NAMESPACE::Document doc(parseDocumentFromString(json, jsonSize));
+    if (!doc.Is<Type>()) {
+        return Type();
+    }
+
+    return doc.Get<Type>();
 }
 
 template <typename Type, Traits::EnableIfAny<std::is_same<Type, std::string>>...> Type fromJson(const char *json, std::size_t jsonSize)
 {
-    RAPIDJSON_NAMESPACE::Document document(RAPIDJSON_NAMESPACE::kObjectType);
-    document.Parse(json, jsonSize);
-    return document.GetString();
+    RAPIDJSON_NAMESPACE::Document doc(parseDocumentFromString(json, jsonSize));
+    if (!doc.IsString()) {
+        return Type();
+    }
+
+    return doc.GetString();
 }
 
 template <typename Type> Type fromJson(const std::string &json)

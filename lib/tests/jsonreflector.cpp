@@ -112,6 +112,8 @@ class JSONReflectorTests : public TestFixture {
     CPPUNIT_TEST(testDeserializePrimitives);
     CPPUNIT_TEST(testDeserializeSimpleObjects);
     CPPUNIT_TEST(testDeserializeNestedObjects);
+    CPPUNIT_TEST(testHandlingParseError);
+    CPPUNIT_TEST(testHandlingTypeMismatch);
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -125,6 +127,8 @@ public:
     void testDeserializePrimitives();
     void testDeserializeSimpleObjects();
     void testDeserializeNestedObjects();
+    void testHandlingParseError();
+    void testHandlingTypeMismatch();
 
 private:
 };
@@ -314,4 +318,27 @@ void JSONReflectorTests::testDeserializeNestedObjects()
         CPPUNIT_ASSERT_EQUAL("test"s, testObj.text);
         CPPUNIT_ASSERT_EQUAL(false, testObj.boolean);
     }
+}
+
+void JSONReflectorTests::testHandlingParseError()
+{
+    try {
+        NestingObject::fromJson("{\"name\":nesting\",\"testObj\":{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":"
+                                "\"test\",\"boolean\":false}}");
+        CPPUNIT_FAIL("expected ParseResult thrown");
+    } catch (const RAPIDJSON_NAMESPACE::ParseResult &res) {
+        CPPUNIT_ASSERT_EQUAL(RAPIDJSON_NAMESPACE::kParseErrorValueInvalid, res.Code());
+        CPPUNIT_ASSERT_EQUAL(9_st, res.Offset());
+    }
+}
+
+void JSONReflectorTests::testHandlingTypeMismatch()
+{
+    NestingObject::fromJson("{\"name\":\"nesting\",\"testObj\":{\"number\":\"42\",\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":"
+                            "\"test\",\"boolean\":false}}");
+    NestingObject::fromJson("{\"name\":\"nesting\",\"testObj\":{\"number\":42,\"number2\":3.141592653589793,\"numbers\":1,\"text\":"
+                            "\"test\",\"boolean\":false}}");
+    NestingObject::fromJson("{\"name\":\"nesting\",\"testObj\":\"this is not an object\"}");
+    NestingObject::fromJson("{\"name\":\"nesting\",\"testObj\":{\"number\":\"42\",\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":"
+                            "\"test\",\"boolean\":\"false\"}}");
 }

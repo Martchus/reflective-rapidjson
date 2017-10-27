@@ -13,7 +13,7 @@ generator.
 ## Usage
 This example shows how the library can be used to make a `struct` serializable:
 ```
-#include "<reflective-rapidjson/jsonserializable.h>
+#include <reflective-rapidjson/jsonserializable.h>
 
 // define structures, eg.
 struct TestObject : public JSONSerializable<TestObject> {

@@ -3,6 +3,8 @@
 
 #include "../../lib/jsonserializable.h"
 
+#include <deque>
+#include <list>
 #include <string>
 #include <vector>
 
@@ -17,6 +19,15 @@ struct TestStruct : public JSONSerializable<TestStruct> {
     int someInt = 0;
     string someString = "foo";
     string yetAnotherString = "bar";
+};
+
+/*!
+ * \brief The NestedTestStruct struct inherits from JSONSerializable and should hence have functional fromJson()
+ *        and toJson() methods. This is asserted in OverallTests::testNesting();
+ */
+struct NestedTestStruct : public JSONSerializable<NestedTestStruct> {
+    list<vector<TestStruct>> nested;
+    deque<double> deq;
 };
 
 /*!

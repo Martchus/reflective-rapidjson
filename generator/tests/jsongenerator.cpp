@@ -17,6 +17,7 @@
 using namespace CPPUNIT_NS;
 using namespace IoUtilities;
 using namespace TestUtilities;
+using namespace TestUtilities::Literals;
 using namespace ConversionUtilities;
 
 /*!
@@ -27,6 +28,7 @@ class OverallTests : public TestFixture {
     CPPUNIT_TEST(testGeneratorItself);
     CPPUNIT_TEST(testCLI);
     CPPUNIT_TEST(testIncludingGeneratedHeader);
+    CPPUNIT_TEST(testNesting);
     CPPUNIT_TEST(testSingleInheritence);
     CPPUNIT_TEST(testMultipleInheritence);
     CPPUNIT_TEST_SUITE_END();
@@ -38,6 +40,7 @@ public:
     void testGeneratorItself();
     void testCLI();
     void testIncludingGeneratedHeader();
+    void testNesting();
     void testSingleInheritence();
     void testMultipleInheritence();
 
@@ -68,8 +71,7 @@ void OverallTests::testGeneratorItself()
     stringstream buffer;
     CodeFactory factory(TestApplication::appPath(), inputFiles, clangOptions, buffer);
     factory.addGenerator<JSONSerializationCodeGenerator>();
-    CPPUNIT_ASSERT(factory.readAST());
-    CPPUNIT_ASSERT(factory.generate());
+    CPPUNIT_ASSERT(factory.run());
     assertEqualityLinewise(m_expectedCode, toArrayOfLines(buffer.str()));
 }
 
@@ -109,6 +111,33 @@ void OverallTests::testIncludingGeneratedHeader()
     CPPUNIT_ASSERT_EQUAL(test.someInt, parsedTest.someInt);
     CPPUNIT_ASSERT_EQUAL(test.someString, parsedTest.someString);
     CPPUNIT_ASSERT_EQUAL(test.yetAnotherString, parsedTest.yetAnotherString);
+}
+
+void OverallTests::testNesting()
+{
+    TestStruct test;
+    test.someInt = 42;
+    test.someString = "the answer";
+    test.yetAnotherString = "but what was the question";
+    NestedTestStruct nested;
+    nested.nested.emplace_front(vector<TestStruct>{ test });
+    nested.deq.emplace_back(3.14);
+    const string expectedJSON(
+        "{\"nested\":[[{\"someInt\":42,\"someString\":\"the answer\",\"yetAnotherString\":\"but what was the question\"}]],\"deq\":[3.14]}");
+
+    // test serialization
+    CPPUNIT_ASSERT_EQUAL(expectedJSON, string(nested.toJson().GetString()));
+
+    // test deserialization
+    const NestedTestStruct parsedNested(NestedTestStruct::fromJson(expectedJSON));
+    CPPUNIT_ASSERT_EQUAL(1_st, parsedNested.nested.size());
+    CPPUNIT_ASSERT_EQUAL(1_st, parsedNested.nested.front().size());
+    CPPUNIT_ASSERT_EQUAL(1_st, parsedNested.deq.size());
+    const TestStruct &parsedTest(parsedNested.nested.front().front());
+    CPPUNIT_ASSERT_EQUAL(test.someInt, parsedTest.someInt);
+    CPPUNIT_ASSERT_EQUAL(test.someString, parsedTest.someString);
+    CPPUNIT_ASSERT_EQUAL(test.yetAnotherString, parsedTest.yetAnotherString);
+    CPPUNIT_ASSERT_EQUAL(3.14, parsedNested.deq.front());
 }
 
 /*!

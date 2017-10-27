@@ -81,6 +81,23 @@ template <typename Type> Type JSONSerializable<Type>::fromJson(const std::string
     return Reflector::fromJson<Type>(json.data(), json.size());
 }
 
+/*!
+ * \brief Helps to disambiguate when inheritance is used.
+ */
+template <typename Type, Traits::EnableIf<std::is_base_of<JSONSerializable<Type>, Type>>...> JSONSerializable<Type> &as(Type &serializable)
+{
+    return static_cast<JSONSerializable<Type> &>(serializable);
+}
+
+/*!
+ * \brief Helps to disambiguate when inheritance is used.
+ */
+template <typename Type, Traits::EnableIf<std::is_base_of<JSONSerializable<Type>, Type>>...>
+const JSONSerializable<Type> &as(const Type &serializable)
+{
+    return static_cast<const JSONSerializable<Type> &>(serializable);
+}
+
 } // namespace ReflectiveRapidJSON
 
 #endif // REFLECTIVE_RAPIDJSON_JSON_SERIALIZABLE_H

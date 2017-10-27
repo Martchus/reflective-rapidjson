@@ -26,7 +26,7 @@ set(DOC_FILES
 )
 
 # find c++utilities
-find_package(c++utilities 4.6.0 REQUIRED)
+find_package(c++utilities 4.11.0 REQUIRED)
 use_cpp_utilities()
 
 # include modules to apply configuration

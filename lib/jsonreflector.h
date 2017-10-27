@@ -136,7 +136,22 @@ inline void push<const char *const &>(const char *const &reflectable, const char
     value.AddMember(RAPIDJSON_NAMESPACE::StringRef(name), RAPIDJSON_NAMESPACE::StringRef(reflectable), allocator);
 }
 
-template <typename Type, Traits::EnableIf<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>...>
+template <typename Type,
+    Traits::EnableIf<Traits::IsIteratable<Type>, Traits::Not<Traits::HasSize<Type>>,
+        Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>...>
+void push(
+    const Type &reflectable, const char *name, RAPIDJSON_NAMESPACE::Value::Object &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
+{
+    RAPIDJSON_NAMESPACE::Value arrayValue(RAPIDJSON_NAMESPACE::kArrayType);
+    RAPIDJSON_NAMESPACE::Value::Array array(arrayValue.GetArray());
+    for (const auto &item : reflectable) {
+        push(item, array, allocator);
+    }
+    value.AddMember(RAPIDJSON_NAMESPACE::StringRef(name), array, allocator);
+}
+
+template <typename Type,
+    Traits::EnableIf<Traits::IsIteratable<Type>, Traits::HasSize<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>...>
 void push(
     const Type &reflectable, const char *name, RAPIDJSON_NAMESPACE::Value::Object &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
@@ -206,25 +221,51 @@ template <> inline void pull<std::string>(std::string &reflectable, const RAPIDJ
 }
 
 template <typename Type, Traits::EnableIf<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>...>
+void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstArray array);
+
+template <typename Type,
+    Traits::EnableIf<Traits::IsIteratable<Type>, Traits::Not<Traits::IsReservable<Type>>,
+        Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>...>
 void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ValueIterator &value)
 {
-    // clear previous contents of the array (TODO: make this configurable)
-    reflectable.clear();
-    // pull all array elements of the specified value
-    for (const auto &item : value->GetArray()) {
-        reflectable.emplace_back();
-        pull(reflectable.back(), item);
-    }
+    pull(reflectable, value->GetArray());
     ++value;
 }
 
-template <typename Type, Traits::EnableIf<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>...>
+template <typename Type,
+    Traits::EnableIf<Traits::IsIteratable<Type>, Traits::IsReservable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>...>
+void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ValueIterator &value)
+{
+    auto array = value->GetArray();
+    reflectable.reserve(array.Size());
+    pull(reflectable, array);
+    ++value;
+}
+
+template <typename Type,
+    Traits::EnableIf<Traits::IsIteratable<Type>, Traits::Not<Traits::IsReservable<Type>>,
+        Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>...>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value)
+{
+    pull(reflectable, value.GetArray());
+}
+
+template <typename Type,
+    Traits::EnableIf<Traits::IsIteratable<Type>, Traits::IsReservable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>...>
+void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value)
+{
+    auto array = value.GetArray();
+    reflectable.reserve(array.Size());
+    pull(reflectable, array);
+}
+
+template <typename Type, Traits::EnableIf<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>...>
+void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstArray array)
 {
     // clear previous contents of the array (TODO: make this configurable)
     reflectable.clear();
     // pull all array elements of the specified value
-    for (const auto &item : value.GetArray()) {
+    for (const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &item : array) {
         reflectable.emplace_back();
         pull(reflectable.back(), item);
     }

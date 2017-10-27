@@ -31,27 +31,15 @@ using namespace ReflectiveRapidJSON;
 
 // define some structs for testing serialization
 struct TestObject : public JSONSerializable<TestObject> {
-    BOOST_HANA_DEFINE_STRUCT(TestObject,
-        (int, number),
-        (double, number2),
-        (vector<int>, numbers),
-        (string, text),
-        (bool, boolean)
-    );
+    BOOST_HANA_DEFINE_STRUCT(TestObject, (int, number), (double, number2), (vector<int>, numbers), (string, text), (bool, boolean));
 };
 
 struct NestingObject : public JSONSerializable<NestingObject> {
-    BOOST_HANA_DEFINE_STRUCT(NestingObject,
-        (string, name),
-        (TestObject, testObj)
-    );
+    BOOST_HANA_DEFINE_STRUCT(NestingObject, (string, name), (TestObject, testObj));
 };
 
 struct NestingArray : public JSONSerializable<NestingArray> {
-    BOOST_HANA_DEFINE_STRUCT(NestingArray,
-        (string, name),
-        (vector<TestObject>, testObjects)
-    );
+    BOOST_HANA_DEFINE_STRUCT(NestingArray, (string, name), (vector<TestObject>, testObjects));
 };
 
 /// \endcond

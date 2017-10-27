@@ -1,5 +1,5 @@
-#include "./structs.h"
 #include "./helper.h"
+#include "./structs.h"
 
 #include "../codefactory.h"
 
@@ -126,8 +126,8 @@ void OverallTests::testSingleInheritence()
         "{\"someInt\":42,\"someString\":\"the answer\",\"yetAnotherString\":\"but what was the question\",\"someBool\":false}");
 
     // test serialization
-    CPPUNIT_ASSERT_EQUAL(expectedJSONForBase, string(static_cast<const JSONSerializable<TestStruct> &>(test).toJson().GetString()));
-    CPPUNIT_ASSERT_EQUAL(expectedJSONForDerived, string(static_cast<const JSONSerializable<DerivedTestStruct> &>(test).toJson().GetString()));
+    CPPUNIT_ASSERT_EQUAL(expectedJSONForBase, string(as<TestStruct>(test).toJson().GetString()));
+    CPPUNIT_ASSERT_EQUAL(expectedJSONForDerived, string(as<DerivedTestStruct>(test).toJson().GetString()));
 
     // test deserialization
     const DerivedTestStruct parsedTest(JSONSerializable<DerivedTestStruct>::fromJson(expectedJSONForDerived));
@@ -152,7 +152,7 @@ void OverallTests::testMultipleInheritence()
                                         "question\",\"arrayOfStrings\":[\"array\",\"of\",\"strings\"],\"someBool\":false}");
 
     // test serialization
-    CPPUNIT_ASSERT_EQUAL(expectedJSONForDerived, string(static_cast<const JSONSerializable<MultipleDerivedTestStruct> &>(test).toJson().GetString()));
+    CPPUNIT_ASSERT_EQUAL(expectedJSONForDerived, string(as<MultipleDerivedTestStruct>(test).toJson().GetString()));
 
     // test deserialization
     const MultipleDerivedTestStruct parsedTest(JSONSerializable<MultipleDerivedTestStruct>::fromJson(expectedJSONForDerived));

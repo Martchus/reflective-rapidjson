@@ -34,7 +34,8 @@ inline void assertEqualityLinewise(const Iteratable &iteratable1, const Iteratab
         }
     }
     if (!differentLines.empty()) {
-        CPPUNIT_ASSERT_EQUAL_MESSAGE("the following lines differ: " + ConversionUtilities::joinStrings(differentLines, ", "), iteratable1, iteratable2);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(
+            "the following lines differ: " + ConversionUtilities::joinStrings(differentLines, ", "), iteratable1, iteratable2);
     }
 }
 

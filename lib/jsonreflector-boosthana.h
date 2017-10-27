@@ -23,7 +23,7 @@ template <typename Type,
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Object &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     boost::hana::for_each(reflectable, [&value, &allocator](auto pair) {
-        push(boost::hana::second(pair), boost::hana::to<char const*>(boost::hana::first(pair)), value, allocator);
+        push(boost::hana::second(pair), boost::hana::to<char const *>(boost::hana::first(pair)), value, allocator);
     });
 }
 
@@ -34,9 +34,8 @@ template <typename Type,
         Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>>...>
 void pull(Type &reflectable, RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ValueIterator &value)
 {
-    boost::hana::for_each(reflectable, [&value](auto pair) {
-        pull(boost::hana::second(pair), boost::hana::to<char const*>(boost::hana::first(pair)), value);
-    });
+    boost::hana::for_each(
+        reflectable, [&value](auto pair) { pull(boost::hana::second(pair), boost::hana::to<char const *>(boost::hana::first(pair)), value); });
 }
 
 template <typename Type,
@@ -44,9 +43,8 @@ template <typename Type,
         Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>>...>
 void pull(Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstObject &value)
 {
-    boost::hana::for_each(reflectable, [&value](auto pair) {
-        pull(boost::hana::second(pair), boost::hana::to<char const*>(boost::hana::first(pair)), value);
-    });
+    boost::hana::for_each(
+        reflectable, [&value](auto pair) { pull(boost::hana::second(pair), boost::hana::to<char const *>(boost::hana::first(pair)), value); });
 }
 
 } // namespace Reflector

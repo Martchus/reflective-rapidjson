@@ -261,7 +261,7 @@ void JSONReflectorBoostHanaTests::testHandlingTypeMismatch()
     CPPUNIT_ASSERT_EQUAL(JSONType::Number, errors.front().expectedType);
     CPPUNIT_ASSERT_EQUAL(JSONType::String, errors.front().actualType);
     CPPUNIT_ASSERT_EQUAL("number"s, string(errors.front().member));
-    CPPUNIT_ASSERT_EQUAL("TestObject"s, string(errors.front().record));
+    CPPUNIT_ASSERT_EQUAL("[document]"s, string(errors.front().record));
     errors.clear();
 
     NestingObjectHana::fromJson("{\"name\":\"nesting\",\"testObj\":{\"number\":42,\"number2\":3.141592653589793,\"numbers\":1,\"text\":"
@@ -272,7 +272,7 @@ void JSONReflectorBoostHanaTests::testHandlingTypeMismatch()
     CPPUNIT_ASSERT_EQUAL(JSONType::Array, errors.front().expectedType);
     CPPUNIT_ASSERT_EQUAL(JSONType::Number, errors.front().actualType);
     CPPUNIT_ASSERT_EQUAL("numbers"s, string(errors.front().member));
-    CPPUNIT_ASSERT_EQUAL("TestObject"s, string(errors.front().record));
+    CPPUNIT_ASSERT_EQUAL("[document]"s, string(errors.front().record));
     errors.clear();
 
     NestingObjectHana::fromJson("{\"name\":[],\"testObj\":\"this is not an object\"}", &errors);
@@ -281,12 +281,12 @@ void JSONReflectorBoostHanaTests::testHandlingTypeMismatch()
     CPPUNIT_ASSERT_EQUAL(JSONType::String, errors.front().expectedType);
     CPPUNIT_ASSERT_EQUAL(JSONType::Array, errors.front().actualType);
     CPPUNIT_ASSERT_EQUAL("name"s, string(errors.front().member));
-    CPPUNIT_ASSERT_EQUAL("NestingObject"s, string(errors.front().record));
+    CPPUNIT_ASSERT_EQUAL("[document]"s, string(errors.front().record));
     CPPUNIT_ASSERT_EQUAL(JSONParseErrorKind::TypeMismatch, errors.back().kind);
     CPPUNIT_ASSERT_EQUAL(JSONType::Object, errors.back().expectedType);
     CPPUNIT_ASSERT_EQUAL(JSONType::String, errors.back().actualType);
     CPPUNIT_ASSERT_EQUAL("testObj"s, string(errors.back().member));
-    CPPUNIT_ASSERT_EQUAL("NestingObject"s, string(errors.back().record));
+    CPPUNIT_ASSERT_EQUAL("[document]"s, string(errors.back().record));
     errors.clear();
 
     const NestingArrayHana nestingArray(
@@ -299,19 +299,19 @@ void JSONReflectorBoostHanaTests::testHandlingTypeMismatch()
     CPPUNIT_ASSERT_EQUAL(JSONType::Object, errors[0].expectedType);
     CPPUNIT_ASSERT_EQUAL(JSONType::Number, errors[0].actualType);
     CPPUNIT_ASSERT_EQUAL("testObjects"s, string(errors[0].member));
-    CPPUNIT_ASSERT_EQUAL("NestingArray"s, string(errors[0].record));
+    CPPUNIT_ASSERT_EQUAL("[document]"s, string(errors[0].record));
     CPPUNIT_ASSERT_EQUAL(0_st, errors[0].index);
     CPPUNIT_ASSERT_EQUAL(JSONParseErrorKind::TypeMismatch, errors[1].kind);
     CPPUNIT_ASSERT_EQUAL(JSONType::Object, errors[1].expectedType);
     CPPUNIT_ASSERT_EQUAL(JSONType::String, errors[1].actualType);
     CPPUNIT_ASSERT_EQUAL(2_st, errors[1].index);
     CPPUNIT_ASSERT_EQUAL("testObjects"s, string(errors[1].member));
-    CPPUNIT_ASSERT_EQUAL("NestingArray"s, string(errors[1].record));
+    CPPUNIT_ASSERT_EQUAL("[document]"s, string(errors[1].record));
     CPPUNIT_ASSERT_EQUAL(JSONParseErrorKind::TypeMismatch, errors[2].kind);
     CPPUNIT_ASSERT_EQUAL(JSONType::Number, errors[2].expectedType);
     CPPUNIT_ASSERT_EQUAL(JSONType::String, errors[2].actualType);
     CPPUNIT_ASSERT_EQUAL("numbers"s, string(errors[2].member));
-    CPPUNIT_ASSERT_EQUAL("TestObject"s, string(errors[2].record));
+    CPPUNIT_ASSERT_EQUAL("[document]"s, string(errors[2].record));
     CPPUNIT_ASSERT_EQUAL(4_st, errors[2].index);
     errors.clear();
 

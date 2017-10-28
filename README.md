@@ -126,8 +126,8 @@ Optional:
 * Doxygen for generating API documentation
 * Graphviz for diagrams in the API documentation
 
-Note that `reflective-rapidjson` and none of these dependencies are required at runtime by an application which
-makes use of the `reflective-rapidjson`.
+Note that Reflective RapidJSON itself and none of these dependencies are required at runtime by an application
+which makes use of Reflective RapidJSON.
 
 ### How to build
 Install all required dependencies and ensure the CMake script finds them. It is possible to build `c++utilities`
@@ -154,9 +154,11 @@ cmake \
  "$SOURCES/reflective-rapidjson"
 # build library and generators
 make
-# run test (optional, requires CppUnit)
+# build and run tests (optional, requires CppUnit)
 make check
-# generates API documentation (optional, reqquires Doxygen)
+# build tests but do not run them (optional, requires CppUnit)
+make tests
+# generate API documentation (optional, reqquires Doxygen)
 make apidoc
 # install header files, libraries and generator
 make install DESTDIR="/temporary/install/location"

@@ -30,16 +30,21 @@ using namespace ReflectiveRapidJSON;
 /// \cond
 
 // define some structs for testing serialization
-struct TestObject : public JSONSerializable<TestObject> {
-    BOOST_HANA_DEFINE_STRUCT(TestObject, (int, number), (double, number2), (vector<int>, numbers), (string, text), (bool, boolean));
+struct TestObjectHana : public JSONSerializable<TestObjectHana> {
+    //TestObjectHana(){};
+    //TestObjectHana(const TestObjectHana &)
+    //{
+    //    std::cout << "copied!!" << std::endl;
+    //};
+    BOOST_HANA_DEFINE_STRUCT(TestObjectHana, (int, number), (double, number2), (vector<int>, numbers), (string, text), (bool, boolean));
 };
 
-struct NestingObject : public JSONSerializable<NestingObject> {
-    BOOST_HANA_DEFINE_STRUCT(NestingObject, (string, name), (TestObject, testObj));
+struct NestingObjectHana : public JSONSerializable<NestingObjectHana> {
+    BOOST_HANA_DEFINE_STRUCT(NestingObjectHana, (string, name), (TestObjectHana, testObj));
 };
 
-struct NestingArray : public JSONSerializable<NestingArray> {
-    BOOST_HANA_DEFINE_STRUCT(NestingArray, (string, name), (vector<TestObject>, testObjects));
+struct NestingArrayHana : public JSONSerializable<NestingArrayHana> {
+    BOOST_HANA_DEFINE_STRUCT(NestingArrayHana, (string, name), (vector<TestObjectHana>, testObjects));
 };
 
 /// \endcond
@@ -56,6 +61,7 @@ class JSONReflectorBoostHanaTests : public TestFixture {
     CPPUNIT_TEST(testDeserializePrimitives);
     CPPUNIT_TEST(testDeserializeSimpleObjects);
     CPPUNIT_TEST(testDeserializeNestedObjects);
+    CPPUNIT_TEST(testHandlingTypeMismatch);
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -68,6 +74,7 @@ public:
     void testDeserializePrimitives();
     void testDeserializeSimpleObjects();
     void testDeserializeNestedObjects();
+    void testHandlingTypeMismatch();
 
 private:
 };
@@ -118,7 +125,7 @@ void JSONReflectorBoostHanaTests::testSerializePrimitives()
  */
 void JSONReflectorBoostHanaTests::testSerializeSimpleObjects()
 {
-    TestObject testObj;
+    TestObjectHana testObj;
     testObj.number = 42;
     testObj.number2 = 3.141592653589793;
     testObj.numbers = { 1, 2, 3, 4 };
@@ -133,9 +140,9 @@ void JSONReflectorBoostHanaTests::testSerializeSimpleObjects()
  */
 void JSONReflectorBoostHanaTests::testSerializeNestedObjects()
 {
-    NestingObject nestingObj;
+    NestingObjectHana nestingObj;
     nestingObj.name = "nesting";
-    TestObject &testObj = nestingObj.testObj;
+    TestObjectHana &testObj = nestingObj.testObj;
     testObj.number = 42;
     testObj.number2 = 3.141592653589793;
     testObj.numbers = { 1, 2, 3, 4 };
@@ -144,7 +151,7 @@ void JSONReflectorBoostHanaTests::testSerializeNestedObjects()
     CPPUNIT_ASSERT_EQUAL(
         "{\"name\":\"nesting\",\"testObj\":{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false}}"s,
         string(nestingObj.toJson().GetString()));
-    NestingArray nestingArray;
+    NestingArrayHana nestingArray;
     nestingArray.name = "nesting2";
     nestingArray.testObjects.emplace_back(testObj);
     nestingArray.testObjects.emplace_back(testObj);
@@ -169,13 +176,14 @@ void JSONReflectorBoostHanaTests::testDeserializePrimitives()
     bool bool1 = false, bool2 = true;
     float float1 = 0.0;
     double double1 = 0.0;
-    Reflector::pull(str1, array);
-    Reflector::pull(int1, array);
-    Reflector::pull(float1, array);
-    Reflector::pull(str2, array);
-    Reflector::pull(bool1, array);
-    Reflector::pull(double1, array);
-    Reflector::pull(bool2, array);
+    JSONParseErrors errors;
+    Reflector::pull(str1, array, &errors);
+    Reflector::pull(int1, array, &errors);
+    Reflector::pull(float1, array, &errors);
+    Reflector::pull(str2, array, &errors);
+    Reflector::pull(bool1, array, &errors);
+    Reflector::pull(double1, array, &errors);
+    Reflector::pull(bool2, array, &errors);
 
     CPPUNIT_ASSERT_EQUAL("a"s, str1);
     CPPUNIT_ASSERT_EQUAL(5, int1);
@@ -191,8 +199,8 @@ void JSONReflectorBoostHanaTests::testDeserializePrimitives()
  */
 void JSONReflectorBoostHanaTests::testDeserializeSimpleObjects()
 {
-    const TestObject testObj(
-        TestObject::fromJson("{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false}"));
+    const TestObjectHana testObj(
+        TestObjectHana::fromJson("{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false}"));
 
     CPPUNIT_ASSERT_EQUAL(42, testObj.number);
     CPPUNIT_ASSERT_EQUAL(3.141592653589793, testObj.number2);
@@ -206,9 +214,9 @@ void JSONReflectorBoostHanaTests::testDeserializeSimpleObjects()
  */
 void JSONReflectorBoostHanaTests::testDeserializeNestedObjects()
 {
-    const NestingObject nestingObj(NestingObject::fromJson("{\"name\":\"nesting\",\"testObj\":{\"number\":42,\"number2\":3.141592653589793,"
-                                                           "\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false}}"));
-    const TestObject &testObj = nestingObj.testObj;
+    const NestingObjectHana nestingObj(NestingObjectHana::fromJson("{\"name\":\"nesting\",\"testObj\":{\"number\":42,\"number2\":3.141592653589793,"
+                                                                   "\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false}}"));
+    const TestObjectHana &testObj = nestingObj.testObj;
     CPPUNIT_ASSERT_EQUAL("nesting"s, nestingObj.name);
     CPPUNIT_ASSERT_EQUAL(42, testObj.number);
     CPPUNIT_ASSERT_EQUAL(3.141592653589793, testObj.number2);
@@ -216,18 +224,97 @@ void JSONReflectorBoostHanaTests::testDeserializeNestedObjects()
     CPPUNIT_ASSERT_EQUAL("test"s, testObj.text);
     CPPUNIT_ASSERT_EQUAL(false, testObj.boolean);
 
-    const NestingArray nestingArray(NestingArray::fromJson("{\"name\":\"nesting2\",\"testObjects\":[{\"number\":42,\"number2\":3.141592653589793,"
-                                                           "\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false},{\"number\":43,\"number2\":3."
-                                                           "141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false}]}"));
-    const vector<TestObject> &testObjects = nestingArray.testObjects;
+    const NestingArrayHana nestingArray(
+        NestingArrayHana::fromJson("{\"name\":\"nesting2\",\"testObjects\":[{\"number\":42,\"number2\":3.141592653589793,"
+                                   "\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false},{\"number\":43,\"number2\":3."
+                                   "141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false}]}"));
+    const vector<TestObjectHana> &testObjects = nestingArray.testObjects;
     CPPUNIT_ASSERT_EQUAL("nesting2"s, nestingArray.name);
     CPPUNIT_ASSERT_EQUAL(2_st, testObjects.size());
     CPPUNIT_ASSERT_EQUAL(42, testObjects[0].number);
     CPPUNIT_ASSERT_EQUAL(43, testObjects[1].number);
-    for (const TestObject &testObj : testObjects) {
+    for (const TestObjectHana &testObj : testObjects) {
         CPPUNIT_ASSERT_EQUAL(3.141592653589793, testObj.number2);
         CPPUNIT_ASSERT_EQUAL(vector<int>({ 1, 2, 3, 4 }), testObj.numbers);
         CPPUNIT_ASSERT_EQUAL("test"s, testObj.text);
         CPPUNIT_ASSERT_EQUAL(false, testObj.boolean);
     }
+}
+
+/*!
+ * \brief Tests whether JSONParseError is thrown on type mismatch.
+ */
+void JSONReflectorBoostHanaTests::testHandlingTypeMismatch()
+{
+    JSONParseErrors errors;
+    NestingArrayHana::fromJson("{\"name\":\"nesting2\",\"testObjects\":[{\"number\":42,\"number2\":3.141592653589793,"
+                               "\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false},{\"number\":43,\"number2\":3."
+                               "141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false}]}",
+        &errors);
+    CPPUNIT_ASSERT_EQUAL(0_st, errors.size());
+
+    NestingObjectHana::fromJson("{\"name\":\"nesting\",\"testObj\":{\"number\":\"42\",\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":"
+                                "\"test\",\"boolean\":false}}",
+        &errors);
+    CPPUNIT_ASSERT_EQUAL(1_st, errors.size());
+    CPPUNIT_ASSERT_EQUAL(JSONParseErrorKind::TypeMismatch, errors.front().kind);
+    CPPUNIT_ASSERT_EQUAL(JSONType::Number, errors.front().expectedType);
+    CPPUNIT_ASSERT_EQUAL(JSONType::String, errors.front().actualType);
+    CPPUNIT_ASSERT_EQUAL("number"s, string(errors.front().member));
+    CPPUNIT_ASSERT_EQUAL("TestObject"s, string(errors.front().record));
+    errors.clear();
+
+    NestingObjectHana::fromJson("{\"name\":\"nesting\",\"testObj\":{\"number\":42,\"number2\":3.141592653589793,\"numbers\":1,\"text\":"
+                                "\"test\",\"boolean\":false}}",
+        &errors);
+    CPPUNIT_ASSERT_EQUAL(1_st, errors.size());
+    CPPUNIT_ASSERT_EQUAL(JSONParseErrorKind::TypeMismatch, errors.front().kind);
+    CPPUNIT_ASSERT_EQUAL(JSONType::Array, errors.front().expectedType);
+    CPPUNIT_ASSERT_EQUAL(JSONType::Number, errors.front().actualType);
+    CPPUNIT_ASSERT_EQUAL("numbers"s, string(errors.front().member));
+    CPPUNIT_ASSERT_EQUAL("TestObject"s, string(errors.front().record));
+    errors.clear();
+
+    NestingObjectHana::fromJson("{\"name\":[],\"testObj\":\"this is not an object\"}", &errors);
+    CPPUNIT_ASSERT_EQUAL(2_st, errors.size());
+    CPPUNIT_ASSERT_EQUAL(JSONParseErrorKind::TypeMismatch, errors.front().kind);
+    CPPUNIT_ASSERT_EQUAL(JSONType::String, errors.front().expectedType);
+    CPPUNIT_ASSERT_EQUAL(JSONType::Array, errors.front().actualType);
+    CPPUNIT_ASSERT_EQUAL("name"s, string(errors.front().member));
+    CPPUNIT_ASSERT_EQUAL("NestingObject"s, string(errors.front().record));
+    CPPUNIT_ASSERT_EQUAL(JSONParseErrorKind::TypeMismatch, errors.back().kind);
+    CPPUNIT_ASSERT_EQUAL(JSONType::Object, errors.back().expectedType);
+    CPPUNIT_ASSERT_EQUAL(JSONType::String, errors.back().actualType);
+    CPPUNIT_ASSERT_EQUAL("testObj"s, string(errors.back().member));
+    CPPUNIT_ASSERT_EQUAL("NestingObject"s, string(errors.back().record));
+    errors.clear();
+
+    const NestingArrayHana nestingArray(
+        NestingArrayHana::fromJson("{\"name\":\"nesting2\",\"testObjects\":[25,{\"number\":42,\"number2\":3.141592653589793,"
+                                   "\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false},\"foo\",{\"number\":43,\"number2\":3."
+                                   "141592653589793,\"numbers\":[1,2,3,4,\"bar\"],\"text\":\"test\",\"boolean\":false}]}",
+            &errors));
+    CPPUNIT_ASSERT_EQUAL(3_st, errors.size());
+    CPPUNIT_ASSERT_EQUAL(JSONParseErrorKind::TypeMismatch, errors[0].kind);
+    CPPUNIT_ASSERT_EQUAL(JSONType::Object, errors[0].expectedType);
+    CPPUNIT_ASSERT_EQUAL(JSONType::Number, errors[0].actualType);
+    CPPUNIT_ASSERT_EQUAL("testObjects"s, string(errors[0].member));
+    CPPUNIT_ASSERT_EQUAL("NestingArray"s, string(errors[0].record));
+    CPPUNIT_ASSERT_EQUAL(0_st, errors[0].index);
+    CPPUNIT_ASSERT_EQUAL(JSONParseErrorKind::TypeMismatch, errors[1].kind);
+    CPPUNIT_ASSERT_EQUAL(JSONType::Object, errors[1].expectedType);
+    CPPUNIT_ASSERT_EQUAL(JSONType::String, errors[1].actualType);
+    CPPUNIT_ASSERT_EQUAL(2_st, errors[1].index);
+    CPPUNIT_ASSERT_EQUAL("testObjects"s, string(errors[1].member));
+    CPPUNIT_ASSERT_EQUAL("NestingArray"s, string(errors[1].record));
+    CPPUNIT_ASSERT_EQUAL(JSONParseErrorKind::TypeMismatch, errors[2].kind);
+    CPPUNIT_ASSERT_EQUAL(JSONType::Number, errors[2].expectedType);
+    CPPUNIT_ASSERT_EQUAL(JSONType::String, errors[2].actualType);
+    CPPUNIT_ASSERT_EQUAL("numbers"s, string(errors[2].member));
+    CPPUNIT_ASSERT_EQUAL("TestObject"s, string(errors[2].record));
+    CPPUNIT_ASSERT_EQUAL(4_st, errors[2].index);
+    errors.clear();
+
+    errors.throwOn = JSONParseErrors::ThrowOn::TypeMismatch;
+    CPPUNIT_ASSERT_THROW(NestingObjectHana::fromJson("{\"name\":[],\"testObj\":\"this is not an object\"}", &errors), JSONParseError);
 }

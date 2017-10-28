@@ -52,7 +52,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(OverallTests);
 
 void OverallTests::setUp()
 {
-    m_expectedCode = toArrayOfLines(readFile(testFilePath("some_structs_json_serialization.h"), 1024));
+    m_expectedCode = toArrayOfLines(readFile(testFilePath("some_structs_json_serialization.h"), 2 * 1024));
 }
 
 void OverallTests::tearDown()

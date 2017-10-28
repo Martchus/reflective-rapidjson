@@ -25,9 +25,9 @@ template <typename Type> struct JSONSerializable {
 
     // high-level API
     RAPIDJSON_NAMESPACE::StringBuffer toJson() const;
-    static Type fromJson(const char *json, std::size_t jsonSize);
-    static Type fromJson(const char *json);
-    static Type fromJson(const std::string &json);
+    static Type fromJson(const char *json, std::size_t jsonSize, JSONParseErrors *errors = nullptr);
+    static Type fromJson(const char *json, JSONParseErrors *errors = nullptr);
+    static Type fromJson(const std::string &json, JSONParseErrors *errors = nullptr);
 
     static constexpr const char *qualifiedName = "ReflectiveRapidJSON::JSONSerializable";
 };
@@ -60,25 +60,25 @@ template <typename Type> RAPIDJSON_NAMESPACE::StringBuffer JSONSerializable<Type
 /*!
  * \brief Constructs a new object from the specified JSON.
  */
-template <typename Type> Type JSONSerializable<Type>::fromJson(const char *json, std::size_t jsonSize)
+template <typename Type> Type JSONSerializable<Type>::fromJson(const char *json, std::size_t jsonSize, JSONParseErrors *errors)
 {
-    return Reflector::fromJson<Type>(json, jsonSize);
+    return Reflector::fromJson<Type>(json, jsonSize, errors);
 }
 
 /*!
  * \brief Constructs a new object from the specified JSON.
  */
-template <typename Type> Type JSONSerializable<Type>::fromJson(const char *json)
+template <typename Type> Type JSONSerializable<Type>::fromJson(const char *json, JSONParseErrors *errors)
 {
-    return Reflector::fromJson<Type>(json, std::strlen(json));
+    return Reflector::fromJson<Type>(json, std::strlen(json), errors);
 }
 
 /*!
  * \brief Constructs a new object from the specified JSON.
  */
-template <typename Type> Type JSONSerializable<Type>::fromJson(const std::string &json)
+template <typename Type> Type JSONSerializable<Type>::fromJson(const std::string &json, JSONParseErrors *errors)
 {
-    return Reflector::fromJson<Type>(json.data(), json.size());
+    return Reflector::fromJson<Type>(json.data(), json.size(), errors);
 }
 
 /*!

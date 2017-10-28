@@ -92,10 +92,12 @@ void JSONSerializationCodeGenerator::generate(ostream &os) const
 
         // print push method
         os << "template <> inline void push<::" << relevantClass.qualifiedName << ">(const ::" << relevantClass.qualifiedName
-           << " &reflectable, ::RAPIDJSON_NAMESPACE::Value::Object &value, ::RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)\n{\n";
+           << " &reflectable, ::RAPIDJSON_NAMESPACE::Value::Object &value, ::RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)\n{\n"
+              "    // push base classes\n";
         for (const RelevantClass *baseClass : relevantBases) {
             os << "    push(static_cast<const ::" << baseClass->qualifiedName << " &>(reflectable), value, allocator);\n";
         }
+        os << "    // push members\n";
         for (const clang::FieldDecl *field : relevantClass.record->fields()) {
             os << "    push(reflectable." << field->getName() << ", \"" << field->getName() << "\", value, allocator);\n";
         }
@@ -103,13 +105,28 @@ void JSONSerializationCodeGenerator::generate(ostream &os) const
 
         // print pull method
         os << "template <> inline void pull<::" << relevantClass.qualifiedName << ">(::" << relevantClass.qualifiedName
-           << " &reflectable, const ::RAPIDJSON_NAMESPACE::GenericValue<::RAPIDJSON_NAMESPACE::UTF8<char>>::ConstObject &value)\n{\n";
+           << " &reflectable, const ::RAPIDJSON_NAMESPACE::GenericValue<::RAPIDJSON_NAMESPACE::UTF8<char>>::ConstObject &value, JSONParseErrors "
+              "*errors)\n{\n"
+              "    // pull base classes\n";
         for (const RelevantClass *baseClass : relevantBases) {
-            os << "    pull(static_cast<::" << baseClass->qualifiedName << " &>(reflectable), value);\n";
+            os << "    pull(static_cast<::" << baseClass->qualifiedName << " &>(reflectable), value, errors);\n";
         }
+        os << "    // set error context for current record\n"
+              "    const char *previousRecord;\n"
+              "    if (errors) {\n"
+              "        previousRecord = errors->currentRecord;\n"
+              "        errors->currentRecord = \""
+           << relevantClass.qualifiedName
+           << "\";\n"
+              "    }\n"
+              "    // pull members\n";
         for (const clang::FieldDecl *field : relevantClass.record->fields()) {
-            os << "    pull(reflectable." << field->getName() << ", \"" << field->getName() << "\", value);\n";
+            os << "    pull(reflectable." << field->getName() << ", \"" << field->getName() << "\", value, errors);\n";
         }
+        os << "    // restore error context for previous record\n"
+              "    if (errors) {\n"
+              "        errors->currentRecord = previousRecord;\n"
+              "    }\n";
         os << "}\n\n";
     }
 

@@ -1,4 +1,5 @@
 #include "./codefactory.h"
+#include "./jsonserializationcodegenerator.h"
 
 #include "resources/config.h"
 
@@ -66,7 +67,7 @@ int main(int argc, char *argv[])
             // find and construct generators by name
             for (const char *generatorName : generatorsArg.values(0)) {
                 if (!strcmp(generatorName, "json")) {
-                    factory.addGenerator<JSONSerializationCodeGenerator>();
+                    factory.addGenerator<JsonSerializationCodeGenerator>();
                 } else {
                     cerr << Phrases::Error << "The specified generator \"" << generatorName << "\" does not exist." << Phrases::EndFlush;
                     return -5;
@@ -74,7 +75,7 @@ int main(int argc, char *argv[])
             }
         } else {
             // add default generators
-            factory.addGenerator<JSONSerializationCodeGenerator>();
+            factory.addGenerator<JsonSerializationCodeGenerator>();
         }
 
         // read AST elements from input files and run the code generator

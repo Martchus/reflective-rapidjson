@@ -2,6 +2,7 @@
 #include "./structs.h"
 
 #include "../codefactory.h"
+#include "../jsonserializationcodegenerator.h"
 
 #include "resources/config.h"
 
@@ -70,7 +71,7 @@ void OverallTests::testGeneratorItself()
 
     stringstream buffer;
     CodeFactory factory(TestApplication::appPath(), inputFiles, clangOptions, buffer);
-    factory.addGenerator<JSONSerializationCodeGenerator>();
+    factory.addGenerator<JsonSerializationCodeGenerator>();
     CPPUNIT_ASSERT(factory.run());
     assertEqualityLinewise(m_expectedCode, toArrayOfLines(buffer.str()));
 }

@@ -159,7 +159,7 @@ void OverallTests::testSingleInheritence()
     CPPUNIT_ASSERT_EQUAL(expectedJSONForDerived, string(as<DerivedTestStruct>(test).toJson().GetString()));
 
     // test deserialization
-    const DerivedTestStruct parsedTest(JSONSerializable<DerivedTestStruct>::fromJson(expectedJSONForDerived));
+    const DerivedTestStruct parsedTest(JsonSerializable<DerivedTestStruct>::fromJson(expectedJSONForDerived));
     CPPUNIT_ASSERT_EQUAL(test.someInt, parsedTest.someInt);
     CPPUNIT_ASSERT_EQUAL(test.someString, parsedTest.someString);
     CPPUNIT_ASSERT_EQUAL(test.yetAnotherString, parsedTest.yetAnotherString);
@@ -184,7 +184,7 @@ void OverallTests::testMultipleInheritence()
     CPPUNIT_ASSERT_EQUAL(expectedJSONForDerived, string(as<MultipleDerivedTestStruct>(test).toJson().GetString()));
 
     // test deserialization
-    const MultipleDerivedTestStruct parsedTest(JSONSerializable<MultipleDerivedTestStruct>::fromJson(expectedJSONForDerived));
+    const MultipleDerivedTestStruct parsedTest(JsonSerializable<MultipleDerivedTestStruct>::fromJson(expectedJSONForDerived));
     CPPUNIT_ASSERT_EQUAL(test.someInt, parsedTest.someInt);
     CPPUNIT_ASSERT_EQUAL(test.someString, parsedTest.someString);
     CPPUNIT_ASSERT_EQUAL(test.yetAnotherString, parsedTest.yetAnotherString);

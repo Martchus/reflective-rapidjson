@@ -2,13 +2,13 @@
 #define SOME_STRUCTS_H
 
 //#include <string>
-#include "../../lib/jsonserializable.h"
+#include "../../lib/json/serializable.h"
 
 namespace TestNamespace1 {
 
 #define SOME_MACRO
 
-struct Person : public ReflectiveRapidJSON::JSONSerializable<Person>
+struct Person : public ReflectiveRapidJSON::JsonSerializable<Person>
 {
     SOME_MACRO
     //std::string name;

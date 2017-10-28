@@ -1,7 +1,7 @@
 #ifndef REFLECTIVE_RAPIDJSON_TESTS_STRUCTS_H
 #define REFLECTIVE_RAPIDJSON_TESTS_STRUCTS_H
 
-#include "../../lib/jsonserializable.h"
+#include "../../lib/json/serializable.h"
 
 #include <deque>
 #include <list>
@@ -12,37 +12,37 @@ using namespace std;
 using namespace ReflectiveRapidJSON;
 
 /*!
- * \brief The TestStruct struct inherits from JSONSerializable and should hence have functional fromJson()
+ * \brief The TestStruct struct inherits from JsonSerializable and should hence have functional fromJson()
  *        and toJson() methods. This is asserted in OverallTests::testIncludingGeneratedHeader();
  */
-struct TestStruct : public JSONSerializable<TestStruct> {
+struct TestStruct : public JsonSerializable<TestStruct> {
     int someInt = 0;
     string someString = "foo";
     string yetAnotherString = "bar";
 };
 
 /*!
- * \brief The NestedTestStruct struct inherits from JSONSerializable and should hence have functional fromJson()
+ * \brief The NestedTestStruct struct inherits from JsonSerializable and should hence have functional fromJson()
  *        and toJson() methods. This is asserted in OverallTests::testNesting();
  */
-struct NestedTestStruct : public JSONSerializable<NestedTestStruct> {
+struct NestedTestStruct : public JsonSerializable<NestedTestStruct> {
     list<vector<TestStruct>> nested;
     deque<double> deq;
 };
 
 /*!
- * \brief The AnotherTestStruct struct inherits from JSONSerializable and should hence have functional fromJson()
+ * \brief The AnotherTestStruct struct inherits from JsonSerializable and should hence have functional fromJson()
  *        and toJson() methods. This is asserted in OverallTests::testInheritence();
  */
-struct AnotherTestStruct : public JSONSerializable<AnotherTestStruct> {
+struct AnotherTestStruct : public JsonSerializable<AnotherTestStruct> {
     vector<string> arrayOfStrings{ "a", "b", "cd" };
 };
 
 /*!
- * \brief The DerivedTestStruct struct inherits from JSONSerializable and should hence have functional fromJson()
+ * \brief The DerivedTestStruct struct inherits from JsonSerializable and should hence have functional fromJson()
  *        and toJson() methods. This is asserted in OverallTests::testInheritence();
  */
-struct DerivedTestStruct : public TestStruct, public JSONSerializable<DerivedTestStruct> {
+struct DerivedTestStruct : public TestStruct, public JsonSerializable<DerivedTestStruct> {
     bool someBool = true;
 };
 
@@ -54,13 +54,13 @@ struct NonSerializable {
 };
 
 /*!
- * \brief The MultipleDerivedTestStruct struct inherits from JSONSerializable and should hence have functional fromJson()
+ * \brief The MultipleDerivedTestStruct struct inherits from JsonSerializable and should hence have functional fromJson()
  *        and toJson() methods. This is asserted in OverallTests::testInheritence();
  */
 struct MultipleDerivedTestStruct : public TestStruct,
                                    public AnotherTestStruct,
                                    public NonSerializable,
-                                   public JSONSerializable<MultipleDerivedTestStruct> {
+                                   public JsonSerializable<MultipleDerivedTestStruct> {
     bool someBool = false;
 };
 

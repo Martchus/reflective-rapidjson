@@ -48,7 +48,7 @@ inline CodeFactory &CodeGenerator::factory() const
 
 /*!
  * \brief The JSONSerializationCodeGenerator class generates code for JSON (de)serialization
- *        of objects inheriting from an instantiation of JSONSerializable.
+ *        of objects inheriting from an instantiation of JsonSerializable.
  */
 class JSONSerializationCodeGenerator : public CodeGenerator {
 public:

@@ -1,6 +1,6 @@
 #include "./codegenerator.h"
 
-#include "../lib/jsonserializable.h"
+#include "../lib/json/serializable.h"
 
 #include <c++utilities/application/global.h>
 
@@ -58,8 +58,8 @@ void JSONSerializationCodeGenerator::addDeclaration(clang::Decl *decl)
         if (!record->hasDefinition()) {
             return;
         }
-        // add classes derived from any instantiation of "ReflectiveRapidJSON::JSONSerializable"
-        if (inheritsFromInstantiationOf(record, JSONSerializable<void>::qualifiedName)) {
+        // add classes derived from any instantiation of "ReflectiveRapidJSON::JsonSerializable"
+        if (inheritsFromInstantiationOf(record, JsonSerializable<void>::qualifiedName)) {
             m_relevantClasses.emplace_back(record->getQualifiedNameAsString(), record);
         }
         break;
@@ -105,7 +105,8 @@ void JSONSerializationCodeGenerator::generate(ostream &os) const
 
         // print pull method
         os << "template <> inline void pull<::" << relevantClass.qualifiedName << ">(::" << relevantClass.qualifiedName
-           << " &reflectable, const ::RAPIDJSON_NAMESPACE::GenericValue<::RAPIDJSON_NAMESPACE::UTF8<char>>::ConstObject &value, JSONParseErrors "
+           << " &reflectable, const ::RAPIDJSON_NAMESPACE::GenericValue<::RAPIDJSON_NAMESPACE::UTF8<char>>::ConstObject &value, "
+              "JsonDeserializationErrors "
               "*errors)\n{\n"
               "    // pull base classes\n";
         for (const RelevantClass *baseClass : relevantBases) {

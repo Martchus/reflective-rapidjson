@@ -2,7 +2,7 @@
 #define REFLECTIVE_RAPIDJSON_JSON_REFLECTOR_BOOST_HANA_H
 
 /*!
- * \file jsonreflector-boosthana.h
+ * \file reflector-boosthana.h
  * \brief Contains generic functions relying on Boost.Hana which can replace the code which would
  *        otherwise had to be generated.
  * \remarks
@@ -12,7 +12,7 @@
  * modifying the actual object.
  */
 
-#include "./jsonreflector.h"
+#include "./reflector.h"
 
 // TODO: find out which header files are actually relevant rather than including the master
 #include <boost/hana.hpp>
@@ -37,7 +37,8 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Object &value, RA
 template <typename Type,
     Traits::DisableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>,
         Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>>...>
-void pull(Type &reflectable, RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ValueIterator &value, JSONParseErrors *errors)
+void pull(
+    Type &reflectable, RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ValueIterator &value, JsonDeserializationErrors *errors)
 {
     boost::hana::for_each(boost::hana::keys(reflectable), [&reflectable, &value, &errors](auto key) {
         pull(boost::hana::at_key(reflectable, key), boost::hana::to<char const *>(key), value, errors);
@@ -47,7 +48,8 @@ void pull(Type &reflectable, RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPA
 template <typename Type,
     Traits::DisableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>,
         Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>>...>
-void pull(Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstObject &value, JSONParseErrors *errors)
+void pull(Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstObject &value,
+    JsonDeserializationErrors *errors)
 {
     boost::hana::for_each(boost::hana::keys(reflectable), [&reflectable, &value, &errors](auto key) {
         pull(boost::hana::at_key(reflectable, key), boost::hana::to<char const *>(key), value, errors);

@@ -13,21 +13,21 @@ generator.
 ## Usage
 This example shows how the library can be used to make a `struct` serializable:
 ```
-#include <reflective-rapidjson/jsonserializable.h>
+#include <reflective-rapidjson/json/serializable.h>
 
 // define structures, eg.
-struct TestObject : public JSONSerializable<TestObject> {
+struct TestObject : public JsonSerializable<TestObject> {
     int number;
     double number2;
     vector<int> numbers;
     string text;
     bool boolean;
 };
-struct NestingObject : public JSONSerializable<NestingObject> {
+struct NestingObject : public JsonSerializable<NestingObject> {
     string name;
     TestObject testObj;
 };
-struct NestingArray : public JSONSerializable<NestingArray> {
+struct NestingArray : public JsonSerializable<NestingArray> {
     string name;
     vector<TestObject> testObjects;
 };
@@ -75,10 +75,10 @@ to the sources of your target. Of course this can be skipped if not required/wan
 The same example as above. However, this time Boost.Hana is used - so it doesn't require invoking the generator.
 
 ```
-#include "<reflective-rapidjson/jsonserializable-boosthana.h>
+#include "<reflective-rapidjson/json/serializable-boosthana.h>
 
 // define structures using BOOST_HANA_DEFINE_STRUCT, eg.
-struct TestObject : public JSONSerializable<TestObject> {
+struct TestObject : public JsonSerializable<TestObject> {
     BOOST_HANA_DEFINE_STRUCT(TestObject,
         (int, number),
         (double, number2),
@@ -87,13 +87,13 @@ struct TestObject : public JSONSerializable<TestObject> {
         (bool, boolean)
     );
 };
-struct NestingObject : public JSONSerializable<NestingObject> {
+struct NestingObject : public JsonSerializable<NestingObject> {
     BOOST_HANA_DEFINE_STRUCT(NestingObject,
         (string, name),
         (TestObject, testObj)
     );
 };
-struct NestingArray : public JSONSerializable<NestingArray> {
+struct NestingArray : public JsonSerializable<NestingArray> {
     BOOST_HANA_DEFINE_STRUCT(NestingArray,
         (string, name),
         (vector<TestObject>, testObjects)
@@ -108,7 +108,7 @@ cout << "JSON: " << obj.toJson().GetString();
 const auto obj = NestingArray::fromJson(...);
 ```
 
-So the usage remains the same.
+So beside the `BOOST_HANA_DEFINE_STRUCT` macro, the usage remains the same.
 
 ## Install instructions
 

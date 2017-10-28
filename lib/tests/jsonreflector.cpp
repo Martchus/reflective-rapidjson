@@ -1,5 +1,5 @@
-#include "../jsonreflector.h"
-#include "../jsonserializable.h"
+#include "../json/reflector.h"
+#include "../json/serializable.h"
 
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/conversion/stringconversion.h>
@@ -30,7 +30,7 @@ using namespace ReflectiveRapidJSON;
 /// \cond
 
 // define some structs for testing serialization
-struct TestObject : public JSONSerializable<TestObject> {
+struct TestObject : public JsonSerializable<TestObject> {
     int number;
     double number2;
     vector<int> numbers;
@@ -38,12 +38,12 @@ struct TestObject : public JSONSerializable<TestObject> {
     bool boolean;
 };
 
-struct NestingObject : public JSONSerializable<NestingObject> {
+struct NestingObject : public JsonSerializable<NestingObject> {
     string name;
     TestObject testObj;
 };
 
-struct NestingArray : public JSONSerializable<NestingArray> {
+struct NestingArray : public JsonSerializable<NestingArray> {
     string name;
     vector<TestObject> testObjects;
 };
@@ -73,7 +73,8 @@ template <> inline void push<NestingArray>(const NestingArray &reflectable, Valu
     push(reflectable.testObjects, "testObjects", value, allocator);
 }
 
-template <> inline void pull<TestObject>(TestObject &reflectable, const GenericValue<UTF8<char>>::ConstObject &value, JSONParseErrors *errors)
+template <>
+inline void pull<TestObject>(TestObject &reflectable, const GenericValue<UTF8<char>>::ConstObject &value, JsonDeserializationErrors *errors)
 {
     const char *previousRecord;
     if (errors) {
@@ -90,7 +91,8 @@ template <> inline void pull<TestObject>(TestObject &reflectable, const GenericV
     }
 }
 
-template <> inline void pull<NestingObject>(NestingObject &reflectable, const GenericValue<UTF8<char>>::ConstObject &value, JSONParseErrors *errors)
+template <>
+inline void pull<NestingObject>(NestingObject &reflectable, const GenericValue<UTF8<char>>::ConstObject &value, JsonDeserializationErrors *errors)
 {
     const char *previousRecord;
     if (errors) {
@@ -104,7 +106,8 @@ template <> inline void pull<NestingObject>(NestingObject &reflectable, const Ge
     }
 }
 
-template <> inline void pull<NestingArray>(NestingArray &reflectable, const GenericValue<UTF8<char>>::ConstObject &value, JSONParseErrors *errors)
+template <>
+inline void pull<NestingArray>(NestingArray &reflectable, const GenericValue<UTF8<char>>::ConstObject &value, JsonDeserializationErrors *errors)
 {
     const char *previousRecord;
     if (errors) {
@@ -131,7 +134,6 @@ template <> inline void pull<NestingArray>(NestingArray &reflectable, const Gene
  */
 class JSONReflectorTests : public TestFixture {
     CPPUNIT_TEST_SUITE(JSONReflectorTests);
-    CPPUNIT_TEST(experiment);
     CPPUNIT_TEST(testSerializePrimitives);
     CPPUNIT_TEST(testSerializeSimpleObjects);
     CPPUNIT_TEST(testSerializeNestedObjects);
@@ -167,33 +169,6 @@ void JSONReflectorTests::setUp()
 
 void JSONReflectorTests::tearDown()
 {
-}
-
-/*!
- * \brief Not a real test, just some assertions for experimenting with the RapidJSON library.
- */
-void JSONReflectorTests::experiment()
-{
-    Document doc(kArrayType);
-    Document::AllocatorType &alloc = doc.GetAllocator();
-
-    /*
-    doc.PushBack(25, alloc);
-    doc.PushBack(26, alloc);
-    doc.SetObject();
-    doc.AddMember(StringRef("test"), 27, alloc);
-
-    StringBuffer strbuf;
-    Writer<StringBuffer> jsonWriter(strbuf);
-    doc.Accept(jsonWriter);
-    */
-
-    doc.Parse("[\"a\", 5, \"test\", \"7\"]");
-    GenericValue<UTF8<>>::Array a = doc.GetArray();
-    CPPUNIT_ASSERT_EQUAL("a"s, string(a[0].GetString()));
-    CPPUNIT_ASSERT_EQUAL(5, a[1].GetInt());
-    //CPPUNIT_ASSERT_EQUAL(5, a[2].GetInt());
-    //CPPUNIT_ASSERT_EQUAL(7, a[3].GetInt());
 }
 
 /*!
@@ -283,7 +258,7 @@ void JSONReflectorTests::testDeserializePrimitives()
     bool bool1 = false, bool2 = true;
     float float1 = 0.0;
     double double1 = 0.0;
-    JSONParseErrors errors;
+    JsonDeserializationErrors errors;
     Reflector::pull(str1, array, &errors);
     Reflector::pull(int1, array, &errors);
     Reflector::pull(float1, array, &errors);
@@ -363,11 +338,11 @@ void JSONReflectorTests::testHandlingParseError()
 }
 
 /*!
- * \brief Tests whether JSONParseError is thrown on type mismatch.
+ * \brief Tests whether JsonDeserializationError is thrown on type mismatch.
  */
 void JSONReflectorTests::testHandlingTypeMismatch()
 {
-    JSONParseErrors errors;
+    JsonDeserializationErrors errors;
     NestingArray::fromJson("{\"name\":\"nesting2\",\"testObjects\":[{\"number\":42,\"number2\":3.141592653589793,"
                            "\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false},{\"number\":43,\"number2\":3."
                            "141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false}]}",
@@ -378,9 +353,9 @@ void JSONReflectorTests::testHandlingTypeMismatch()
                             "\"test\",\"boolean\":false}}",
         &errors);
     CPPUNIT_ASSERT_EQUAL(1_st, errors.size());
-    CPPUNIT_ASSERT_EQUAL(JSONParseErrorKind::TypeMismatch, errors.front().kind);
-    CPPUNIT_ASSERT_EQUAL(JSONType::Number, errors.front().expectedType);
-    CPPUNIT_ASSERT_EQUAL(JSONType::String, errors.front().actualType);
+    CPPUNIT_ASSERT_EQUAL(JsonDeserializationErrorKind::TypeMismatch, errors.front().kind);
+    CPPUNIT_ASSERT_EQUAL(JsonType::Number, errors.front().expectedType);
+    CPPUNIT_ASSERT_EQUAL(JsonType::String, errors.front().actualType);
     CPPUNIT_ASSERT_EQUAL("number"s, string(errors.front().member));
     CPPUNIT_ASSERT_EQUAL("TestObject"s, string(errors.front().record));
     errors.clear();
@@ -389,23 +364,23 @@ void JSONReflectorTests::testHandlingTypeMismatch()
                             "\"test\",\"boolean\":false}}",
         &errors);
     CPPUNIT_ASSERT_EQUAL(1_st, errors.size());
-    CPPUNIT_ASSERT_EQUAL(JSONParseErrorKind::TypeMismatch, errors.front().kind);
-    CPPUNIT_ASSERT_EQUAL(JSONType::Array, errors.front().expectedType);
-    CPPUNIT_ASSERT_EQUAL(JSONType::Number, errors.front().actualType);
+    CPPUNIT_ASSERT_EQUAL(JsonDeserializationErrorKind::TypeMismatch, errors.front().kind);
+    CPPUNIT_ASSERT_EQUAL(JsonType::Array, errors.front().expectedType);
+    CPPUNIT_ASSERT_EQUAL(JsonType::Number, errors.front().actualType);
     CPPUNIT_ASSERT_EQUAL("numbers"s, string(errors.front().member));
     CPPUNIT_ASSERT_EQUAL("TestObject"s, string(errors.front().record));
     errors.clear();
 
     NestingObject::fromJson("{\"name\":[],\"testObj\":\"this is not an object\"}", &errors);
     CPPUNIT_ASSERT_EQUAL(2_st, errors.size());
-    CPPUNIT_ASSERT_EQUAL(JSONParseErrorKind::TypeMismatch, errors.front().kind);
-    CPPUNIT_ASSERT_EQUAL(JSONType::String, errors.front().expectedType);
-    CPPUNIT_ASSERT_EQUAL(JSONType::Array, errors.front().actualType);
+    CPPUNIT_ASSERT_EQUAL(JsonDeserializationErrorKind::TypeMismatch, errors.front().kind);
+    CPPUNIT_ASSERT_EQUAL(JsonType::String, errors.front().expectedType);
+    CPPUNIT_ASSERT_EQUAL(JsonType::Array, errors.front().actualType);
     CPPUNIT_ASSERT_EQUAL("name"s, string(errors.front().member));
     CPPUNIT_ASSERT_EQUAL("NestingObject"s, string(errors.front().record));
-    CPPUNIT_ASSERT_EQUAL(JSONParseErrorKind::TypeMismatch, errors.back().kind);
-    CPPUNIT_ASSERT_EQUAL(JSONType::Object, errors.back().expectedType);
-    CPPUNIT_ASSERT_EQUAL(JSONType::String, errors.back().actualType);
+    CPPUNIT_ASSERT_EQUAL(JsonDeserializationErrorKind::TypeMismatch, errors.back().kind);
+    CPPUNIT_ASSERT_EQUAL(JsonType::Object, errors.back().expectedType);
+    CPPUNIT_ASSERT_EQUAL(JsonType::String, errors.back().actualType);
     CPPUNIT_ASSERT_EQUAL("testObj"s, string(errors.back().member));
     CPPUNIT_ASSERT_EQUAL("NestingObject"s, string(errors.back().record));
     errors.clear();
@@ -416,26 +391,26 @@ void JSONReflectorTests::testHandlingTypeMismatch()
                                "141592653589793,\"numbers\":[1,2,3,4,\"bar\"],\"text\":\"test\",\"boolean\":false}]}",
             &errors));
     CPPUNIT_ASSERT_EQUAL(3_st, errors.size());
-    CPPUNIT_ASSERT_EQUAL(JSONParseErrorKind::TypeMismatch, errors[0].kind);
-    CPPUNIT_ASSERT_EQUAL(JSONType::Object, errors[0].expectedType);
-    CPPUNIT_ASSERT_EQUAL(JSONType::Number, errors[0].actualType);
+    CPPUNIT_ASSERT_EQUAL(JsonDeserializationErrorKind::TypeMismatch, errors[0].kind);
+    CPPUNIT_ASSERT_EQUAL(JsonType::Object, errors[0].expectedType);
+    CPPUNIT_ASSERT_EQUAL(JsonType::Number, errors[0].actualType);
     CPPUNIT_ASSERT_EQUAL("testObjects"s, string(errors[0].member));
     CPPUNIT_ASSERT_EQUAL("NestingArray"s, string(errors[0].record));
     CPPUNIT_ASSERT_EQUAL(0_st, errors[0].index);
-    CPPUNIT_ASSERT_EQUAL(JSONParseErrorKind::TypeMismatch, errors[1].kind);
-    CPPUNIT_ASSERT_EQUAL(JSONType::Object, errors[1].expectedType);
-    CPPUNIT_ASSERT_EQUAL(JSONType::String, errors[1].actualType);
+    CPPUNIT_ASSERT_EQUAL(JsonDeserializationErrorKind::TypeMismatch, errors[1].kind);
+    CPPUNIT_ASSERT_EQUAL(JsonType::Object, errors[1].expectedType);
+    CPPUNIT_ASSERT_EQUAL(JsonType::String, errors[1].actualType);
     CPPUNIT_ASSERT_EQUAL(2_st, errors[1].index);
     CPPUNIT_ASSERT_EQUAL("testObjects"s, string(errors[1].member));
     CPPUNIT_ASSERT_EQUAL("NestingArray"s, string(errors[1].record));
-    CPPUNIT_ASSERT_EQUAL(JSONParseErrorKind::TypeMismatch, errors[2].kind);
-    CPPUNIT_ASSERT_EQUAL(JSONType::Number, errors[2].expectedType);
-    CPPUNIT_ASSERT_EQUAL(JSONType::String, errors[2].actualType);
+    CPPUNIT_ASSERT_EQUAL(JsonDeserializationErrorKind::TypeMismatch, errors[2].kind);
+    CPPUNIT_ASSERT_EQUAL(JsonType::Number, errors[2].expectedType);
+    CPPUNIT_ASSERT_EQUAL(JsonType::String, errors[2].actualType);
     CPPUNIT_ASSERT_EQUAL("numbers"s, string(errors[2].member));
     CPPUNIT_ASSERT_EQUAL("TestObject"s, string(errors[2].record));
     CPPUNIT_ASSERT_EQUAL(4_st, errors[2].index);
     errors.clear();
 
-    errors.throwOn = JSONParseErrors::ThrowOn::TypeMismatch;
-    CPPUNIT_ASSERT_THROW(NestingObject::fromJson("{\"name\":[],\"testObj\":\"this is not an object\"}", &errors), JSONParseError);
+    errors.throwOn = JsonDeserializationErrors::ThrowOn::TypeMismatch;
+    CPPUNIT_ASSERT_THROW(NestingObject::fromJson("{\"name\":[],\"testObj\":\"this is not an object\"}", &errors), JsonDeserializationError);
 }

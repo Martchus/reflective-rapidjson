@@ -9,7 +9,7 @@ template <> inline void push<::TestNamespace1::Person>(const ::TestNamespace1::P
     push(reflectable.age, "age", value, allocator);
     push(reflectable.alive, "alive", value, allocator);
 }
-template <> inline void pull<::TestNamespace1::Person>(::TestNamespace1::Person &reflectable, const ::RAPIDJSON_NAMESPACE::GenericValue<::RAPIDJSON_NAMESPACE::UTF8<char>>::ConstObject &value, JSONParseErrors *errors)
+template <> inline void pull<::TestNamespace1::Person>(::TestNamespace1::Person &reflectable, const ::RAPIDJSON_NAMESPACE::GenericValue<::RAPIDJSON_NAMESPACE::UTF8<char>>::ConstObject &value, JsonDeserializationErrors *errors)
 {
     // pull base classes
     // set error context for current record

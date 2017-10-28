@@ -5,9 +5,10 @@ set(META_PROJECT_TYPE library)
 
 # add project files
 set(HEADER_FILES
-    jsonreflector.h
-    jsonreflector-boosthana.h
-    jsonserializable.h
+    json/reflector.h
+    json/reflector-boosthana.h
+    json/serializable.h
+    json/errorhandling.h
 )
 set(SRC_FILES
 )

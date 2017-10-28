@@ -182,7 +182,8 @@ void JsonReflectorTests::testSerializePrimitives()
     Document::Array array(doc.GetArray());
 
     // string
-    Reflector::push<string>("foo"s, array, alloc);
+    const string foo("foo"); // musn't be destroyed until JSON is actually written
+    Reflector::push<string>(foo, array, alloc);
     Reflector::push<const char *>("bar", array, alloc);
     // number
     Reflector::push<int>(25, array, alloc);

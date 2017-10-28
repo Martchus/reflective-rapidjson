@@ -34,23 +34,27 @@ set(TEST_SRC_FILES
     tests/jsongenerator.cpp
 )
 
-# find c++utilities
+# find c++utilities and link against the library
 find_package(c++utilities 4.11.0 REQUIRED)
 use_cpp_utilities()
 
-# find libclang
+# find Clang for LibTooling; adding clangTooling should be sufficient as it pulls all transitive dependencies
 find_package(Clang REQUIRED)
 list(APPEND PRIVATE_LIBRARIES clangTooling)
 
-# also add reflective_rapidjson
+# also add reflective_rapidjson which is header-only but might pull additional include dirs for RapidJSON
 list(APPEND PRIVATE_LIBRARIES reflective_rapidjson)
 
-# trigger code generator for tests
+# trigger code generator because the tests already contain structs to be (de)serialized
 include(ReflectionGenerator)
 add_reflection_generator_invocation(
-    INPUT_FILES tests/structs.h tests/cppunit.cpp
-    GENERATORS json
-    OUTPUT_LISTS TEST_HEADER_FILES
+    INPUT_FILES
+        tests/structs.h   # used by test cases
+        tests/cppunit.cpp # just for testing multiple input files and the "empty file" case
+    GENERATORS
+        json
+    OUTPUT_LISTS
+        TEST_HEADER_FILES
 )
 
 # include modules to apply configuration

@@ -11,6 +11,7 @@
 
 #include <rapidjson/rapidjson.h>
 
+#include <limits>
 #include <list>
 #include <string>
 #include <vector>

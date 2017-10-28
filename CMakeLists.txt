@@ -16,8 +16,11 @@ set(META_APP_VERSION ${META_VERSION_MAJOR}.${META_VERSION_MINOR}.${META_VERSION_
 # set project name for IDEs like Qt Creator
 project(${META_PROJECT_NAME})
 
+# ensure testing is enabled at this level (and not only for particular sub directories)
+enable_testing()
+
 # allow bundling c++utilities
-set(BUNDLED_CPP_UTILITIES_PATH OFF CACHE FILEPATH "specifies the (relative) path to the c++utilities sources for building it together with ${META_PROJECT_NAME}")
+set(BUNDLED_CPP_UTILITIES_PATH OFF CACHE PATH "specifies the (relative) path to the c++utilities sources for building it together with ${META_PROJECT_NAME}")
 if(NOT BUNDLED_CPP_UTILITIES_PATH)
     message(STATUS "Using system c++utilities")
 elseif(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${BUNDLED_CPP_UTILITIES_PATH}" OR IS_DIRECTORY "${BUNDLED_CPP_UTILITIES_PATH}")

@@ -26,9 +26,20 @@ set(DOC_FILES
     README.md
 )
 
-# find c++utilities
+# find c++utilities, but only add the include dirs because we're not depending on the actual library
 find_package(c++utilities 4.11.0 REQUIRED)
-use_cpp_utilities()
+list(APPEND PUBLIC_SHARED_INCLUDE_DIRS ${CPP_UTILITIES_INCLUDE_DIRS})
+list(APPEND PUBLIC_STATIC_INCLUDE_DIRS ${CPP_UTILITIES_INCLUDE_DIRS})
+list(APPEND CMAKE_MODULE_PATH ${CPP_UTILITIES_MODULE_DIRS})
+
+# find RapidJSON, also add only the include dirs because RapidJSON is a header-only library
+find_package(RapidJSON)
+if(RapidJSON_FOUND)
+    list(APPEND PUBLIC_SHARED_INCLUDE_DIRS ${RAPIDJSON_INCLUDE_DIRS})
+    list(APPEND PUBLIC_STATIC_INCLUDE_DIRS ${RAPIDJSON_INCLUDE_DIRS})
+else()
+    message(FATAL_ERROR "Unable to find RapidJSON. Since this is the only reflection application supported at this time it makes no sense to continue.")
+endif()
 
 # include modules to apply configuration
 include(BasicConfig)

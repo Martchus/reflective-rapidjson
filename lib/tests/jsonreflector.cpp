@@ -129,11 +129,11 @@ inline void pull<NestingArray>(NestingArray &reflectable, const GenericValue<UTF
 /// \endcond
 
 /*!
- * \brief The ReflectorTests class tests RapidJSON wrapper which is used to ease code generation.
- * \remarks In this tests, no reflection or code generation is involved yet.
+ * \brief The JsonReflectorTests class tests RapidJSON wrapper which is used to ease code generation.
+ * \remarks In these tests, the required reflection code is provided by hand so the generator isn't involved yet.
  */
-class JSONReflectorTests : public TestFixture {
-    CPPUNIT_TEST_SUITE(JSONReflectorTests);
+class JsonReflectorTests : public TestFixture {
+    CPPUNIT_TEST_SUITE(JsonReflectorTests);
     CPPUNIT_TEST(testSerializePrimitives);
     CPPUNIT_TEST(testSerializeSimpleObjects);
     CPPUNIT_TEST(testSerializeNestedObjects);
@@ -161,20 +161,20 @@ public:
 private:
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(JSONReflectorTests);
+CPPUNIT_TEST_SUITE_REGISTRATION(JsonReflectorTests);
 
-void JSONReflectorTests::setUp()
+void JsonReflectorTests::setUp()
 {
 }
 
-void JSONReflectorTests::tearDown()
+void JsonReflectorTests::tearDown()
 {
 }
 
 /*!
  * \brief Tests serializing strings, numbers, arrays and boolean.
  */
-void JSONReflectorTests::testSerializePrimitives()
+void JsonReflectorTests::testSerializePrimitives()
 {
     Document doc(kArrayType);
     Document::AllocatorType &alloc = doc.GetAllocator();
@@ -205,7 +205,7 @@ void JSONReflectorTests::testSerializePrimitives()
 /*!
  * \brief Tests serializing objects.
  */
-void JSONReflectorTests::testSerializeSimpleObjects()
+void JsonReflectorTests::testSerializeSimpleObjects()
 {
     TestObject testObj;
     testObj.number = 42;
@@ -220,7 +220,7 @@ void JSONReflectorTests::testSerializeSimpleObjects()
 /*!
  * \brief Tests serializing nested object and arrays.
  */
-void JSONReflectorTests::testSerializeNestedObjects()
+void JsonReflectorTests::testSerializeNestedObjects()
 {
     NestingObject nestingObj;
     nestingObj.name = "nesting";
@@ -246,7 +246,7 @@ void JSONReflectorTests::testSerializeNestedObjects()
 /*!
  * \brief Tests deserializing strings, numbers (int, float, double) and boolean.
  */
-void JSONReflectorTests::testDeserializePrimitives()
+void JsonReflectorTests::testDeserializePrimitives()
 {
     Document doc(kArrayType);
 
@@ -279,7 +279,7 @@ void JSONReflectorTests::testDeserializePrimitives()
 /*!
  * \brief Tests deserializing simple objects.
  */
-void JSONReflectorTests::testDeserializeSimpleObjects()
+void JsonReflectorTests::testDeserializeSimpleObjects()
 {
     const TestObject testObj(
         TestObject::fromJson("{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false}"));
@@ -294,7 +294,7 @@ void JSONReflectorTests::testDeserializeSimpleObjects()
 /*!
  * \brief Tests deserializing nested objects and arrays.
  */
-void JSONReflectorTests::testDeserializeNestedObjects()
+void JsonReflectorTests::testDeserializeNestedObjects()
 {
     const NestingObject nestingObj(NestingObject::fromJson("{\"name\":\"nesting\",\"testObj\":{\"number\":42,\"number2\":3.141592653589793,"
                                                            "\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false}}"));
@@ -325,7 +325,7 @@ void JSONReflectorTests::testDeserializeNestedObjects()
 /*!
  * \brief Tests whether RAPIDJSON_NAMESPACE::ParseResult is thrown correctly when passing invalid JSON to fromJSON().
  */
-void JSONReflectorTests::testHandlingParseError()
+void JsonReflectorTests::testHandlingParseError()
 {
     try {
         NestingObject::fromJson("{\"name\":nesting\",\"testObj\":{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":"
@@ -340,7 +340,7 @@ void JSONReflectorTests::testHandlingParseError()
 /*!
  * \brief Tests whether JsonDeserializationError is thrown on type mismatch.
  */
-void JSONReflectorTests::testHandlingTypeMismatch()
+void JsonReflectorTests::testHandlingTypeMismatch()
 {
     JsonDeserializationErrors errors;
     NestingArray::fromJson("{\"name\":\"nesting2\",\"testObjects\":[{\"number\":42,\"number2\":3.141592653589793,"

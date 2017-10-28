@@ -1,4 +1,4 @@
-# reflective-rapidjson
+# Reflective RapidJSON
 
 The main goal of this project is to provide a code generator for serializing/deserializing C++ objects to/from JSON
 using Clang and RapidJSON.
@@ -131,9 +131,34 @@ makes use of the `reflective-rapidjson`.
 
 ### How to build
 Install all required dependencies and ensure the CMake script finds them. It is possible to build `c++utilities`
-together `reflective-rapidjson` to ease the build process. The following build script makes use of this. To use
-system `c++utilities`, just skip any lines with `c++utilities` in it.
+together with `reflective-rapidjson` to simplify the build process. The following build script makes use of this.
+To use system `c++utilities`, just skip any lines with "`c++utilities`" in the following examples.
 
+Get sources, eg. using Git:
 ```
-TODO
+cd $SOURCES
+git clone https://github.com/Martchus/cpp-utilities.git c++utilities
+git clone https://github.com/Martchus/reflective-rapidjson.git
 ```
+
+If you don't want to build the development version, just checkout the desired version tag.
+
+Here is an example for building with CMake and GNU Make:
+```
+cd $BUILD_DIR
+# generate Makefile
+cmake \
+ -DCMAKE_BUILD_TYPE:STRING=Release \
+ -DCMAKE_INSTALL_PREFIX:PATH="/final/install/prefix" \
+ -DBUNDLED_CPP_UTILITIES_PATH:PATH="$SOURCES/c++utilities" \
+ "$SOURCES/reflective-rapidjson"
+# build library and generators
+make
+# run test (optional, requires CppUnit)
+make check
+# generates API documentation (optional, reqquires Doxygen)
+make apidoc
+# install header files, libraries and generator
+make install DESTDIR="/temporary/install/location"
+```
+Add eg. `-j$(nproc)` to `make` arguments for using all cores.

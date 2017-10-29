@@ -16,6 +16,7 @@
 #include <rapidjson/writer.h>
 
 #include <string>
+#include <tuple>
 
 #include "./errorhandling.h"
 
@@ -133,6 +134,36 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAP
     value.PushBack(array, allocator);
 }
 
+namespace Detail {
+template <class Tuple, std::size_t N> struct TupleHelper {
+    static void push(const Tuple &tuple, RAPIDJSON_NAMESPACE::Value::Array &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
+    {
+        TupleHelper<Tuple, N - 1>::push(tuple, value, allocator);
+        Reflector::push(std::get<N - 1>(tuple), value, allocator);
+    }
+};
+
+template <class Tuple> struct TupleHelper<Tuple, 1> {
+    static void push(const Tuple &tuple, RAPIDJSON_NAMESPACE::Value::Array &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
+    {
+        Reflector::push(std::get<0>(tuple), value, allocator);
+    }
+};
+} // namespace Detail
+
+/*!
+ * \brief Pushes the specified tuple to the specified array.
+ */
+template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::tuple>>...>
+void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
+{
+    RAPIDJSON_NAMESPACE::Value arrayValue(RAPIDJSON_NAMESPACE::kArrayType);
+    RAPIDJSON_NAMESPACE::Value::Array array(arrayValue.GetArray());
+    array.Reserve(std::tuple_size<Type>::value, allocator);
+    Detail::TupleHelper<Type, std::tuple_size<Type>::value>::push(reflectable, array, allocator);
+    value.PushBack(array, allocator);
+}
+
 /*!
  * \brief Pushes the specified \a reflectable which has a custom type as member to the specified object.
  */
@@ -229,6 +260,20 @@ void push(
     for (const auto &item : reflectable) {
         push(item, array, allocator);
     }
+    value.AddMember(RAPIDJSON_NAMESPACE::StringRef(name), array, allocator);
+}
+
+/*!
+ * \brief Pushes the specified tuple as member to the specified object.
+ */
+template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::tuple>>...>
+void push(
+    const Type &reflectable, const char *name, RAPIDJSON_NAMESPACE::Value::Object &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
+{
+    RAPIDJSON_NAMESPACE::Value arrayValue(RAPIDJSON_NAMESPACE::kArrayType);
+    RAPIDJSON_NAMESPACE::Value::Array array(arrayValue.GetArray());
+    array.Reserve(std::tuple_size<Type>::value, allocator);
+    Detail::TupleHelper<Type, std::tuple_size<Type>::value>::push(reflectable, array, allocator);
     value.AddMember(RAPIDJSON_NAMESPACE::StringRef(name), array, allocator);
 }
 

@@ -16,6 +16,7 @@ using TestUtilities::operator<<; // must be visible prior to the call site
 
 #include <iostream>
 #include <string>
+#include <tuple>
 #include <vector>
 
 using namespace std;
@@ -208,6 +209,7 @@ void JsonReflectorTests::testSerializePrimitives()
     Reflector::push<vector<const char *>>({ "foo1", "bar1" }, array, alloc);
     Reflector::push<list<const char *>>({ "foo2", "bar2" }, array, alloc);
     Reflector::push<initializer_list<const char *>>({ "foo3", "bar3" }, array, alloc);
+    Reflector::push<tuple<int, double>>(make_tuple(2, 413.0), array, alloc);
     // boolean
     Reflector::push<bool>(true, array, alloc);
     Reflector::push<bool>(false, array, alloc);
@@ -215,8 +217,8 @@ void JsonReflectorTests::testSerializePrimitives()
     StringBuffer strbuf;
     Writer<StringBuffer> jsonWriter(strbuf);
     doc.Accept(jsonWriter);
-    CPPUNIT_ASSERT_EQUAL(
-        "[\"foo\",\"bar\",25,12.5,1,1,2,[\"foo1\",\"bar1\"],[\"foo2\",\"bar2\"],[\"foo3\",\"bar3\"],true,false]"s, string(strbuf.GetString()));
+    CPPUNIT_ASSERT_EQUAL("[\"foo\",\"bar\",25,12.5,1,1,2,[\"foo1\",\"bar1\"],[\"foo2\",\"bar2\"],[\"foo3\",\"bar3\"],[2,413.0],true,false]"s,
+        string(strbuf.GetString()));
 }
 
 /*!

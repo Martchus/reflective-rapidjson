@@ -55,7 +55,7 @@ namespace Reflector {
  * \brief Pushes the \a reflectable which has a custom type to the specified array.
  */
 template <typename Type,
-    Traits::DisableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>,
+    Traits::DisableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>, std::is_enum<Type>,
         Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>>...>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator);
 
@@ -64,7 +64,7 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAP
  * \remarks The definition of this function must be provided by the code generator or Boost.Hana.
  */
 template <typename Type,
-    Traits::DisableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>,
+    Traits::DisableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>, std::is_enum<Type>,
         Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>>...>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Object &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator);
 
@@ -75,6 +75,15 @@ template <typename Type, Traits::EnableIfAny<std::is_integral<Type>, std::is_flo
 inline void push(Type reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     value.PushBack(reflectable, allocator);
+}
+
+/*!
+ * \brief Pushes the specified enumeration item to the specified array.
+ */
+template <typename Type, Traits::EnableIfAny<std::is_enum<Type>>...>
+inline void push(Type reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
+{
+    value.PushBack(static_cast<typename std::underlying_type<Type>::type>(reflectable), allocator);
 }
 
 /*!
@@ -148,6 +157,16 @@ inline void push(
 }
 
 /*!
+ * \brief Pushes the specified enumeration item as member to the specified object.
+ */
+template <typename Type, Traits::EnableIfAny<std::is_enum<Type>>...>
+inline void push(
+    Type reflectable, const char *name, RAPIDJSON_NAMESPACE::Value::Object &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
+{
+    value.AddMember(RAPIDJSON_NAMESPACE::StringRef(name), static_cast<typename std::underlying_type<Type>::type>(reflectable), allocator);
+}
+
+/*!
  * \brief Pushes the specified C-string as member to the specified object.
  */
 template <>
@@ -215,7 +234,7 @@ void push(
  * \brief Pushes the \a reflectable which has a custom type to the specified array.
  */
 template <typename Type,
-    Traits::DisableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>,
+    Traits::DisableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>, std::is_enum<Type>,
         Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>>...>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
@@ -231,7 +250,7 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAP
  * \brief Pulls the \a reflectable which has a custom type from the specified value.
  */
 template <typename Type,
-    Traits::DisableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>,
+    Traits::DisableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>, std::is_enum<Type>,
         Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>>...>
 void pull(
     Type &reflectable, RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ValueIterator &value, JsonDeserializationErrors *errors);
@@ -241,7 +260,7 @@ void pull(
  * \remarks The definition of this function must be provided by the code generator or Boost.Hana.
  */
 template <typename Type,
-    Traits::DisableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>,
+    Traits::DisableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>, std::is_enum<Type>,
         Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>>...>
 void pull(Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstObject &value,
     JsonDeserializationErrors *errors);

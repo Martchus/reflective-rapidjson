@@ -48,6 +48,18 @@ struct NestingArray : public JsonSerializable<NestingArray> {
     vector<TestObject> testObjects;
 };
 
+enum SomeEnum {
+    SomeEnumItem1,
+    SomeEnumItem2,
+    SomeEnumItem3,
+};
+
+enum class SomeEnumClass {
+    Item1,
+    Item2,
+    Item3,
+};
+
 // pretend serialization code for structs has been generated
 namespace ReflectiveRapidJSON {
 namespace Reflector {
@@ -188,6 +200,10 @@ void JsonReflectorTests::testSerializePrimitives()
     // number
     Reflector::push<int>(25, array, alloc);
     Reflector::push<double>(12.5, array, alloc);
+    // enum
+    Reflector::push<SomeEnum>(SomeEnumItem2, array, alloc);
+    Reflector::push<SomeEnumClass>(SomeEnumClass::Item2, array, alloc);
+    Reflector::push<SomeEnumClass>(SomeEnumClass::Item3, array, alloc);
     // array
     Reflector::push<vector<const char *>>({ "foo1", "bar1" }, array, alloc);
     Reflector::push<list<const char *>>({ "foo2", "bar2" }, array, alloc);
@@ -200,7 +216,7 @@ void JsonReflectorTests::testSerializePrimitives()
     Writer<StringBuffer> jsonWriter(strbuf);
     doc.Accept(jsonWriter);
     CPPUNIT_ASSERT_EQUAL(
-        "[\"foo\",\"bar\",25,12.5,[\"foo1\",\"bar1\"],[\"foo2\",\"bar2\"],[\"foo3\",\"bar3\"],true,false]"s, string(strbuf.GetString()));
+        "[\"foo\",\"bar\",25,12.5,1,1,2,[\"foo1\",\"bar1\"],[\"foo2\",\"bar2\"],[\"foo3\",\"bar3\"],true,false]"s, string(strbuf.GetString()));
 }
 
 /*!

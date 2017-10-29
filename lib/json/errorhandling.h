@@ -23,6 +23,7 @@ namespace ReflectiveRapidJSON {
  */
 enum class JsonDeserializationErrorKind : byte {
     TypeMismatch,
+    ArraySizeMismatch,
 };
 
 /*!
@@ -144,6 +145,7 @@ struct JsonDeserializationErrors : public std::vector<JsonDeserializationError> 
     JsonDeserializationErrors();
 
     template <typename ExpectedType> void reportTypeMismatch(RAPIDJSON_NAMESPACE::Type presentType);
+    void reportArraySizeMismatch();
 
     /// \brief The name of the class or struct which is currently being processed.
     const char *currentRecord;
@@ -152,7 +154,7 @@ struct JsonDeserializationErrors : public std::vector<JsonDeserializationError> 
     /// \brief The index in the array which is currently processed.
     std::size_t currentIndex;
     /// \brief The list of fatal error types in form of flags.
-    enum class ThrowOn : unsigned char { None = 0, TypeMismatch = 0x1 } throwOn;
+    enum class ThrowOn : unsigned char { None = 0, TypeMismatch = 0x1, ArraySizeMismatch = 0x2 } throwOn;
 };
 
 /*!
@@ -175,13 +177,26 @@ constexpr JsonDeserializationErrors::ThrowOn operator|(JsonDeserializationErrors
 }
 
 /*!
- * \brief Reports a type missmatch between \tparam ExpectedType and \a presentType within the current context.
+ * \brief Reports a type mismatch between \tparam ExpectedType and \a presentType within the current context.
  */
 template <typename ExpectedType> inline void JsonDeserializationErrors::reportTypeMismatch(RAPIDJSON_NAMESPACE::Type presentType)
 {
     emplace_back(
         JsonDeserializationErrorKind::TypeMismatch, jsonType<ExpectedType>(), jsonType(presentType), currentRecord, currentMember, currentIndex);
     if (static_cast<unsigned char>(throwOn) & static_cast<unsigned char>(ThrowOn::TypeMismatch)) {
+        throw back();
+    }
+}
+
+/*!
+ * \brief Reports an array size mismatch.
+ * \todo Allow specifying expected and actual size.
+ * \remarks This can happen when mapping a JSON array to a C++ tuple.
+ */
+inline void JsonDeserializationErrors::reportArraySizeMismatch()
+{
+    emplace_back(JsonDeserializationErrorKind::ArraySizeMismatch, JsonType::Array, JsonType::Array, currentRecord, currentMember, currentIndex);
+    if (static_cast<unsigned char>(throwOn) & static_cast<unsigned char>(ThrowOn::ArraySizeMismatch)) {
         throw back();
     }
 }

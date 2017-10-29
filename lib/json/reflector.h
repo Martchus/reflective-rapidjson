@@ -135,15 +135,19 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAP
 }
 
 namespace Detail {
-template <class Tuple, std::size_t N> struct TupleHelper {
+
+/*!
+ * \brief The TuplePushHelper class helps serializing tuples to JSON arrays.
+ */
+template <class Tuple, std::size_t N> struct TuplePushHelper {
     static void push(const Tuple &tuple, RAPIDJSON_NAMESPACE::Value::Array &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
     {
-        TupleHelper<Tuple, N - 1>::push(tuple, value, allocator);
+        TuplePushHelper<Tuple, N - 1>::push(tuple, value, allocator);
         Reflector::push(std::get<N - 1>(tuple), value, allocator);
     }
 };
 
-template <class Tuple> struct TupleHelper<Tuple, 1> {
+template <class Tuple> struct TuplePushHelper<Tuple, 1> {
     static void push(const Tuple &tuple, RAPIDJSON_NAMESPACE::Value::Array &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
     {
         Reflector::push(std::get<0>(tuple), value, allocator);
@@ -160,7 +164,7 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAP
     RAPIDJSON_NAMESPACE::Value arrayValue(RAPIDJSON_NAMESPACE::kArrayType);
     RAPIDJSON_NAMESPACE::Value::Array array(arrayValue.GetArray());
     array.Reserve(std::tuple_size<Type>::value, allocator);
-    Detail::TupleHelper<Type, std::tuple_size<Type>::value>::push(reflectable, array, allocator);
+    Detail::TuplePushHelper<Type, std::tuple_size<Type>::value>::push(reflectable, array, allocator);
     value.PushBack(array, allocator);
 }
 
@@ -273,7 +277,7 @@ void push(
     RAPIDJSON_NAMESPACE::Value arrayValue(RAPIDJSON_NAMESPACE::kArrayType);
     RAPIDJSON_NAMESPACE::Value::Array array(arrayValue.GetArray());
     array.Reserve(std::tuple_size<Type>::value, allocator);
-    Detail::TupleHelper<Type, std::tuple_size<Type>::value>::push(reflectable, array, allocator);
+    Detail::TuplePushHelper<Type, std::tuple_size<Type>::value>::push(reflectable, array, allocator);
     value.AddMember(RAPIDJSON_NAMESPACE::StringRef(name), array, allocator);
 }
 
@@ -501,6 +505,75 @@ void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<c
     if (errors) {
         errors->currentIndex = JsonDeserializationError::noIndex;
     }
+}
+
+namespace Detail {
+
+/*!
+ * \brief The TuplePullHelper class helps deserializing tuples from JSON arrays.
+ * \remarks Assumes that the array bounds have been checked before (to match the size of the tuple).
+ */
+template <class Tuple, std::size_t N> struct TuplePullHelper {
+    static void pull(Tuple &tuple, const RAPIDJSON_NAMESPACE::Value::Array &value, JsonDeserializationErrors *errors)
+    {
+        TuplePullHelper<Tuple, N - 1>::pull(tuple, value, errors);
+        Reflector::pull(std::get<N - 1>(tuple), value[N - 1], errors);
+    }
+};
+
+template <class Tuple> struct TuplePullHelper<Tuple, 1> {
+    static void pull(Tuple &tuple, const RAPIDJSON_NAMESPACE::Value::Array &value, JsonDeserializationErrors *errors)
+    {
+        Reflector::pull(std::get<0>(tuple), value[0], errors);
+    }
+};
+} // namespace Detail
+
+/*!
+ * \brief Pulls the speciified \a reflectable which is tuple from the specified value iterator which is checked to contain an array.
+ */
+template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::tuple>>...>
+void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ValueIterator &value, JsonDeserializationErrors *errors)
+{
+    if (!value->IsArray()) {
+        if (errors) {
+            errors->reportTypeMismatch<Type>(value->GetType());
+        }
+        return;
+    }
+    auto array = value->GetArray();
+    if (array.Size() != std::tuple_size<Type>::value) {
+        if (errors) {
+            // FIXME: report expected and actual size
+            errors->reportArraySizeMismatch();
+        }
+        return;
+    }
+    Detail::TuplePullHelper<Type, std::tuple_size<Type>::value>::pull(reflectable, array, errors);
+    ++value;
+}
+
+/*!
+ * \brief Pulls the speciified \a reflectable which is tuple from the specified value iterator which is checked to contain an array.
+ */
+template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::tuple>>...>
+void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
+{
+    if (!value.IsArray()) {
+        if (errors) {
+            errors->reportTypeMismatch<Type>(value.GetType());
+        }
+        return;
+    }
+    auto array = value.GetArray();
+    if (array.Size() != std::tuple_size<Type>::value) {
+        if (errors) {
+            // FIXME: report expected and actual size
+            errors->reportArraySizeMismatch();
+        }
+        return;
+    }
+    Detail::TuplePullHelper<Type, std::tuple_size<Type>::value>::pull(reflectable, array, errors);
 }
 
 /*!

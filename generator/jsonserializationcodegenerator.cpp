@@ -47,9 +47,9 @@ void JsonSerializationCodeGenerator::generate(ostream &os) const
         return;
     }
 
-    // put everything into namespace ReflectiveRapidJSON::Reflector
+    // put everything into namespace ReflectiveRapidJSON::JsonReflector
     os << "namespace ReflectiveRapidJSON {\n"
-          "namespace Reflector {\n\n";
+          "namespace JsonReflector {\n\n";
 
     // add push and pull functions for each class, for an example of the resulting
     // output, see ../lib/tests/jsonserializable.cpp (code under comment "pretend serialization code...")
@@ -101,8 +101,8 @@ void JsonSerializationCodeGenerator::generate(ostream &os) const
         os << "}\n\n";
     }
 
-    // close namespace ReflectiveRapidJSON::Reflector
-    os << "} // namespace Reflector\n"
+    // close namespace ReflectiveRapidJSON::JsonReflector
+    os << "} // namespace JsonReflector\n"
           "} // namespace ReflectiveRapidJSON\n";
 }
 

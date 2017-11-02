@@ -37,7 +37,7 @@ template <typename Type> struct JsonSerializable {
  */
 template <typename Type> void JsonSerializable<Type>::push(RAPIDJSON_NAMESPACE::Value &container)
 {
-    return Reflector::push<Type>(*this, container);
+    return JsonReflector::push<Type>(*this, container);
 }
 
 /*!
@@ -45,7 +45,7 @@ template <typename Type> void JsonSerializable<Type>::push(RAPIDJSON_NAMESPACE::
  */
 template <typename Type> void JsonSerializable<Type>::push(RAPIDJSON_NAMESPACE::Value &container, const char *name)
 {
-    return Reflector::push<Type>(*this, name, container);
+    return JsonReflector::push<Type>(*this, name, container);
 }
 
 /*!
@@ -54,7 +54,7 @@ template <typename Type> void JsonSerializable<Type>::push(RAPIDJSON_NAMESPACE::
  */
 template <typename Type> RAPIDJSON_NAMESPACE::StringBuffer JsonSerializable<Type>::toJson() const
 {
-    return Reflector::toJson<Type>(static_cast<const Type &>(*this));
+    return JsonReflector::toJson<Type>(static_cast<const Type &>(*this));
 }
 
 /*!
@@ -62,7 +62,7 @@ template <typename Type> RAPIDJSON_NAMESPACE::StringBuffer JsonSerializable<Type
  */
 template <typename Type> Type JsonSerializable<Type>::fromJson(const char *json, std::size_t jsonSize, JsonDeserializationErrors *errors)
 {
-    return Reflector::fromJson<Type>(json, jsonSize, errors);
+    return JsonReflector::fromJson<Type>(json, jsonSize, errors);
 }
 
 /*!
@@ -70,7 +70,7 @@ template <typename Type> Type JsonSerializable<Type>::fromJson(const char *json,
  */
 template <typename Type> Type JsonSerializable<Type>::fromJson(const char *json, JsonDeserializationErrors *errors)
 {
-    return Reflector::fromJson<Type>(json, std::strlen(json), errors);
+    return JsonReflector::fromJson<Type>(json, std::strlen(json), errors);
 }
 
 /*!
@@ -78,7 +78,7 @@ template <typename Type> Type JsonSerializable<Type>::fromJson(const char *json,
  */
 template <typename Type> Type JsonSerializable<Type>::fromJson(const std::string &json, JsonDeserializationErrors *errors)
 {
-    return Reflector::fromJson<Type>(json.data(), json.size(), errors);
+    return JsonReflector::fromJson<Type>(json.data(), json.size(), errors);
 }
 
 /*!

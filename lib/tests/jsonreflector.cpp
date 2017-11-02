@@ -63,7 +63,7 @@ enum class SomeEnumClass {
 
 // pretend serialization code for structs has been generated
 namespace ReflectiveRapidJSON {
-namespace Reflector {
+namespace JsonReflector {
 
 template <> inline void push<TestObject>(const TestObject &reflectable, Value::Object &value, Document::AllocatorType &allocator)
 {
@@ -134,9 +134,9 @@ inline void pull<NestingArray>(NestingArray &reflectable, const GenericValue<UTF
     }
 }
 
-} // namespace Reflector
+} // namespace JsonReflector
 
-// namespace Reflector
+// namespace JsonReflector
 } // namespace ReflectiveRapidJSON
 
 /// \endcond
@@ -196,23 +196,23 @@ void JsonReflectorTests::testSerializePrimitives()
 
     // string
     const string foo("foo"); // musn't be destroyed until JSON is actually written
-    Reflector::push<string>(foo, array, alloc);
-    Reflector::push<const char *>("bar", array, alloc);
+    JsonReflector::push<string>(foo, array, alloc);
+    JsonReflector::push<const char *>("bar", array, alloc);
     // number
-    Reflector::push<int>(25, array, alloc);
-    Reflector::push<double>(12.5, array, alloc);
+    JsonReflector::push<int>(25, array, alloc);
+    JsonReflector::push<double>(12.5, array, alloc);
     // enum
-    Reflector::push<SomeEnum>(SomeEnumItem2, array, alloc);
-    Reflector::push<SomeEnumClass>(SomeEnumClass::Item2, array, alloc);
-    Reflector::push<SomeEnumClass>(SomeEnumClass::Item3, array, alloc);
+    JsonReflector::push<SomeEnum>(SomeEnumItem2, array, alloc);
+    JsonReflector::push<SomeEnumClass>(SomeEnumClass::Item2, array, alloc);
+    JsonReflector::push<SomeEnumClass>(SomeEnumClass::Item3, array, alloc);
     // array
-    Reflector::push<vector<const char *>>({ "foo1", "bar1" }, array, alloc);
-    Reflector::push<list<const char *>>({ "foo2", "bar2" }, array, alloc);
-    Reflector::push<initializer_list<const char *>>({ "foo3", "bar3" }, array, alloc);
-    Reflector::push<tuple<int, double>>(make_tuple(2, 413.0), array, alloc);
+    JsonReflector::push<vector<const char *>>({ "foo1", "bar1" }, array, alloc);
+    JsonReflector::push<list<const char *>>({ "foo2", "bar2" }, array, alloc);
+    JsonReflector::push<initializer_list<const char *>>({ "foo3", "bar3" }, array, alloc);
+    JsonReflector::push<tuple<int, double>>(make_tuple(2, 413.0), array, alloc);
     // boolean
-    Reflector::push<bool>(true, array, alloc);
-    Reflector::push<bool>(false, array, alloc);
+    JsonReflector::push<bool>(true, array, alloc);
+    JsonReflector::push<bool>(false, array, alloc);
 
     StringBuffer strbuf;
     Writer<StringBuffer> jsonWriter(strbuf);
@@ -278,13 +278,13 @@ void JsonReflectorTests::testDeserializePrimitives()
     float float1 = 0.0;
     double double1 = 0.0;
     JsonDeserializationErrors errors;
-    Reflector::pull(str1, array, &errors);
-    Reflector::pull(int1, array, &errors);
-    Reflector::pull(float1, array, &errors);
-    Reflector::pull(str2, array, &errors);
-    Reflector::pull(bool1, array, &errors);
-    Reflector::pull(double1, array, &errors);
-    Reflector::pull(bool2, array, &errors);
+    JsonReflector::pull(str1, array, &errors);
+    JsonReflector::pull(int1, array, &errors);
+    JsonReflector::pull(float1, array, &errors);
+    JsonReflector::pull(str2, array, &errors);
+    JsonReflector::pull(bool1, array, &errors);
+    JsonReflector::pull(double1, array, &errors);
+    JsonReflector::pull(bool2, array, &errors);
 
     CPPUNIT_ASSERT_EQUAL(0_st, errors.size());
     CPPUNIT_ASSERT_EQUAL("a"s, str1);
@@ -297,7 +297,7 @@ void JsonReflectorTests::testDeserializePrimitives()
 
     // deserialize primitives as tuple
     tuple<string, int, float, string, bool, double, bool> arrayAsTuple;
-    Reflector::pull(arrayAsTuple, doc, &errors);
+    JsonReflector::pull(arrayAsTuple, doc, &errors);
     CPPUNIT_ASSERT_EQUAL(0_st, errors.size());
     CPPUNIT_ASSERT_EQUAL("a"s, get<0>(arrayAsTuple));
     CPPUNIT_ASSERT_EQUAL(5, get<1>(arrayAsTuple));
@@ -307,7 +307,7 @@ void JsonReflectorTests::testDeserializePrimitives()
     CPPUNIT_ASSERT_EQUAL(4.125, get<5>(arrayAsTuple));
     CPPUNIT_ASSERT_EQUAL(false, get<6>(arrayAsTuple));
     tuple<string, int> anotherTuple;
-    Reflector::pull(anotherTuple, doc, &errors);
+    JsonReflector::pull(anotherTuple, doc, &errors);
     CPPUNIT_ASSERT_EQUAL(1_st, errors.size());
     CPPUNIT_ASSERT_EQUAL(JsonDeserializationErrorKind::ArraySizeMismatch, errors.front().kind);
 }

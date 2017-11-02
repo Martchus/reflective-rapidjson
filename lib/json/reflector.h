@@ -48,7 +48,7 @@ inline RAPIDJSON_NAMESPACE::Document parseJsonDocFromString(const char *json, st
     return document;
 }
 
-namespace Reflector {
+namespace JsonReflector {
 
 // define functions to "push" values to a RapidJSON array or object
 
@@ -143,14 +143,14 @@ template <class Tuple, std::size_t N> struct TuplePushHelper {
     static void push(const Tuple &tuple, RAPIDJSON_NAMESPACE::Value::Array &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
     {
         TuplePushHelper<Tuple, N - 1>::push(tuple, value, allocator);
-        Reflector::push(std::get<N - 1>(tuple), value, allocator);
+        JsonReflector::push(std::get<N - 1>(tuple), value, allocator);
     }
 };
 
 template <class Tuple> struct TuplePushHelper<Tuple, 1> {
     static void push(const Tuple &tuple, RAPIDJSON_NAMESPACE::Value::Array &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
     {
-        Reflector::push(std::get<0>(tuple), value, allocator);
+        JsonReflector::push(std::get<0>(tuple), value, allocator);
     }
 };
 } // namespace Detail
@@ -517,14 +517,14 @@ template <class Tuple, std::size_t N> struct TuplePullHelper {
     static void pull(Tuple &tuple, const RAPIDJSON_NAMESPACE::Value::Array &value, JsonDeserializationErrors *errors)
     {
         TuplePullHelper<Tuple, N - 1>::pull(tuple, value, errors);
-        Reflector::pull(std::get<N - 1>(tuple), value[N - 1], errors);
+        JsonReflector::pull(std::get<N - 1>(tuple), value[N - 1], errors);
     }
 };
 
 template <class Tuple> struct TuplePullHelper<Tuple, 1> {
     static void pull(Tuple &tuple, const RAPIDJSON_NAMESPACE::Value::Array &value, JsonDeserializationErrors *errors)
     {
-        Reflector::pull(std::get<0>(tuple), value[0], errors);
+        JsonReflector::pull(std::get<0>(tuple), value[0], errors);
     }
 };
 } // namespace Detail
@@ -716,7 +716,7 @@ template <typename Type> Type fromJson(const std::string &json)
     return fromJson<Type>(json.data(), json.size());
 }
 
-} // namespace Reflector
+} // namespace JsonReflector
 } // namespace ReflectiveRapidJSON
 
 #endif // REFLECTIVE_RAPIDJSON_JSON_REFLECTOR_H

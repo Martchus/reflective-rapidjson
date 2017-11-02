@@ -18,7 +18,7 @@
 #include <boost/hana.hpp>
 
 namespace ReflectiveRapidJSON {
-namespace Reflector {
+namespace JsonReflector {
 
 // define functions to "push" values to a RapidJSON array or object
 
@@ -59,7 +59,7 @@ void pull(Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_N
     });
 }
 
-} // namespace Reflector
+} // namespace JsonReflector
 } // namespace ReflectiveRapidJSON
 
 #endif // REFLECTIVE_RAPIDJSON_JSON_REFLECTOR_BOOST_HANA_H

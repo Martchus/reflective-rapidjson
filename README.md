@@ -4,7 +4,7 @@ The main goal of this project is to provide a code generator for serializing/des
 using Clang and RapidJSON.
 
 However, extending the generator to generate code for other applications of reflection or to provide generic
-reflection functionallity would be possible as well.
+reflection would be possible as well.
 
 This repository also contains a small, additional header to use RapidJSON with Boost.Hana. This allows to serialize
 or dezerialize simple data structures using the `BOOST_HANA_DEFINE_STRUCT` macro rather than requiring the code
@@ -30,8 +30,9 @@ The following table shows the mapping of supported C++ types to supported JSON t
 * Enums are only supported for serialization.
 * For deserialization, iteratables must provide an `emplace_back` method. So deserialization of eg. `std::forward_list`
   is currently not supported.
-* Using pointers is not supported yet.
+* Using smart pointers is not supported yet.
 * The JSON type `null` is not supported yet.
+* See also TODOs.md.
 
 ## Usage
 This example shows how the library can be used to make a `struct` serializable:
@@ -133,31 +134,73 @@ const auto obj = NestingArray::fromJson(...);
 
 So beside the `BOOST_HANA_DEFINE_STRUCT` macro, the usage remains the same.
 
+#### Disadvantages
+* Use of ugly macro required
+* No context information for errors like type-mismatch available
+* Inherited members not considered
+* Support for enums is unlikely
+
+### Further examples
+Checkout the test cases for further examples. Relevant files are in
+the directories `lib/tests` and `generator/tests`.
+
 ## Install instructions
 
 ### Dependencies
+The following dependencies are required at build time. Note that Reflective RapidJSON itself
+and *none* of these dependencies are required at runtime by an application which makes use of
+Reflective RapidJSON.
+
 * C++ compiler and standard library supporting at least C++14
-* the CMake build system
-* LibTooling from Clang for the code generator
-* RapidJSON for JSON (de)serialization
-* Boost.Hana for using `BOOST_HANA_DEFINE_STRUCT` instead of code generator
-* `c++utilities` for various helper functions
+* the [CMake](https://cmake.org) build system
+* LibTooling from [Clang](https://clang.llvm.org) for the code generator
+* [RapidJSON](https://github.com/Tencent/rapidjson) for JSON (de)serialization
+* [Boost.Hana](http://www.boost.org/doc/libs/1_65_1/libs/hana/doc/html/index.html) for using
+  `BOOST_HANA_DEFINE_STRUCT` instead of code generator
+* [C++ utilities](https://github.com/Martchus/cpp-utilities) for various helper functions
 
-Optional:
+#### Optional
+* [CppUnit](https://www.freedesktop.org/wiki/Software/cppunit) for building and running the tests
+* [Doxygen](http://www.doxygen.org) for generating API documentation
+* [Graphviz](http://www.graphviz.org) for diagrams in the API documentation
 
-* CppUnit for building and running the tests
-* Doxygen for generating API documentation
-* Graphviz for diagrams in the API documentation
-
-Note that Reflective RapidJSON itself and none of these dependencies are required at runtime by an application
-which makes use of Reflective RapidJSON.
+#### Remarks
+* It is not required to use CMake as build system for your own project. However, when using a
+  different build system, there is no helper for adding the code generator to the build process
+  provided (so far).
 
 ### How to build
-Install all required dependencies and ensure the CMake script finds them. It is possible to build `c++utilities`
-together with `reflective-rapidjson` to simplify the build process. The following build script makes use of this.
-To use system `c++utilities`, just skip any lines with "`c++utilities`" in the following examples.
+#### 1. Install dependencies
+Install all required dependencies. Under a typical GNU/Linux system most of these dependencies
+can be installed via the package manager. Otherwise follow the links in the "Dependencies" section
+above.
 
-Get sources, eg. using Git:
+C++ utilities is likely not available as package. However, it is possible to build C++ utilities
+together with `reflective-rapidjson` to simplify the build process. The following build script makes
+use of this. (To use system C++ utilities, just skip any lines with "`c++utilities`" in the following
+examples.)
+
+#### 2. Make dependencies available
+
+When installing (some) of the dependencies at custom locations, it is likely neccassary to tell
+CMake where to find them. If you installed everything using packages provided by the system,
+you can skip this step of course.
+
+To specify custom locations, just set some environment variables before invoking CMake. This
+can likely be done in your IDE settings and of course at command line. Here is a Bash example:
+```
+export PATH=$CUSTOM_INSTALL_PREFIX/bin:$PATH
+export CMAKE_PREFIX_PATH=$CUSTOM_INSTALL_PREFIX:$CMAKE_PREFIX_PATH
+export CMAKE_LIBRARY_PATH=$CUSTOM_INSTALL_PREFIX/lib:$CMAKE_LIBRARY_PATH
+export CMAKE_INCLUDE_PATH=$CUSTOM_INSTALL_PREFIX/include:$CMAKE_INCLUDE_PATH
+```
+
+There are also a lot of [useful variables](https://cmake.org/Wiki/CMake_Useful_Variables)
+that can be specified as CMake arguments. It is also possible to create a
+[toolchain file](https://cmake.org/cmake/help/v3.10/manual/cmake-toolchains.7.html).
+
+
+#### 3. Get sources, eg. using Git:
 ```
 cd $SOURCES
 git clone https://github.com/Martchus/cpp-utilities.git c++utilities
@@ -166,7 +209,8 @@ git clone https://github.com/Martchus/reflective-rapidjson.git
 
 If you don't want to build the development version, just checkout the desired version tag.
 
-Here is an example for building with CMake and GNU Make:
+#### 4. Run the build script
+Here is an example for building with GNU Make:
 ```
 cd $BUILD_DIR
 # generate Makefile

@@ -24,8 +24,8 @@ using namespace ConversionUtilities;
 /*!
  * \brief The OverallTests class tests the overall functionality of the code generator (CLI and generator itself).
  */
-class OverallTests : public TestFixture {
-    CPPUNIT_TEST_SUITE(OverallTests);
+class JsonGeneratorTests : public TestFixture {
+    CPPUNIT_TEST_SUITE(JsonGeneratorTests);
     CPPUNIT_TEST(testGeneratorItself);
     CPPUNIT_TEST(testCLI);
     CPPUNIT_TEST(testIncludingGeneratedHeader);
@@ -35,9 +35,7 @@ class OverallTests : public TestFixture {
     CPPUNIT_TEST_SUITE_END();
 
 public:
-    void setUp();
-    void tearDown();
-
+    JsonGeneratorTests();
     void testGeneratorItself();
     void testCLI();
     void testIncludingGeneratedHeader();
@@ -46,24 +44,20 @@ public:
     void testMultipleInheritence();
 
 private:
-    vector<string> m_expectedCode;
+    const vector<string> m_expectedCode;
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(OverallTests);
+CPPUNIT_TEST_SUITE_REGISTRATION(JsonGeneratorTests);
 
-void OverallTests::setUp()
-{
-    m_expectedCode = toArrayOfLines(readFile(testFilePath("some_structs_json_serialization.h"), 2 * 1024));
-}
-
-void OverallTests::tearDown()
+JsonGeneratorTests::JsonGeneratorTests()
+    : m_expectedCode(toArrayOfLines(readFile(testFilePath("some_structs_json_serialization.h"), 2 * 1024)))
 {
 }
 
 /*!
  * \brief Tests whether the generator works by using it directly.
  */
-void OverallTests::testGeneratorItself()
+void JsonGeneratorTests::testGeneratorItself()
 {
     const string inputFilePath(testFilePath("some_structs.h"));
     const vector<const char *> inputFiles{ inputFilePath.data() };
@@ -77,11 +71,11 @@ void OverallTests::testGeneratorItself()
 }
 
 /*!
- * \brief Test the generator via CLI.
+ * \brief Tests the generator CLI explicitely.
  * \remarks Only available under UNIX (like) systems so far, because TESTUTILS_ASSERT_EXEC has not been implemented
  *          for other platforms.
  */
-void OverallTests::testCLI()
+void JsonGeneratorTests::testCLI()
 {
 #ifdef PLATFORM_UNIX
     string stdout, stderr;
@@ -95,8 +89,9 @@ void OverallTests::testCLI()
 
 /*!
  * \brief Tests whether the generated reflection code actually works.
+ * \remarks The following methods do the same. This test case is supposed to be the minimum example.
  */
-void OverallTests::testIncludingGeneratedHeader()
+void JsonGeneratorTests::testIncludingGeneratedHeader()
 {
     TestStruct test;
     test.someInt = 42;
@@ -114,7 +109,10 @@ void OverallTests::testIncludingGeneratedHeader()
     CPPUNIT_ASSERT_EQUAL(test.yetAnotherString, parsedTest.yetAnotherString);
 }
 
-void OverallTests::testNesting()
+/*!
+ * \brief Like testIncludingGeneratedHeader() but also for nested structures.
+ */
+void JsonGeneratorTests::testNesting()
 {
     TestStruct test;
     test.someInt = 42;
@@ -144,7 +142,7 @@ void OverallTests::testNesting()
 /*!
  * \brief Like testIncludingGeneratedHeader() but also tests single inheritence.
  */
-void OverallTests::testSingleInheritence()
+void JsonGeneratorTests::testSingleInheritence()
 {
     DerivedTestStruct test;
     test.someInt = 42;
@@ -170,7 +168,7 @@ void OverallTests::testSingleInheritence()
 /*!
  * \brief Like testIncludingGeneratedHeader() but also tests multiple inheritence.
  */
-void OverallTests::testMultipleInheritence()
+void JsonGeneratorTests::testMultipleInheritence()
 {
     MultipleDerivedTestStruct test;
     test.someInt = 42;

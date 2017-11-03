@@ -57,42 +57,12 @@ inline void push<ChronoUtilities::TimeSpan>(const ChronoUtilities::TimeSpan &ref
 
 template <>
 inline void pull<ChronoUtilities::DateTime>(ChronoUtilities::DateTime &reflectable,
-    RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ValueIterator &value, JsonDeserializationErrors *errors)
-{
-    std::string asString;
-    pull(asString, value, errors);
-    try {
-        reflectable = ChronoUtilities::DateTime::fromIsoStringGmt(asString.data());
-    } catch (const ConversionUtilities::ConversionException &) {
-        if (errors) {
-            errors->reportConversionError(JsonType::String);
-        }
-    }
-}
-
-template <>
-inline void pull<ChronoUtilities::DateTime>(ChronoUtilities::DateTime &reflectable,
     const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
     std::string asString;
     pull(asString, value, errors);
     try {
         reflectable = ChronoUtilities::DateTime::fromIsoStringGmt(asString.data());
-    } catch (const ConversionUtilities::ConversionException &) {
-        if (errors) {
-            errors->reportConversionError(JsonType::String);
-        }
-    }
-}
-
-template <>
-inline void pull<ChronoUtilities::TimeSpan>(ChronoUtilities::TimeSpan &reflectable,
-    RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ValueIterator &value, JsonDeserializationErrors *errors)
-{
-    std::string asString;
-    pull(asString, value, errors);
-    try {
-        reflectable = ChronoUtilities::TimeSpan::fromString(asString.data());
     } catch (const ConversionUtilities::ConversionException &) {
         if (errors) {
             errors->reportConversionError(JsonType::String);

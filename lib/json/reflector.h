@@ -299,16 +299,6 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAP
 // define functions to "pull" values from a RapidJSON array or object
 
 /*!
- * \brief Pulls the \a reflectable which has a custom type from the specified value.
- */
-template <typename Type,
-    Traits::DisableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>, std::is_enum<Type>,
-        Traits::IsSpecializationOf<Type, std::tuple>,
-        Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>>...>
-void pull(
-    Type &reflectable, RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ValueIterator &value, JsonDeserializationErrors *errors);
-
-/*!
  * \brief Pulls the \a reflectable which has a custom type from the specified object.
  * \remarks The definition of this function must be provided by the code generator or Boost.Hana.
  */
@@ -337,23 +327,6 @@ void pull(Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_N
 }
 
 /*!
- * \brief Pulls the integer/float/boolean from the specified value iterator which is supposed and checked to contain the right type.
- */
-template <typename Type, Traits::EnableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>>...>
-inline void pull(
-    Type &reflectable, RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ValueIterator &value, JsonDeserializationErrors *errors)
-{
-    if (!value->Is<Type>()) {
-        if (errors) {
-            errors->reportTypeMismatch<Type>(value->GetType());
-        }
-        return;
-    }
-    reflectable = value->Get<Type>();
-    ++value;
-}
-
-/*!
  * \brief Pulls the integer/float/boolean from the specified value which is supposed and checked to contain the right type.
  */
 template <typename Type, Traits::EnableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>>...>
@@ -367,23 +340,6 @@ inline void pull(
         return;
     }
     reflectable = value.Get<Type>();
-}
-
-/*!
- * \brief Pulls the std::string from the specified value iterator which is supposed and checked to contain a string.
- */
-template <>
-inline void pull<std::string>(std::string &reflectable, RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ValueIterator &value,
-    JsonDeserializationErrors *errors)
-{
-    if (!value->IsString()) {
-        if (errors) {
-            errors->reportTypeMismatch<std::string>(value->GetType());
-        }
-        return;
-    }
-    reflectable = value->GetString();
-    ++value;
 }
 
 /*!
@@ -407,43 +363,6 @@ inline void pull<std::string>(
  */
 template <typename Type, Traits::EnableIf<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>...>
 void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstArray array, JsonDeserializationErrors *errors);
-
-/*!
- * \brief Pulls the speciified \a reflectable which is an iteratable without reserve() method from the specified value iterator which is checked to contain an array.
- */
-template <typename Type,
-    Traits::EnableIf<Traits::IsIteratable<Type>, Traits::Not<Traits::IsReservable<Type>>,
-        Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>...>
-void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ValueIterator &value, JsonDeserializationErrors *errors)
-{
-    if (!value->IsArray()) {
-        if (errors) {
-            errors->reportTypeMismatch<Type>(value->GetType());
-        }
-        return;
-    }
-    pull(reflectable, value->GetArray(), errors);
-    ++value;
-}
-
-/*!
- * \brief Pulls the speciified \a reflectable which is an iteratable with reserve() method from the specified value iterator which is checked to contain an array.
- */
-template <typename Type,
-    Traits::EnableIf<Traits::IsIteratable<Type>, Traits::IsReservable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>...>
-void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ValueIterator &value, JsonDeserializationErrors *errors)
-{
-    if (!value->IsArray()) {
-        if (errors) {
-            errors->reportTypeMismatch<Type>(value->GetType());
-        }
-        return;
-    }
-    auto array = value->GetArray();
-    reflectable.reserve(array.Size());
-    pull(reflectable, array, errors);
-    ++value;
-}
 
 /*!
  * \brief Pulls the speciified \a reflectable which is an iteratable without reserve() method from the specified value which is checked to contain an array.
@@ -530,31 +449,7 @@ template <class Tuple> struct TuplePullHelper<Tuple, 1> {
 } // namespace Detail
 
 /*!
- * \brief Pulls the speciified \a reflectable which is tuple from the specified value iterator which is checked to contain an array.
- */
-template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::tuple>>...>
-void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ValueIterator &value, JsonDeserializationErrors *errors)
-{
-    if (!value->IsArray()) {
-        if (errors) {
-            errors->reportTypeMismatch<Type>(value->GetType());
-        }
-        return;
-    }
-    auto array = value->GetArray();
-    if (array.Size() != std::tuple_size<Type>::value) {
-        if (errors) {
-            // FIXME: report expected and actual size
-            errors->reportArraySizeMismatch();
-        }
-        return;
-    }
-    Detail::TuplePullHelper<Type, std::tuple_size<Type>::value>::pull(reflectable, array, errors);
-    ++value;
-}
-
-/*!
- * \brief Pulls the speciified \a reflectable which is tuple from the specified value iterator which is checked to contain an array.
+ * \brief Pulls the speciified \a reflectable which is tuple from the specified value which is checked to contain an array.
  */
 template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::tuple>>...>
 void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
@@ -574,6 +469,16 @@ void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<c
         return;
     }
     Detail::TuplePullHelper<Type, std::tuple_size<Type>::value>::pull(reflectable, array, errors);
+}
+
+/*!
+ * \brief Pulls the speciified \a reflectable from the specified value iterator which is checked to contain the right type.
+ */
+template <typename Type>
+inline void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ValueIterator &value, JsonDeserializationErrors *errors)
+{
+    pull(reflectable, *value, errors);
+    ++value;
 }
 
 /*!

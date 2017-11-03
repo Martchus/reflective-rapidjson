@@ -7,10 +7,20 @@ endif()
 set(REFLECTION_GENERATOR_MODULE_LOADED YES)
 
 # find code generator
-set(REFLECTION_GENERATOR_EXECUTABLE reflective_rapidjson_generator)
-if(CMAKE_CROSSCOMPILING OR NOT TARGET "${REFLECTION_GENERATOR_EXECUTABLE}")
-    # find "reflective_rapidjson_moc" from path
-    find_program(REFLECTION_GENERATOR_EXECUTABLE "${REFLECTION_GENERATOR_EXECUTABLE}")
+set(DEFAULT_REFLECTION_GENERATOR_EXECUTABLE "reflective_rapidjson_generator")
+set(CUSTOM_REFLECTION_GENERATOR_EXECUTABLE "" CACHE FILEPATH "path to executable of reflection generator")
+if(CUSTOM_REFLECTION_GENERATOR_EXECUTABLE)
+    # use custom generator executable
+    if(NOT FILE "${CUSTOM_REFLECTION_GENERATOR_EXECUTABLE}")
+        message(FATAL_ERROR "The specified code generator executable \"${CUSTOM_REFLECTION_GENERATOR_EXECUTABLE}\" does not exist.")
+    endif()
+    set(REFLECTION_GENERATOR_EXECUTABLE "${CUSTOM_REFLECTION_GENERATOR_EXECUTABLE}")
+elseif(CMAKE_CROSSCOMPILING OR NOT TARGET "${DEFAULT_REFLECTION_GENERATOR_EXECUTABLE}")
+    # find native/external "reflective_rapidjson_generator"
+    find_program(REFLECTION_GENERATOR_EXECUTABLE "${DEFAULT_REFLECTION_GENERATOR_EXECUTABLE}")
+else()
+    # use "reflective_rapidjson_generator" target
+    set(REFLECTION_GENERATOR_EXECUTABLE "${DEFAULT_REFLECTION_GENERATOR_EXECUTABLE}")
 endif()
 if(NOT REFLECTION_GENERATOR_EXECUTABLE)
     message(FATAL_ERROR "Unable to find executable of generator for reflection code.")

@@ -45,7 +45,12 @@ list(APPEND PRIVATE_LIBRARIES clangTooling)
 # also add reflective_rapidjson which is header-only but might pull additional include dirs for RapidJSON
 list(APPEND PRIVATE_LIBRARIES reflective_rapidjson)
 
-# trigger code generator because the tests already contain structs to be (de)serialized
+# include modules to apply configuration
+include(BasicConfig)
+include(WindowsResources)
+include(AppTarget)
+
+# trigger code generator for tests because the tests already contain structs to be (de)serialized
 include(ReflectionGenerator)
 add_reflection_generator_invocation(
     INPUT_FILES
@@ -58,9 +63,6 @@ add_reflection_generator_invocation(
 )
 
 # include modules to apply configuration
-include(BasicConfig)
-include(WindowsResources)
-include(AppTarget)
 include(TestTarget)
 include(ShellCompletion)
 include(Doxygen)

@@ -12,4 +12,4 @@
 - [ ] Support `std::unique_ptr` and `std::shared_ptr`
 - [ ] Support `std::map` and `std::unordered_map`
 - [ ] Support `std::any`
-- [ ] Support/document customized (de)serialization (eg. serialize some `DateTime` object to ISO string representation)
+- [X] Support/document customized (de)serialization (eg. serialize some `DateTime` object to ISO string representation)

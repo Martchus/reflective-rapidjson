@@ -7,6 +7,7 @@ set(META_PROJECT_TYPE library)
 set(HEADER_FILES
     json/reflector.h
     json/reflector-boosthana.h
+    json/reflector-chronoutilities.h
     json/serializable.h
     json/errorhandling.h
 )
@@ -18,6 +19,7 @@ set(TEST_SRC_FILES
     tests/cppunit.cpp
     tests/jsonreflector.cpp
     tests/jsonreflector-boosthana.cpp
+    tests/jsonreflector-chronoutilities.cpp
 )
 set(CMAKE_MODULE_FILES
     cmake/modules/ReflectionGenerator.cmake

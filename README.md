@@ -144,6 +144,15 @@ So beside the `BOOST_HANA_DEFINE_STRUCT` macro, the usage remains the same.
 Checkout the test cases for further examples. Relevant files are in
 the directories `lib/tests` and `generator/tests`.
 
+### Custom (de)serialization
+Sometimes it is appropriate to implement custom (de)serialization. For instance, a
+custom object representing a time value should likey be serialized as a string rather
+than an object with the internal data members.
+
+An example for such custom (de)serialization can be found in the file
+`json/reflector-chronoutilities.h`. It provides (de)serialization of `DateTime` and
+`TimeSpan` objects from the C++ utilities library.
+
 ## Install instructions
 
 ### Dependencies

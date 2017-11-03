@@ -22,8 +22,9 @@ namespace ReflectiveRapidJSON {
  * \brief The JsonDeserializationErrorKind enum specifies which kind of error happend when populating variables from parsing results.
  */
 enum class JsonDeserializationErrorKind : byte {
-    TypeMismatch,
-    ArraySizeMismatch,
+    TypeMismatch, /**< The expected type does not match the type actually present in the JSON document. */
+    ArraySizeMismatch, /**< The expected array size does not match the actual size of the JSON array. A fixed size is expected when deserializing an std::tuple. */
+    ConversionError, /**< The expected type matches the type present in the JSON document, but further conversion of the value failed. */
 };
 
 /*!
@@ -38,6 +39,8 @@ enum class JsonType : byte {
     Array,
     Object,
 };
+
+// define helper functions which return the JsonType for the C++ type specified as template parameter
 
 template <typename Type,
     Traits::EnableIf<Traits::Not<std::is_same<Type, bool>>, Traits::Any<std::is_integral<Type>, std::is_floating_point<Type>>>...>
@@ -75,8 +78,6 @@ constexpr JsonType jsonType()
 constexpr JsonType jsonType(RAPIDJSON_NAMESPACE::Type type)
 {
     switch (type) {
-    case RAPIDJSON_NAMESPACE::kNullType:
-        return JsonType::Null;
     case RAPIDJSON_NAMESPACE::kFalseType:
     case RAPIDJSON_NAMESPACE::kTrueType:
         return JsonType::Bool;
@@ -146,6 +147,7 @@ struct JsonDeserializationErrors : public std::vector<JsonDeserializationError> 
 
     template <typename ExpectedType> void reportTypeMismatch(RAPIDJSON_NAMESPACE::Type presentType);
     void reportArraySizeMismatch();
+    void reportConversionError(JsonType jsonType);
 
     /// \brief The name of the class or struct which is currently being processed.
     const char *currentRecord;
@@ -154,7 +156,10 @@ struct JsonDeserializationErrors : public std::vector<JsonDeserializationError> 
     /// \brief The index in the array which is currently processed.
     std::size_t currentIndex;
     /// \brief The list of fatal error types in form of flags.
-    enum class ThrowOn : unsigned char { None = 0, TypeMismatch = 0x1, ArraySizeMismatch = 0x2 } throwOn;
+    enum class ThrowOn : byte { None = 0, TypeMismatch = 0x1, ArraySizeMismatch = 0x2, ConversionError = 0x4 } throwOn;
+
+private:
+    void throwMaybe(ThrowOn on) const;
 };
 
 /*!
@@ -173,7 +178,19 @@ inline JsonDeserializationErrors::JsonDeserializationErrors()
  */
 constexpr JsonDeserializationErrors::ThrowOn operator|(JsonDeserializationErrors::ThrowOn lhs, JsonDeserializationErrors::ThrowOn rhs)
 {
-    return static_cast<JsonDeserializationErrors::ThrowOn>(static_cast<unsigned char>(lhs) | static_cast<unsigned char>(rhs));
+    return static_cast<JsonDeserializationErrors::ThrowOn>(static_cast<byte>(lhs) | static_cast<byte>(rhs));
+}
+
+/*!
+ * \brief Throws the last error if its type is considered critical.
+ * \param on Specifies the type of the last error as ThrowOn mask.
+ * \remarks Behaviour is undefined if no error is present.
+ */
+inline void JsonDeserializationErrors::throwMaybe(ThrowOn on) const
+{
+    if (static_cast<byte>(throwOn) & static_cast<byte>(on)) {
+        throw back();
+    }
 }
 
 /*!
@@ -183,9 +200,7 @@ template <typename ExpectedType> inline void JsonDeserializationErrors::reportTy
 {
     emplace_back(
         JsonDeserializationErrorKind::TypeMismatch, jsonType<ExpectedType>(), jsonType(presentType), currentRecord, currentMember, currentIndex);
-    if (static_cast<unsigned char>(throwOn) & static_cast<unsigned char>(ThrowOn::TypeMismatch)) {
-        throw back();
-    }
+    throwMaybe(ThrowOn::TypeMismatch);
 }
 
 /*!
@@ -196,9 +211,18 @@ template <typename ExpectedType> inline void JsonDeserializationErrors::reportTy
 inline void JsonDeserializationErrors::reportArraySizeMismatch()
 {
     emplace_back(JsonDeserializationErrorKind::ArraySizeMismatch, JsonType::Array, JsonType::Array, currentRecord, currentMember, currentIndex);
-    if (static_cast<unsigned char>(throwOn) & static_cast<unsigned char>(ThrowOn::ArraySizeMismatch)) {
-        throw back();
-    }
+    throwMaybe(ThrowOn::ArraySizeMismatch);
+}
+
+/*!
+ * \brief Reports a conversion error. An error of that kind occurs when the JSON type matched the expected type, but further conversion of the value has failed.
+ * \todo Allow specifying the error message.
+ * \remarks This can happen when doing custom mapping (eg. when interpreting a JSON string as time value).
+ */
+inline void JsonDeserializationErrors::reportConversionError(JsonType jsonType)
+{
+    emplace_back(JsonDeserializationErrorKind::ConversionError, jsonType, jsonType, currentRecord, currentMember, currentIndex);
+    throwMaybe(ThrowOn::ConversionError);
 }
 
 } // namespace ReflectiveRapidJSON

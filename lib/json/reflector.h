@@ -24,6 +24,8 @@ namespace ReflectiveRapidJSON {
 
 template <typename Type> struct JsonSerializable;
 
+namespace JsonReflector {
+
 /*!
  * \brief Serializes the specified JSON \a document.
  */
@@ -47,8 +49,6 @@ inline RAPIDJSON_NAMESPACE::Document parseJsonDocFromString(const char *json, st
     }
     return document;
 }
-
-namespace JsonReflector {
 
 // define functions to "push" values to a RapidJSON array or object
 

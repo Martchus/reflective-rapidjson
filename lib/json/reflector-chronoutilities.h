@@ -21,36 +21,18 @@ namespace JsonReflector {
 
 template <>
 inline void push<ChronoUtilities::DateTime>(
-    const ChronoUtilities::DateTime &reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
+    const ChronoUtilities::DateTime &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     const std::string str(reflectable.toIsoString());
-    value.PushBack(RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>(str.data(), str.size(), allocator), allocator);
-}
-
-template <>
-inline void push<ChronoUtilities::DateTime>(const ChronoUtilities::DateTime &reflectable, const char *name, RAPIDJSON_NAMESPACE::Value::Object &value,
-    RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
-{
-    const std::string str(reflectable.toIsoString());
-    value.AddMember(RAPIDJSON_NAMESPACE::StringRef(name),
-        RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>(str.data(), str.size(), allocator), allocator);
+    value.SetString(str.data(), str.size(), allocator);
 }
 
 template <>
 inline void push<ChronoUtilities::TimeSpan>(
-    const ChronoUtilities::TimeSpan &reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
+    const ChronoUtilities::TimeSpan &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     const std::string str(reflectable.toString());
-    value.PushBack(RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>(str.data(), str.size(), allocator), allocator);
-}
-
-template <>
-inline void push<ChronoUtilities::TimeSpan>(const ChronoUtilities::TimeSpan &reflectable, const char *name, RAPIDJSON_NAMESPACE::Value::Object &value,
-    RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
-{
-    const std::string str(reflectable.toString());
-    value.AddMember(RAPIDJSON_NAMESPACE::StringRef(name),
-        RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>(str.data(), str.size(), allocator), allocator);
+    value.SetString(str.data(), str.size(), allocator);
 }
 
 // define functions to "pull" values from a RapidJSON array or object
@@ -59,10 +41,10 @@ template <>
 inline void pull<ChronoUtilities::DateTime>(ChronoUtilities::DateTime &reflectable,
     const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
-    std::string asString;
-    pull(asString, value, errors);
+    std::string str;
+    pull(str, value, errors);
     try {
-        reflectable = ChronoUtilities::DateTime::fromIsoStringGmt(asString.data());
+        reflectable = ChronoUtilities::DateTime::fromIsoStringGmt(str.data());
     } catch (const ConversionUtilities::ConversionException &) {
         if (errors) {
             errors->reportConversionError(JsonType::String);
@@ -74,10 +56,10 @@ template <>
 inline void pull<ChronoUtilities::TimeSpan>(ChronoUtilities::TimeSpan &reflectable,
     const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
-    std::string asString;
-    pull(asString, value, errors);
+    std::string str;
+    pull(str, value, errors);
     try {
-        reflectable = ChronoUtilities::TimeSpan::fromString(asString.data());
+        reflectable = ChronoUtilities::TimeSpan::fromString(str.data());
     } catch (const ConversionUtilities::ConversionException &) {
         if (errors) {
             errors->reportConversionError(JsonType::String);

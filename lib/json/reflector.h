@@ -85,18 +85,14 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAP
 /*!
  * \brief Pushes the specified \a reflectable which has custom type as a member to the specified object.
  */
-template <typename Type,
-    Traits::DisableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>, std::is_enum<Type>,
-        Traits::IsSpecializationOf<Type, std::tuple>, Traits::IsIteratable<Type>>...>
+template <typename Type, Traits::EnableIf<std::is_base_of<JsonSerializable<Type>, Type>>...>
 void push(
     const Type &reflectable, const char *name, RAPIDJSON_NAMESPACE::Value::Object &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator);
 
 /*!
  * \brief Pushes the specified \a reflectable as a member to the specified object.
  */
-template <typename Type,
-    Traits::EnableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>, std::is_enum<Type>,
-        Traits::IsSpecializationOf<Type, std::tuple>, Traits::IsIteratable<Type>>...>
+template <typename Type, Traits::DisableIf<std::is_base_of<JsonSerializable<Type>, Type>>...>
 void push(
     const Type &reflectable, const char *name, RAPIDJSON_NAMESPACE::Value::Object &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator);
 
@@ -243,9 +239,7 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAP
 /*!
  * \brief Pushes the specified \a reflectable which has custom type as a member to the specified object.
  */
-template <typename Type,
-    Traits::DisableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>, std::is_enum<Type>,
-        Traits::IsSpecializationOf<Type, std::tuple>, Traits::IsIteratable<Type>>...>
+template <typename Type, Traits::EnableIf<std::is_base_of<JsonSerializable<Type>, Type>>...>
 void push(
     const Type &reflectable, const char *name, RAPIDJSON_NAMESPACE::Value::Object &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
@@ -258,9 +252,7 @@ void push(
 /*!
  * \brief Pushes the specified \a reflectable as a member to the specified object.
  */
-template <typename Type,
-    Traits::EnableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>, std::is_enum<Type>,
-        Traits::IsSpecializationOf<Type, std::tuple>, Traits::IsIteratable<Type>>...>
+template <typename Type, Traits::DisableIf<std::is_base_of<JsonSerializable<Type>, Type>>...>
 void push(
     const Type &reflectable, const char *name, RAPIDJSON_NAMESPACE::Value::Object &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {

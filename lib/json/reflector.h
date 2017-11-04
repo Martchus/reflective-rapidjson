@@ -15,6 +15,7 @@
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
 
+#include <limits>
 #include <string>
 #include <tuple>
 
@@ -25,6 +26,15 @@ namespace ReflectiveRapidJSON {
 template <typename Type> struct JsonSerializable;
 
 namespace JsonReflector {
+
+/*!
+ * \brief Casts the specified \a size to the size type used by RapidJSON ensuring no overflow happens.
+ */
+constexpr RAPIDJSON_NAMESPACE::SizeType rapidJsonSize(std::size_t size)
+{
+    return size > std::numeric_limits<RAPIDJSON_NAMESPACE::SizeType>::max() ? std::numeric_limits<RAPIDJSON_NAMESPACE::SizeType>::max()
+                                                                            : static_cast<RAPIDJSON_NAMESPACE::SizeType>(size);
+}
 
 /*!
  * \brief Serializes the specified JSON \a document.

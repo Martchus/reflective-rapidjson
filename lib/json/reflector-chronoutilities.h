@@ -24,7 +24,7 @@ inline void push<ChronoUtilities::DateTime>(
     const ChronoUtilities::DateTime &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     const std::string str(reflectable.toIsoString());
-    value.SetString(str.data(), str.size(), allocator);
+    value.SetString(str.data(), rapidJsonSize(str.size()), allocator);
 }
 
 template <>
@@ -32,7 +32,7 @@ inline void push<ChronoUtilities::TimeSpan>(
     const ChronoUtilities::TimeSpan &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     const std::string str(reflectable.toString());
-    value.SetString(str.data(), str.size(), allocator);
+    value.SetString(str.data(), rapidJsonSize(str.size()), allocator);
 }
 
 // define functions to "pull" values from a RapidJSON array or object

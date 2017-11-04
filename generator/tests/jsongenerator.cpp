@@ -32,6 +32,7 @@ class JsonGeneratorTests : public TestFixture {
     CPPUNIT_TEST(testNesting);
     CPPUNIT_TEST(testSingleInheritence);
     CPPUNIT_TEST(testMultipleInheritence);
+    CPPUNIT_TEST(testCustomSerialization);
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -42,6 +43,7 @@ public:
     void testNesting();
     void testSingleInheritence();
     void testMultipleInheritence();
+    void testCustomSerialization();
 
 private:
     const vector<string> m_expectedCode;
@@ -189,6 +191,23 @@ void JsonGeneratorTests::testMultipleInheritence()
     CPPUNIT_ASSERT_EQUAL(test.yetAnotherString, parsedTest.yetAnotherString);
     CPPUNIT_ASSERT_EQUAL(test.someBool, parsedTest.someBool);
     CPPUNIT_ASSERT_EQUAL(test.arrayOfStrings, parsedTest.arrayOfStrings);
+}
+
+/*!
+ * \brief Like testIncludingGeneratedHeader() but also tests custom (de)serialization.
+ */
+void JsonGeneratorTests::testCustomSerialization()
+{
+    const StructWithCustomTypes test;
+    const string str("{\"dt\":\"2017-04-02T15:31:21.165125\",\"ts\":\"03:15:19.125\"}");
+
+    // test serialization
+    CPPUNIT_ASSERT_EQUAL(str, string(test.toJson().GetString()));
+
+    // test deserialization
+    const StructWithCustomTypes parsedTest(StructWithCustomTypes::fromJson(str));
+    CPPUNIT_ASSERT_EQUAL(test.dt.toString(), parsedTest.dt.toString());
+    CPPUNIT_ASSERT_EQUAL(test.ts.toString(), parsedTest.ts.toString());
 }
 
 // include file required for reflection of TestStruct and other structs defined in structs.h

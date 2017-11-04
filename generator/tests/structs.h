@@ -1,7 +1,11 @@
 #ifndef REFLECTIVE_RAPIDJSON_TESTS_STRUCTS_H
 #define REFLECTIVE_RAPIDJSON_TESTS_STRUCTS_H
 
+#include "../../lib/json/reflector-chronoutilities.h"
 #include "../../lib/json/serializable.h"
+
+#include <c++utilities/chrono/datetime.h>
+#include <c++utilities/chrono/timespan.h>
 
 #include <deque>
 #include <list>
@@ -32,7 +36,7 @@ struct NestedTestStruct : public JsonSerializable<NestedTestStruct> {
 
 /*!
  * \brief The AnotherTestStruct struct inherits from JsonSerializable and should hence have functional fromJson()
- *        and toJson() methods. This is asserted in OverallTests::testInheritence();
+ *        and toJson() methods. This is asserted in OverallTests::testSingleInheritence();
  */
 struct AnotherTestStruct : public JsonSerializable<AnotherTestStruct> {
     vector<string> arrayOfStrings{ "a", "b", "cd" };
@@ -55,13 +59,22 @@ struct NonSerializable {
 
 /*!
  * \brief The MultipleDerivedTestStruct struct inherits from JsonSerializable and should hence have functional fromJson()
- *        and toJson() methods. This is asserted in OverallTests::testInheritence();
+ *        and toJson() methods. This is asserted in OverallTests::testMultipleInheritence();
  */
 struct MultipleDerivedTestStruct : public TestStruct,
                                    public AnotherTestStruct,
                                    public NonSerializable,
                                    public JsonSerializable<MultipleDerivedTestStruct> {
     bool someBool = false;
+};
+
+/*!
+ * \brief The StructWithCustomTypes struct inherits from JsonSerializable and should hence have functional fromJson()
+ *        and toJson() methods. This is asserted in OverallTests::testCustomSerialization();
+ */
+struct StructWithCustomTypes : public JsonSerializable<StructWithCustomTypes> {
+    ChronoUtilities::DateTime dt = ChronoUtilities::DateTime::fromDateAndTime(2017, 4, 2, 15, 31, 21, 165.125);
+    ChronoUtilities::TimeSpan ts = ChronoUtilities::TimeSpan::fromHours(3.25) + ChronoUtilities::TimeSpan::fromSeconds(19.125);
 };
 
 #endif // REFLECTIVE_RAPIDJSON_TESTS_STRUCTS_H

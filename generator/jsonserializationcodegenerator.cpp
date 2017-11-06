@@ -7,8 +7,17 @@
 #include <iostream>
 
 using namespace std;
+using namespace ApplicationUtilities;
 
 namespace ReflectiveRapidJSON {
+
+JsonSerializationCodeGenerator::Options::Options()
+    : additionalClassesArg("json-classes", '\0', "specifies additional classes to consider for JSON serialization")
+{
+    additionalClassesArg.setCombinable(true);
+    additionalClassesArg.setValueNames({ "class-name" });
+    additionalClassesArg.setRequiredValueCount(Argument::varValueCount);
+}
 
 /*!
  * \brief Prints an LLVM string reference without instantiating a std::string first.
@@ -29,8 +38,10 @@ void JsonSerializationCodeGenerator::addDeclaration(clang::Decl *decl)
             return;
         }
         // add classes derived from any instantiation of "ReflectiveRapidJSON::JsonSerializable"
-        if (inheritsFromInstantiationOf(record, JsonSerializable<void>::qualifiedName)) {
-            m_relevantClasses.emplace_back(record->getQualifiedNameAsString(), record);
+        // and also add classes explicitely specified via "--additional-classes" argument
+        string qualifiedName(qualifiedNameIfRelevant(record));
+        if (!qualifiedName.empty()) {
+            m_relevantClasses.emplace_back(move(qualifiedName), record);
         }
         break;
     }
@@ -104,6 +115,31 @@ void JsonSerializationCodeGenerator::generate(ostream &os) const
     // close namespace ReflectiveRapidJSON::JsonReflector
     os << "} // namespace JsonReflector\n"
           "} // namespace ReflectiveRapidJSON\n";
+}
+
+/*!
+ * \brief Returns the qualified name of the specified \a record if it is considered relevant.
+ */
+string JsonSerializationCodeGenerator::qualifiedNameIfRelevant(clang::CXXRecordDecl *record) const
+{
+    // consider all classes inheriting from an instantiation of "JsonSerializable" relevant
+    if (inheritsFromInstantiationOf(record, JsonSerializable<void>::qualifiedName)) {
+        return record->getQualifiedNameAsString();
+    }
+
+    // consider all classes specified via "--additional-classes" argument relevant
+    if (!m_options.additionalClassesArg.isPresent()) {
+        return string();
+    }
+
+    const string qualifiedName(record->getQualifiedNameAsString());
+    for (const char *className : m_options.additionalClassesArg.values()) {
+        if (className == qualifiedName) {
+            return qualifiedName;
+        }
+    }
+
+    return string();
 }
 
 std::vector<const JsonSerializationCodeGenerator::RelevantClass *> JsonSerializationCodeGenerator::findRelevantBaseClasses(

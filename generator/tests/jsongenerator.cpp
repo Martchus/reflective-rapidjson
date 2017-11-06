@@ -66,8 +66,9 @@ void JsonGeneratorTests::testGeneratorItself()
     const vector<const char *> clangOptions{};
 
     stringstream buffer;
+    JsonSerializationCodeGenerator::Options jsonOptions;
     CodeFactory factory(TestApplication::appPath(), inputFiles, clangOptions, buffer);
-    factory.addGenerator<JsonSerializationCodeGenerator>();
+    factory.addGenerator<JsonSerializationCodeGenerator>(jsonOptions);
     CPPUNIT_ASSERT(factory.run());
     assertEqualityLinewise(m_expectedCode, toArrayOfLines(buffer.str()));
 }

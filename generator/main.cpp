@@ -27,8 +27,9 @@ int main(int argc, char *argv[])
 
     // setup argument parser
     ArgumentParser parser;
+    OperationArgument generateArg("generate", 'g', "runs the code generator");
+    generateArg.setImplicit(true);
     ConfigValueArgument inputFileArg("input-file", 'i', "specifies the input file", { "path" });
-    inputFileArg.setRequired(true);
     ConfigValueArgument outputFileArg("output-file", 'o', "specifies the output file", { "path" });
     Argument generatorsArg("generators", 'g', "specifies the generators (by default all generators are enabled)");
     generatorsArg.setValueNames({ "json" });
@@ -36,9 +37,11 @@ int main(int argc, char *argv[])
     generatorsArg.setRequiredValueCount(Argument::varValueCount);
     generatorsArg.setCombinable(true);
     ConfigValueArgument clangOptionsArg("clang-opt", 'c', "specifies an argument to be passed to Clang", { "option" });
+    JsonSerializationCodeGenerator::Options jsonOptions;
     HelpArgument helpArg(parser);
     NoColorArgument noColorArg;
-    parser.setMainArguments({ &inputFileArg, &outputFileArg, &generatorsArg, &clangOptionsArg, &noColorArg, &helpArg });
+    generateArg.setSubArguments({ &inputFileArg, &outputFileArg, &generatorsArg, &clangOptionsArg, &jsonOptions.additionalClassesArg });
+    parser.setMainArguments({ &generateArg, &noColorArg, &helpArg });
 
     // parse arguments
     parser.parseArgsOrExit(argc, argv);
@@ -67,7 +70,7 @@ int main(int argc, char *argv[])
             // find and construct generators by name
             for (const char *generatorName : generatorsArg.values(0)) {
                 if (!strcmp(generatorName, "json")) {
-                    factory.addGenerator<JsonSerializationCodeGenerator>();
+                    factory.addGenerator<JsonSerializationCodeGenerator>(jsonOptions);
                 } else {
                     cerr << Phrases::Error << "The specified generator \"" << generatorName << "\" does not exist." << Phrases::EndFlush;
                     return -5;
@@ -75,7 +78,7 @@ int main(int argc, char *argv[])
             }
         } else {
             // add default generators
-            factory.addGenerator<JsonSerializationCodeGenerator>();
+            factory.addGenerator<JsonSerializationCodeGenerator>(jsonOptions);
         }
 
         // read AST elements from input files and run the code generator

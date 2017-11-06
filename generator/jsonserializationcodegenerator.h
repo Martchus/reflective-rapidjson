@@ -3,6 +3,8 @@
 
 #include "./codegenerator.h"
 
+#include <c++utilities/application/argumentparser.h>
+
 namespace ReflectiveRapidJSON {
 
 /*!
@@ -11,30 +13,41 @@ namespace ReflectiveRapidJSON {
  */
 class JsonSerializationCodeGenerator : public CodeGenerator {
 public:
-    JsonSerializationCodeGenerator(CodeFactory &factory);
+    struct Options {
+        Options();
 
-    void addDeclaration(clang::Decl *decl) override;
-    void generate(std::ostream &os) const override;
+        ApplicationUtilities::Argument additionalClassesArg;
+    };
 
 private:
     struct RelevantClass {
-        explicit RelevantClass(const std::string &qualifiedName, clang::CXXRecordDecl *record);
+        explicit RelevantClass(std::string &&qualifiedName, clang::CXXRecordDecl *record);
 
         std::string qualifiedName;
         clang::CXXRecordDecl *record;
     };
 
+public:
+    JsonSerializationCodeGenerator(CodeFactory &factory, const Options &options);
+
+    void addDeclaration(clang::Decl *decl) override;
+    void generate(std::ostream &os) const override;
+    std::string qualifiedNameIfRelevant(clang::CXXRecordDecl *record) const;
+
+private:
     std::vector<const RelevantClass *> findRelevantBaseClasses(const RelevantClass &relevantClass) const;
 
     std::vector<RelevantClass> m_relevantClasses;
+    const Options &m_options;
 };
 
-inline JsonSerializationCodeGenerator::JsonSerializationCodeGenerator(CodeFactory &factory)
+inline JsonSerializationCodeGenerator::JsonSerializationCodeGenerator(CodeFactory &factory, const Options &options)
     : CodeGenerator(factory)
+    , m_options(options)
 {
 }
 
-inline JsonSerializationCodeGenerator::RelevantClass::RelevantClass(const std::string &qualifiedName, clang::CXXRecordDecl *record)
+inline JsonSerializationCodeGenerator::RelevantClass::RelevantClass(std::string &&qualifiedName, clang::CXXRecordDecl *record)
     : qualifiedName(qualifiedName)
     , record(record)
 {

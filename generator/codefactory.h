@@ -33,7 +33,7 @@ public:
     ~CodeFactory();
 
     const std::vector<std::unique_ptr<CodeGenerator>> &generators() const;
-    template <typename GeneratorType> void addGenerator();
+    template <typename GeneratorType, typename... Args> void addGenerator(Args &&... args);
 
     bool run();
     clang::CompilerInstance *compilerInstance();
@@ -55,9 +55,9 @@ private:
     clang::CompilerInstance *m_compilerInstance;
 };
 
-template <typename GeneratorType> void CodeFactory::addGenerator()
+template <typename GeneratorType, typename... Args> void CodeFactory::addGenerator(Args &&... args)
 {
-    m_generators.emplace_back(std::make_unique<GeneratorType>(*this));
+    m_generators.emplace_back(std::make_unique<GeneratorType>(*this, std::forward<Args>(args)...));
 }
 
 inline const std::vector<std::unique_ptr<CodeGenerator>> &CodeFactory::generators() const

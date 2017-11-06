@@ -32,7 +32,7 @@ function(add_reflection_generator_invocation)
     # parse arguments
     set(OPTIONAL_ARGS)
     set(ONE_VALUE_ARGS OUTPUT_DIRECTORY)
-    set(MULTI_VALUE_ARGS INPUT_FILES GENERATORS OUTPUT_LISTS)
+    set(MULTI_VALUE_ARGS INPUT_FILES GENERATORS OUTPUT_LISTS CLANG_OPTIONS JSON_CLASSES)
     cmake_parse_arguments(ARGS "${OPTIONAL_ARGS}" "${ONE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN})
 
     # determine file name or file path if none specified
@@ -48,9 +48,11 @@ function(add_reflection_generator_invocation)
         add_custom_command(
             OUTPUT "${OUTPUT_FILE}"
             COMMAND "${REFLECTION_GENERATOR_EXECUTABLE}"
-                -o "${OUTPUT_FILE}"
-                -i "${INPUT_FILE}"
-                -g ${ARGS_GENERATORS}
+                --output-file "${OUTPUT_FILE}"
+                --input-file "${INPUT_FILE}"
+                --generators ${ARGS_GENERATORS}
+                --clang-opt ${ARGS_CLANG_OPTIONS}
+                --json-classes ${ARGS_JSON_CLASSES}
             DEPENDS "${INPUT_FILE}"
             WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
             COMMENT "Generating reflection code for ${INPUT_FILE}"

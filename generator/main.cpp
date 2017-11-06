@@ -36,7 +36,8 @@ int main(int argc, char *argv[])
     generatorsArg.setPreDefinedCompletionValues("json");
     generatorsArg.setRequiredValueCount(Argument::varValueCount);
     generatorsArg.setCombinable(true);
-    ConfigValueArgument clangOptionsArg("clang-opt", 'c', "specifies an argument to be passed to Clang", { "option" });
+    ConfigValueArgument clangOptionsArg("clang-opt", 'c', "specifies arguments/options to be passed to Clang", { "option" });
+    clangOptionsArg.setRequiredValueCount(Argument::varValueCount);
     JsonSerializationCodeGenerator::Options jsonOptions;
     HelpArgument helpArg(parser);
     NoColorArgument noColorArg;

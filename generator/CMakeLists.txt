@@ -54,12 +54,15 @@ include(AppTarget)
 include(ReflectionGenerator)
 add_reflection_generator_invocation(
     INPUT_FILES
-        tests/structs.h   # used by test cases
-        tests/cppunit.cpp # just for testing multiple input files and the "empty file" case
+        tests/structs.h               # used by test cases
+        tests/cppunit.cpp             # just for testing multiple input files and the "empty file" case
     GENERATORS
         json
     OUTPUT_LISTS
         TEST_HEADER_FILES
+    JSON_CLASSES
+        OtherNotJsonSerializable       # test specifying classes for JSON (de)serialization manually
+        SomeOtherClassName             # specifying a class that does not exist should not cause any problems
 )
 
 # include modules to apply configuration

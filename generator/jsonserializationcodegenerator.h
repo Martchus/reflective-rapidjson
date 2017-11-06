@@ -35,9 +35,11 @@ public:
     std::string qualifiedNameIfRelevant(clang::CXXRecordDecl *record) const;
 
 private:
-    std::vector<const RelevantClass *> findRelevantBaseClasses(const RelevantClass &relevantClass) const;
+    static std::vector<const RelevantClass *> findRelevantBaseClasses(
+        const RelevantClass &relevantClass, const std::vector<RelevantClass> &relevantBases);
 
-    std::vector<RelevantClass> m_relevantClasses;
+    std::vector<clang::CXXRecordDecl *> m_records;
+    std::vector<std::string> m_adaptionRecords;
     const Options &m_options;
 };
 

@@ -17,7 +17,7 @@ using namespace ReflectiveRapidJSON;
 
 /*!
  * \brief The TestStruct struct inherits from JsonSerializable and should hence have functional fromJson()
- *        and toJson() methods. This is asserted in OverallTests::testIncludingGeneratedHeader();
+ *        and toJson() methods. This is asserted in JsonGeneratorTests::testIncludingGeneratedHeader();
  */
 struct TestStruct : public JsonSerializable<TestStruct> {
     int someInt = 0;
@@ -27,7 +27,7 @@ struct TestStruct : public JsonSerializable<TestStruct> {
 
 /*!
  * \brief The NestedTestStruct struct inherits from JsonSerializable and should hence have functional fromJson()
- *        and toJson() methods. This is asserted in OverallTests::testNesting();
+ *        and toJson() methods. This is asserted in JsonGeneratorTests::testNesting();
  */
 struct NestedTestStruct : public JsonSerializable<NestedTestStruct> {
     list<vector<TestStruct>> nested;
@@ -36,7 +36,7 @@ struct NestedTestStruct : public JsonSerializable<NestedTestStruct> {
 
 /*!
  * \brief The AnotherTestStruct struct inherits from JsonSerializable and should hence have functional fromJson()
- *        and toJson() methods. This is asserted in OverallTests::testSingleInheritence();
+ *        and toJson() methods. This is asserted in JsonGeneratorTests::testSingleInheritence();
  */
 struct AnotherTestStruct : public JsonSerializable<AnotherTestStruct> {
     vector<string> arrayOfStrings{ "a", "b", "cd" };
@@ -44,7 +44,7 @@ struct AnotherTestStruct : public JsonSerializable<AnotherTestStruct> {
 
 /*!
  * \brief The DerivedTestStruct struct inherits from JsonSerializable and should hence have functional fromJson()
- *        and toJson() methods. This is asserted in OverallTests::testInheritence();
+ *        and toJson() methods. This is asserted in JsonGeneratorTests::testInheritence();
  */
 struct DerivedTestStruct : public TestStruct, public JsonSerializable<DerivedTestStruct> {
     bool someBool = true;
@@ -59,7 +59,7 @@ struct NonSerializable {
 
 /*!
  * \brief The MultipleDerivedTestStruct struct inherits from JsonSerializable and should hence have functional fromJson()
- *        and toJson() methods. This is asserted in OverallTests::testMultipleInheritence();
+ *        and toJson() methods. This is asserted in JsonGeneratorTests::testMultipleInheritence();
  */
 struct MultipleDerivedTestStruct : public TestStruct,
                                    public AnotherTestStruct,
@@ -70,11 +70,42 @@ struct MultipleDerivedTestStruct : public TestStruct,
 
 /*!
  * \brief The StructWithCustomTypes struct inherits from JsonSerializable and should hence have functional fromJson()
- *        and toJson() methods. This is asserted in OverallTests::testCustomSerialization();
+ *        and toJson() methods. This is asserted in JsonGeneratorTests::testCustomSerialization();
  */
 struct StructWithCustomTypes : public JsonSerializable<StructWithCustomTypes> {
     ChronoUtilities::DateTime dt = ChronoUtilities::DateTime::fromDateAndTime(2017, 4, 2, 15, 31, 21, 165.125);
     ChronoUtilities::TimeSpan ts = ChronoUtilities::TimeSpan::fromHours(3.25) + ChronoUtilities::TimeSpan::fromSeconds(19.125);
 };
+
+/*!
+ * \brief The NotJsonSerializable struct is used to tests (de)serialization for 3rd party structs (which do not
+ *        inherit from JsonSerializable instance). It is used in JsonGeneratorTests::test3rdPartyAdaption().
+ * \remarks Imagine this struct would have been defined in a 3rd party header.
+ */
+struct NotJsonSerializable {
+    std::string butSerializableAnyways = "useful to adapt 3rd party structs";
+};
+
+// make "NotJsonSerializable" serializable
+REFLECTIVE_RAPIDJSON_MAKE_JSON_SERIALIZABLE(NotJsonSerializable);
+
+/*!
+ * \brief The OtherNotJsonSerializable struct is used to test whether code for (de)serialization is generated for classes explicitely
+ *        specified via CMake macro (despite use of REFLECTIVE_RAPIDJSON_ADAPT_JSON_SERIALIZABLE or JsonSerializable is
+ *        missing).
+ */
+struct OtherNotJsonSerializable {
+    std::string codeIsGenerated = "for this despite missing REFLECTIVE_RAPIDJSON_ADAPT_JSON_SERIALIZABLE";
+};
+
+/*!
+ * \brief The ReallyNotJsonSerializable struct is used to tests (de)serialization for 3rd party structs (which do not
+ *        inherit from JsonSerializable instance). It is used in JsonGeneratorTests::test3rdPartyAdaption().
+ */
+struct ReallyNotJsonSerializable {
+    std::string notSerializable;
+};
+
+//REFLECTIVE_RAPIDJSON_ADAPT_JSON_SERIALIZABLE(NotJsonSerializable);
 
 #endif // REFLECTIVE_RAPIDJSON_TESTS_STRUCTS_H

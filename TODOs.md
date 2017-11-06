@@ -7,10 +7,10 @@
 - [x] Add documentation (install instructions, usage)
 - [ ] Support enums (undoable with Boost.Hana)
 - [ ] Support templated classes
-- [ ] Allow making 3rdparty classes/structs reflectable
-    - [ ] Add additional parameter for code generator to allow specifying relevant classes
+- [X] Allow making 3rdparty classes/structs reflectable
+    - [X] Add additional parameter for code generator to allow specifying relevant classes
           explicitely
-    - [ ] Fix traits currently relying on `JsonSerializable` being base class
+    - [X] Fix traits currently relying on `JsonSerializable` being base class
 
 ## Library-only
 - [ ] Support `std::unique_ptr` and `std::shared_ptr`

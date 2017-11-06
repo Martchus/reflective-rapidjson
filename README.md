@@ -140,6 +140,31 @@ So beside the `BOOST_HANA_DEFINE_STRUCT` macro, the usage remains the same.
 * Inherited members not considered
 * Support for enums is unlikely
 
+### Enable reflection for 3rd party classes/structs
+It is obvious that the previously shown examples do not work for classes
+defined in 3rd party header files as it requires adding an additional
+base class.
+
+To work around this issue, one can use the `REFLECTIVE_RAPIDJSON_MAKE_JSON_SERIALIZABLE`
+macro. It will enable the `toJson` and `fromJson` methods for the specified class
+in the `ReflectiveRapidJSON::JsonReflector` namespace:
+
+```
+// somewhere in included header
+struct ThridPartyStruct
+{ ... };
+
+// somewhere in own header or source file
+REFLECTIVE_RAPIDJSON_MAKE_JSON_SERIALIZABLE(ThridPartyStruct)
+
+// (de)serialization
+ReflectiveRapidJSON::JsonReflector::toJson(...).GetString();
+ReflectiveRapidJSON::JsonReflector::fromJson<ThridPartyStruct>("...");
+```
+
+The code generator will emit the same code in the same way as `JsonSerializable` was
+used.
+
 ### Further examples
 Checkout the test cases for further examples. Relevant files are in
 the directories `lib/tests` and `generator/tests`.

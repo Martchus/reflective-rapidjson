@@ -33,6 +33,7 @@ class JsonGeneratorTests : public TestFixture {
     CPPUNIT_TEST(testSingleInheritence);
     CPPUNIT_TEST(testMultipleInheritence);
     CPPUNIT_TEST(testCustomSerialization);
+    CPPUNIT_TEST(test3rdPartyAdaption);
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -44,6 +45,7 @@ public:
     void testSingleInheritence();
     void testMultipleInheritence();
     void testCustomSerialization();
+    void test3rdPartyAdaption();
 
 private:
     const vector<string> m_expectedCode;
@@ -211,6 +213,29 @@ void JsonGeneratorTests::testCustomSerialization()
     const StructWithCustomTypes parsedTest(StructWithCustomTypes::fromJson(str));
     CPPUNIT_ASSERT_EQUAL(test.dt.toString(), parsedTest.dt.toString());
     CPPUNIT_ASSERT_EQUAL(test.ts.toString(), parsedTest.ts.toString());
+}
+
+/*!
+ * \brief Tests whether adapting (de)serialization for 3rd party structs works.
+ */
+void JsonGeneratorTests::test3rdPartyAdaption()
+{
+    static_assert(ReflectiveRapidJSON::JsonReflector::AdaptedJsonSerializable<NotJsonSerializable>::value,
+        "can serialize NotJsonSerializable because of adaption macro");
+    static_assert(!ReflectiveRapidJSON::JsonReflector::AdaptedJsonSerializable<OtherNotJsonSerializable>::value,
+        "can not serialize OtherNotJsonSerializable because adaption macro missing");
+    static_assert(!ReflectiveRapidJSON::JsonReflector::AdaptedJsonSerializable<ReallyNotJsonSerializable>::value,
+        "can not serialize ReallyNotJsonSerializable");
+
+    const NotJsonSerializable test;
+    const string str("{\"butSerializableAnyways\":\"useful to adapt 3rd party structs\"}");
+
+    // test serialization
+    CPPUNIT_ASSERT_EQUAL(str, string(ReflectiveRapidJSON::JsonReflector::toJson(test).GetString()));
+
+    // test deserialization
+    const NotJsonSerializable parsedTest(ReflectiveRapidJSON::JsonReflector::fromJson<NotJsonSerializable>(str));
+    CPPUNIT_ASSERT_EQUAL(test.butSerializableAnyways, parsedTest.butSerializableAnyways);
 }
 
 // include file required for reflection of TestStruct and other structs defined in structs.h

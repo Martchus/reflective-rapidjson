@@ -3,6 +3,7 @@
 #include "../lib/json/serializable.h"
 
 #include <clang/AST/DeclCXX.h>
+#include <clang/AST/DeclTemplate.h>
 
 #include <iostream>
 
@@ -31,18 +32,33 @@ ostream &operator<<(ostream &os, llvm::StringRef str)
 void JsonSerializationCodeGenerator::addDeclaration(clang::Decl *decl)
 {
     switch (decl->getKind()) {
-    case clang::Decl::Kind::CXXRecord: {
+    case clang::Decl::Kind::CXXRecord:
+    case clang::Decl::Kind::ClassTemplateSpecialization: {
         auto *const record = static_cast<clang::CXXRecordDecl *>(decl);
         // skip forward declarations
         if (!record->hasDefinition()) {
             return;
         }
 
-        string qualifiedName(qualifiedNameIfRelevant(record));
-        if (!qualifiedName.empty()) {
-            m_relevantClasses.emplace_back(move(qualifiedName), record);
+        // check for template specializations to adapt a 3rd party class/struct
+        if (decl->getKind() == clang::Decl::Kind::ClassTemplateSpecialization) {
+            auto *const templRecord = static_cast<clang::ClassTemplateSpecializationDecl *>(decl);
+            if (templRecord->getQualifiedNameAsString() == JsonReflector::AdaptedJsonSerializable<void>::qualifiedName) {
+                const clang::TemplateArgumentList &templateArgs = templRecord->getTemplateArgs();
+                if (templateArgs.size() != 1 || templateArgs.get(0).getKind() != clang::TemplateArgument::Type) {
+                    return; // FIXME: use Clang diagnostics to print warning
+                }
+                const clang::CXXRecordDecl *templateRecord = templateArgs.get(0).getAsType()->getAsCXXRecordDecl();
+                if (!templateRecord) {
+                    return; // FIXME: use Clang diagnostics to print warning
+                }
+                m_adaptionRecords.emplace_back(templateRecord->getNameAsString());
+                return;
+            }
         }
-        break;
+
+        // add any other records
+        m_records.emplace_back(record);
     }
     case clang::Decl::Kind::Enum:
         // TODO: add enums
@@ -53,7 +69,15 @@ void JsonSerializationCodeGenerator::addDeclaration(clang::Decl *decl)
 
 void JsonSerializationCodeGenerator::generate(ostream &os) const
 {
-    if (m_relevantClasses.empty()) {
+    // find relevant classes
+    std::vector<RelevantClass> relevantClasses;
+    for (clang::CXXRecordDecl *record : m_records) {
+        string qualifiedName(qualifiedNameIfRelevant(record));
+        if (!qualifiedName.empty()) {
+            relevantClasses.emplace_back(move(qualifiedName), record);
+        }
+    }
+    if (relevantClasses.empty()) {
         return;
     }
 
@@ -63,12 +87,12 @@ void JsonSerializationCodeGenerator::generate(ostream &os) const
 
     // add push and pull functions for each class, for an example of the resulting
     // output, see ../lib/tests/jsonserializable.cpp (code under comment "pretend serialization code...")
-    for (const RelevantClass &relevantClass : m_relevantClasses) {
+    for (const RelevantClass &relevantClass : relevantClasses) {
         // write comment
         os << "// define code for (de)serializing " << relevantClass.qualifiedName << " objects\n";
 
         // find relevant base classes
-        const vector<const RelevantClass *> relevantBases = findRelevantBaseClasses(relevantClass);
+        const vector<const RelevantClass *> relevantBases = findRelevantBaseClasses(relevantClass, relevantClasses);
 
         // print push method
         os << "template <> inline void push<::" << relevantClass.qualifiedName << ">(const ::" << relevantClass.qualifiedName
@@ -126,12 +150,19 @@ string JsonSerializationCodeGenerator::qualifiedNameIfRelevant(clang::CXXRecordD
         return record->getQualifiedNameAsString();
     }
 
+    // consider all classes for which a specialization of the "AdaptedJsonSerializable" struct is available
+    const string qualifiedName(record->getQualifiedNameAsString());
+    for (const string &adaptionRecord : m_adaptionRecords) {
+        if (adaptionRecord == qualifiedName) {
+            return qualifiedName;
+        }
+    }
+
     // consider all classes specified via "--additional-classes" argument relevant
     if (!m_options.additionalClassesArg.isPresent()) {
         return string();
     }
 
-    const string qualifiedName(record->getQualifiedNameAsString());
     for (const char *className : m_options.additionalClassesArg.values()) {
         if (className == qualifiedName) {
             return qualifiedName;
@@ -142,10 +173,10 @@ string JsonSerializationCodeGenerator::qualifiedNameIfRelevant(clang::CXXRecordD
 }
 
 std::vector<const JsonSerializationCodeGenerator::RelevantClass *> JsonSerializationCodeGenerator::findRelevantBaseClasses(
-    const RelevantClass &relevantClass) const
+    const RelevantClass &relevantClass, const std::vector<RelevantClass> &relevantBases)
 {
     vector<const RelevantClass *> relevantBaseClasses;
-    for (const RelevantClass &otherClass : m_relevantClasses) {
+    for (const RelevantClass &otherClass : relevantBases) {
         if (relevantClass.record != otherClass.record && relevantClass.record->isDerivedFrom(otherClass.record)) {
             relevantBaseClasses.push_back(&otherClass);
         }

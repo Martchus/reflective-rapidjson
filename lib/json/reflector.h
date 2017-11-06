@@ -25,7 +25,24 @@ namespace ReflectiveRapidJSON {
 
 template <typename Type> struct JsonSerializable;
 
+/*!
+ * \brief The JsonReflector namespace contains helper functions to ease the use of RapidJSON for automatic (de)serialization.
+ */
 namespace JsonReflector {
+
+template <typename T> struct AdaptedJsonSerializable : Traits::Bool<false> {
+    static constexpr const char *name = "AdaptedJsonSerializable";
+    static constexpr const char *qualifiedName = "ReflectiveRapidJSON::JsonReflector::AdaptedJsonSerializable";
+};
+
+/*!
+ * \def The REFLECTIVE_RAPIDJSON_MAKE_JSON_SERIALIZABLE macro allows to adapt (de)serialization for types defined in 3rd party header files.
+ * \remarks The struct will not have the toJson() and fromJson() methods available. Use the corresponding functions in the namespace
+ *          ReflectiveRapidJSON::JsonReflector instead.
+ */
+#define REFLECTIVE_RAPIDJSON_MAKE_JSON_SERIALIZABLE(T)                                                                                               \
+    template <> struct ::ReflectiveRapidJSON::JsonReflector::AdaptedJsonSerializable<T> : Traits::Bool<true> {                                       \
+    }
 
 /*!
  * \brief Casts the specified \a size to the size type used by RapidJSON ensuring no overflow happens.
@@ -481,7 +498,7 @@ inline void pull(Type &reflectable, const char *name, const rapidjson::GenericVa
 /*!
  * \brief Serializes the specified \a reflectable which has a custom type.
  */
-template <typename Type, Traits::EnableIfAny<std::is_base_of<JsonSerializable<Type>, Type>>...>
+template <typename Type, Traits::EnableIfAny<std::is_base_of<JsonSerializable<Type>, Type>, AdaptedJsonSerializable<Type>>...>
 RAPIDJSON_NAMESPACE::StringBuffer toJson(const Type &reflectable)
 {
     RAPIDJSON_NAMESPACE::Document document(RAPIDJSON_NAMESPACE::kObjectType);
@@ -527,7 +544,7 @@ template <typename Type, Traits::EnableIfAny<std::is_same<Type, const char *>>..
 /*!
  * \brief Deserializes the specified JSON to \tparam Type which is a custom type.
  */
-template <typename Type, Traits::EnableIfAny<std::is_base_of<JsonSerializable<Type>, Type>>...>
+template <typename Type, Traits::EnableIfAny<std::is_base_of<JsonSerializable<Type>, Type>, AdaptedJsonSerializable<Type>>...>
 Type fromJson(const char *json, std::size_t jsonSize, JsonDeserializationErrors *errors = nullptr)
 {
     RAPIDJSON_NAMESPACE::Document doc(parseJsonDocFromString(json, jsonSize));

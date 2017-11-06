@@ -37,8 +37,7 @@ void JsonSerializationCodeGenerator::addDeclaration(clang::Decl *decl)
         if (!record->hasDefinition()) {
             return;
         }
-        // add classes derived from any instantiation of "ReflectiveRapidJSON::JsonSerializable"
-        // and also add classes explicitely specified via "--additional-classes" argument
+
         string qualifiedName(qualifiedNameIfRelevant(record));
         if (!qualifiedName.empty()) {
             m_relevantClasses.emplace_back(move(qualifiedName), record);

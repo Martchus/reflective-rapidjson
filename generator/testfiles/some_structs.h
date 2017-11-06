@@ -1,7 +1,7 @@
 #ifndef SOME_STRUCTS_H
 #define SOME_STRUCTS_H
 
-//#include <string>
+#include <string>
 #include "../../lib/json/serializable.h"
 
 namespace TestNamespace1 {
@@ -29,6 +29,11 @@ struct SomeOtherNonReflectableClass : public NonReflectableClass
 }
 
 namespace TestNamespace2 {
+
+struct ThirdPartyStruct {
+    std::string test1;
+    unsigned long long test2;
+};
 
 }
 

@@ -35,7 +35,7 @@ set(TEST_SRC_FILES
 )
 
 # find c++utilities and link against the library
-find_package(c++utilities 4.11.0 REQUIRED)
+find_package(c++utilities 4.12.0 REQUIRED)
 use_cpp_utilities()
 
 # find Clang for LibTooling; adding clangTooling should be sufficient as it pulls all transitive dependencies

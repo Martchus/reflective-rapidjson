@@ -52,7 +52,7 @@ private:
 CPPUNIT_TEST_SUITE_REGISTRATION(JsonGeneratorTests);
 
 JsonGeneratorTests::JsonGeneratorTests()
-    : m_expectedCode(toArrayOfLines(readFile(testFilePath("some_structs_json_serialization.h"), 2 * 1024)))
+    : m_expectedCode(toArrayOfLines(readFile(testFilePath("some_structs_json_serialization.h"), 3 * 1024)))
 {
 }
 
@@ -67,6 +67,8 @@ void JsonGeneratorTests::testGeneratorItself()
 
     stringstream buffer;
     JsonSerializationCodeGenerator::Options jsonOptions;
+    jsonOptions.additionalClassesArg.occurrenceInfo().emplace_back(0);
+    jsonOptions.additionalClassesArg.occurrenceInfo().back().values.emplace_back("TestNamespace2::ThirdPartyStruct");
     CodeFactory factory(TestApplication::appPath(), inputFiles, clangOptions, buffer);
     factory.addGenerator<JsonSerializationCodeGenerator>(jsonOptions);
     CPPUNIT_ASSERT(factory.run());
@@ -84,7 +86,7 @@ void JsonGeneratorTests::testCLI()
     string stdout, stderr;
 
     const string inputFilePath(testFilePath("some_structs.h"));
-    const char *const args1[] = { PROJECT_NAME, "-i", inputFilePath.data(), nullptr };
+    const char *const args1[] = { PROJECT_NAME, "-i", inputFilePath.data(), "--json-classes", "TestNamespace2::ThirdPartyStruct", nullptr };
     TESTUTILS_ASSERT_EXEC(args1);
     assertEqualityLinewise(m_expectedCode, toArrayOfLines(stdout));
 #endif

@@ -103,7 +103,9 @@ void JsonSerializationCodeGenerator::generate(ostream &os) const
         }
         os << "    // push members\n";
         for (const clang::FieldDecl *field : relevantClass.record->fields()) {
-            os << "    push(reflectable." << field->getName() << ", \"" << field->getName() << "\", value, allocator);\n";
+            if (field->getAccess() == clang::AS_public) {
+                os << "    push(reflectable." << field->getName() << ", \"" << field->getName() << "\", value, allocator);\n";
+            }
         }
         os << "}\n";
 
@@ -126,7 +128,9 @@ void JsonSerializationCodeGenerator::generate(ostream &os) const
               "    }\n"
               "    // pull members\n";
         for (const clang::FieldDecl *field : relevantClass.record->fields()) {
-            os << "    pull(reflectable." << field->getName() << ", \"" << field->getName() << "\", value, errors);\n";
+            if (field->getAccess() == clang::AS_public) {
+                os << "    pull(reflectable." << field->getName() << ", \"" << field->getName() << "\", value, errors);\n";
+            }
         }
         os << "    // restore error context for previous record\n"
               "    if (errors) {\n"

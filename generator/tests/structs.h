@@ -23,6 +23,9 @@ struct TestStruct : public JsonSerializable<TestStruct> {
     int someInt = 0;
     string someString = "foo";
     string yetAnotherString = "bar";
+
+private:
+    string privateString = "not going to be serialized";
 };
 
 /*!

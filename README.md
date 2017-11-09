@@ -139,6 +139,7 @@ So beside the `BOOST_HANA_DEFINE_STRUCT` macro, the usage remains the same.
 * No context information for errors like type-mismatch available
 * Inherited members not considered
 * Support for enums is unlikely
+* Attempt to access private members can not be prevented
 
 ### Enable reflection for 3rd party classes/structs
 It is obvious that the previously shown examples do not work for classes
@@ -162,12 +163,34 @@ ReflectiveRapidJSON::JsonReflector::toJson(...).GetString();
 ReflectiveRapidJSON::JsonReflector::fromJson<ThridPartyStruct>("...");
 ```
 
-The code generator will emit the same code in the same way as `JsonSerializable` was
+The code generator will emit the code in the same way as if `JsonSerializable` was
 used.
 
-### Further examples
-Checkout the test cases for further examples. Relevant files are in
-the directories `lib/tests` and `generator/tests`.
+By the way, the functions in the `ReflectiveRapidJSON::JsonReflector` namespace can also
+be used when inheriting from `JsonSerializable` (instead of the member functions).
+
+### (De)serializing private members
+By default, private members are not considered for (de)serialization. However, it is possible
+to enable this by adding `friend` methods for the helper functions of Reflective RapidJSON.
+
+To make things easier, there's a macro provided:
+```
+struct SomeStruct : public JsonSerializable<SomeStruct> {
+    REFLECTIVE_RAPIDJSON_ENABLE_PRIVATE_MEMBERS(SomeStruct);
+
+public:
+    std::string publicMember = "will be (de)serialized anyways";
+
+private:
+    std::string privateMember = "will be (de)serialized with the help of REFLECTIVE_RAPIDJSON_ENABLE_PRIVATE_MEMBERS macro";
+};
+```
+
+#### Caveats
+* It will obviously not work for 3rd party structs.
+* This way to allow (de)serialization of private members must be applied when using Boost.Hana
+  and there are any private members present. The reason is that accessing the private members can
+  currently not prevented when using Boost.Hana.
 
 ### Custom (de)serialization
 Sometimes it is appropriate to implement custom (de)serialization. For instance, a
@@ -177,6 +200,10 @@ than an object with the internal data members.
 An example for such custom (de)serialization can be found in the file
 `json/reflector-chronoutilities.h`. It provides (de)serialization of `DateTime` and
 `TimeSpan` objects from the C++ utilities library.
+
+### Further examples
+Checkout the test cases for further examples. Relevant files are in
+the directories `lib/tests` and `generator/tests`.
 
 ## Install instructions
 

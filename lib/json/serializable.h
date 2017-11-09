@@ -98,6 +98,48 @@ const JsonSerializable<Type> &as(const Type &serializable)
     return static_cast<const JsonSerializable<Type> &>(serializable);
 }
 
+/*!
+ * \brief The AdaptedJsonSerializable class allows considering 3rd party classes as serializable.
+ */
+template <typename T> struct AdaptedJsonSerializable : Traits::Bool<false> {
+    static constexpr const char *name = "AdaptedJsonSerializable";
+    static constexpr const char *qualifiedName = "ReflectiveRapidJSON::AdaptedJsonSerializable";
+};
+
+/*!
+ * \def The REFLECTIVE_RAPIDJSON_MAKE_JSON_SERIALIZABLE macro allows to adapt (de)serialization for types defined in 3rd party header files.
+ * \remarks The struct will not have the toJson() and fromJson() methods available. Use the corresponding functions in the namespace
+ *          ReflectiveRapidJSON::JsonReflector instead.
+ */
+#define REFLECTIVE_RAPIDJSON_MAKE_JSON_SERIALIZABLE(T)                                                                                               \
+    template <> struct ::ReflectiveRapidJSON::AdaptedJsonSerializable<T> : Traits::Bool<true> {                                                      \
+    }
+
+/*!
+ * \def The REFLECTIVE_RAPIDJSON_PUSH_PRIVATE_MEMBERS macro enables serialization of private members.
+ * \remarks For an example, see README.md.
+ */
+#define REFLECTIVE_RAPIDJSON_PUSH_PRIVATE_MEMBERS(T)                                                                                                 \
+    friend void ::ReflectiveRapidJSON::JsonReflector::push<T>(                                                                                       \
+        const T &reflectable, ::RAPIDJSON_NAMESPACE::Value::Object &value, ::RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
+
+/*!
+ * \def The REFLECTIVE_RAPIDJSON_PULL_PRIVATE_MEMBERS macro enables deserialization of private members.
+ * \remarks For an example, see README.md.
+ */
+#define REFLECTIVE_RAPIDJSON_PULL_PRIVATE_MEMBERS(T)                                                                                                 \
+    friend void ::ReflectiveRapidJSON::JsonReflector::pull<T>(T & reflectable,                                                                       \
+        const ::RAPIDJSON_NAMESPACE::GenericValue<::RAPIDJSON_NAMESPACE::UTF8<char>>::ConstObject &value,                                            \
+        ::ReflectiveRapidJSON::JsonDeserializationErrors *errors)
+
+/*!
+ * \def The REFLECTIVE_RAPIDJSON_ENABLE_PRIVATE_MEMBERS macro enables serialization and deserialization of private members.
+ * \remarks For an example, see README.md.
+ */
+#define REFLECTIVE_RAPIDJSON_ENABLE_PRIVATE_MEMBERS(T)                                                                                               \
+    REFLECTIVE_RAPIDJSON_PUSH_PRIVATE_MEMBERS(T);                                                                                                    \
+    REFLECTIVE_RAPIDJSON_PULL_PRIVATE_MEMBERS(T)
+
 } // namespace ReflectiveRapidJSON
 
 #endif // REFLECTIVE_RAPIDJSON_JSON_SERIALIZABLE_H

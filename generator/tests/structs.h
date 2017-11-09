@@ -28,12 +28,19 @@ private:
     string privateString = "not going to be serialized";
 };
 
+class JsonGeneratorTests;
+
 /*!
  * \brief The NestedTestStruct struct inherits from JsonSerializable and should hence have functional fromJson()
  *        and toJson() methods. This is asserted in JsonGeneratorTests::testNesting();
  */
 struct NestedTestStruct : public JsonSerializable<NestedTestStruct> {
+    REFLECTIVE_RAPIDJSON_ENABLE_PRIVATE_MEMBERS(NestedTestStruct);
+    friend class JsonGeneratorTests;
+
     list<vector<TestStruct>> nested;
+
+private:
     deque<double> deq;
 };
 

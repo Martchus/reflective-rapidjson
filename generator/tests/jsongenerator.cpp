@@ -220,12 +220,11 @@ void JsonGeneratorTests::testCustomSerialization()
  */
 void JsonGeneratorTests::test3rdPartyAdaption()
 {
-    static_assert(ReflectiveRapidJSON::JsonReflector::AdaptedJsonSerializable<NotJsonSerializable>::value,
-        "can serialize NotJsonSerializable because of adaption macro");
-    static_assert(!ReflectiveRapidJSON::JsonReflector::AdaptedJsonSerializable<OtherNotJsonSerializable>::value,
+    static_assert(
+        ReflectiveRapidJSON::AdaptedJsonSerializable<NotJsonSerializable>::value, "can serialize NotJsonSerializable because of adaption macro");
+    static_assert(!ReflectiveRapidJSON::AdaptedJsonSerializable<OtherNotJsonSerializable>::value,
         "can not serialize OtherNotJsonSerializable because adaption macro missing");
-    static_assert(!ReflectiveRapidJSON::JsonReflector::AdaptedJsonSerializable<ReallyNotJsonSerializable>::value,
-        "can not serialize ReallyNotJsonSerializable");
+    static_assert(!ReflectiveRapidJSON::AdaptedJsonSerializable<ReallyNotJsonSerializable>::value, "can not serialize ReallyNotJsonSerializable");
 
     const NotJsonSerializable test;
     const string str("{\"butSerializableAnyways\":\"useful to adapt 3rd party structs\"}");

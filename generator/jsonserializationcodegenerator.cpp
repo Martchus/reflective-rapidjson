@@ -3,6 +3,7 @@
 #include "../lib/json/serializable.h"
 
 #include <clang/AST/DeclCXX.h>
+#include <clang/AST/DeclFriend.h>
 #include <clang/AST/DeclTemplate.h>
 
 #include <iostream>
@@ -43,7 +44,7 @@ void JsonSerializationCodeGenerator::addDeclaration(clang::Decl *decl)
         // check for template specializations to adapt a 3rd party class/struct
         if (decl->getKind() == clang::Decl::Kind::ClassTemplateSpecialization) {
             auto *const templRecord = static_cast<clang::ClassTemplateSpecializationDecl *>(decl);
-            if (templRecord->getQualifiedNameAsString() == JsonReflector::AdaptedJsonSerializable<void>::qualifiedName) {
+            if (templRecord->getQualifiedNameAsString() == AdaptedJsonSerializable<void>::qualifiedName) {
                 const clang::TemplateArgumentList &templateArgs = templRecord->getTemplateArgs();
                 if (templateArgs.size() != 1 || templateArgs.get(0).getKind() != clang::TemplateArgument::Type) {
                     return; // FIXME: use Clang diagnostics to print warning
@@ -59,7 +60,7 @@ void JsonSerializationCodeGenerator::addDeclaration(clang::Decl *decl)
 
         // add any other records
         m_records.emplace_back(record);
-    }
+    } break;
     case clang::Decl::Kind::Enum:
         // TODO: add enums
         break;
@@ -88,6 +89,27 @@ void JsonSerializationCodeGenerator::generate(ostream &os) const
     // add push and pull functions for each class, for an example of the resulting
     // output, see ../lib/tests/jsonserializable.cpp (code under comment "pretend serialization code...")
     for (const RelevantClass &relevantClass : relevantClasses) {
+        bool pushPrivateMembers = false;
+        bool pullPrivateMembers = false;
+        for (const clang::FriendDecl *const friendDecl : relevantClass.record->friends()) {
+            const clang::NamedDecl *const actualFriendDecl = friendDecl->getFriendDecl();
+            if (!actualFriendDecl /* && decl->getKind() != clang::Decl::Kind::FunctionTemplate */) {
+                continue;
+            }
+            const string friendName(actualFriendDecl->getQualifiedNameAsString());
+            if (friendName == "ReflectiveRapidJSON::JsonReflector::push") {
+                pushPrivateMembers = true;
+            }
+            if (friendName == "ReflectiveRapidJSON::JsonReflector::pull") {
+                pullPrivateMembers = true;
+            }
+            cout << "friend-kind: " << actualFriendDecl->getDeclKindName() << endl;
+            cout << "friend: " << actualFriendDecl->getQualifiedNameAsString() << endl;
+            if (pushPrivateMembers && pullPrivateMembers) {
+                break;
+            }
+        }
+
         // write comment
         os << "// define code for (de)serializing " << relevantClass.qualifiedName << " objects\n";
 
@@ -103,7 +125,7 @@ void JsonSerializationCodeGenerator::generate(ostream &os) const
         }
         os << "    // push members\n";
         for (const clang::FieldDecl *field : relevantClass.record->fields()) {
-            if (field->getAccess() == clang::AS_public) {
+            if (pushPrivateMembers || field->getAccess() == clang::AS_public) {
                 os << "    push(reflectable." << field->getName() << ", \"" << field->getName() << "\", value, allocator);\n";
             }
         }
@@ -128,7 +150,7 @@ void JsonSerializationCodeGenerator::generate(ostream &os) const
               "    }\n"
               "    // pull members\n";
         for (const clang::FieldDecl *field : relevantClass.record->fields()) {
-            if (field->getAccess() == clang::AS_public) {
+            if (pullPrivateMembers || field->getAccess() == clang::AS_public) {
                 os << "    pull(reflectable." << field->getName() << ", \"" << field->getName() << "\", value, errors);\n";
             }
         }

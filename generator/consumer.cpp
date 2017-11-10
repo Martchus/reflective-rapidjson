@@ -57,7 +57,7 @@ void DiagConsumer::finish()
 }
 
 /*!
- * \brief Changes most errors into warnings to be able to operate also on non self-contained headers.
+ * \brief Turns most errors into warnings so it works despite issues when parsing libstdc++ headers.
  */
 void DiagConsumer::HandleDiagnostic(clang::DiagnosticsEngine::Level diagLevel, const clang::Diagnostic &info)
 {
@@ -66,7 +66,7 @@ void DiagConsumer::HandleDiagnostic(clang::DiagnosticsEngine::Level diagLevel, c
 
     bool shouldReset = false;
     if (diagLevel >= clang::DiagnosticsEngine::Error) {
-        if (category == 2 || category == 4 || diagId == clang::diag::err_param_redefinition || diagId == clang::diag::err_pp_expr_bad_token_binop) {
+        if (category == 2 /* 2 means "Semantic Issue" */) {
             if (!m_realErrorCount) {
                 shouldReset = true;
             }

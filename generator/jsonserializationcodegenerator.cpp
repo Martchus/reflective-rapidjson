@@ -27,14 +27,9 @@ JsonSerializationCodeGenerator::Options::Options()
 }
 
 /*!
- * \brief Prints an LLVM string reference without instantiating a std::string first.
+ * \brief Adds all class declarations (to the internal member variable m_records).
+ * \remarks "AdaptedJsonSerializable" specializations are directly filtered and added to m_adaptionRecords (instead of m_records).
  */
-ostream &operator<<(ostream &os, llvm::StringRef str)
-{
-    os.write(str.data(), static_cast<streamsize>(str.size()));
-    return os;
-}
-
 void JsonSerializationCodeGenerator::addDeclaration(clang::Decl *decl)
 {
     switch (decl->getKind()) {
@@ -73,9 +68,43 @@ void JsonSerializationCodeGenerator::addDeclaration(clang::Decl *decl)
     }
 }
 
-void JsonSerializationCodeGenerator::generate(ostream &os) const
+/*!
+ * \brief Returns the qualified name of the specified \a record if it is considered relevant.
+ */
+string JsonSerializationCodeGenerator::qualifiedNameIfRelevant(clang::CXXRecordDecl *record) const
 {
-    // find relevant classes
+    // consider all classes inheriting from an instantiation of "JsonSerializable" relevant
+    if (inheritsFromInstantiationOf(record, JsonSerializable<void>::qualifiedName)) {
+        return record->getQualifiedNameAsString();
+    }
+
+    // consider all classes for which a specialization of the "AdaptedJsonSerializable" struct is available
+    const string qualifiedName(record->getQualifiedNameAsString());
+    for (const string &adaptionRecord : m_adaptionRecords) {
+        if (adaptionRecord == qualifiedName) {
+            return qualifiedName;
+        }
+    }
+
+    // consider all classes specified via "--additional-classes" argument relevant
+    if (!m_options.additionalClassesArg.isPresent()) {
+        return string();
+    }
+    for (const char *className : m_options.additionalClassesArg.values()) {
+        if (className == qualifiedName) {
+            return qualifiedName;
+        }
+    }
+
+    return string();
+}
+
+/*!
+ * \brief Searches the records added via addDeclaration() and returns the relevant ones.
+ * \sa Whether a record is relevant is determined using the qualifiedNameIfRelevant() method.
+ */
+std::vector<JsonSerializationCodeGenerator::RelevantClass> JsonSerializationCodeGenerator::findRelevantClasses() const
+{
     std::vector<RelevantClass> relevantClasses;
     for (clang::CXXRecordDecl *record : m_records) {
         string qualifiedName(qualifiedNameIfRelevant(record));
@@ -83,8 +112,41 @@ void JsonSerializationCodeGenerator::generate(ostream &os) const
             relevantClasses.emplace_back(move(qualifiedName), record);
         }
     }
+    return relevantClasses;
+}
+
+/*!
+ * \brief Returns the relevant base classes of the specified \a relevantClass. All base classes in \a relevantBases are considered relevant.
+ */
+std::vector<const JsonSerializationCodeGenerator::RelevantClass *> JsonSerializationCodeGenerator::findRelevantBaseClasses(
+    const RelevantClass &relevantClass, const std::vector<RelevantClass> &relevantBases)
+{
+    vector<const RelevantClass *> relevantBaseClasses;
+    for (const RelevantClass &otherClass : relevantBases) {
+        if (relevantClass.record != otherClass.record && relevantClass.record->isDerivedFrom(otherClass.record)) {
+            relevantBaseClasses.push_back(&otherClass);
+        }
+    }
+    return relevantBaseClasses;
+}
+
+/*!
+ * \brief Prints an LLVM string reference without instantiating a std::string first.
+ */
+ostream &operator<<(ostream &os, llvm::StringRef str)
+{
+    return os.write(str.data(), static_cast<streamsize>(str.size()));
+}
+
+/*!
+ * \brief Generates pull() and push() helper functions in the ReflectiveRapidJSON::JsonReflector namespace for the relevant classes.
+ */
+void JsonSerializationCodeGenerator::generate(ostream &os) const
+{
+    // find relevant classes
+    const auto relevantClasses = findRelevantClasses();
     if (relevantClasses.empty()) {
-        return;
+        return; // nothing to generate
     }
 
     // put everything into namespace ReflectiveRapidJSON::JsonReflector
@@ -100,13 +162,16 @@ void JsonSerializationCodeGenerator::generate(ostream &os) const
     // add push and pull functions for each class, for an example of the resulting
     // output, see ../lib/tests/jsonserializable.cpp (code under comment "pretend serialization code...")
     for (const RelevantClass &relevantClass : relevantClasses) {
-        bool pushPrivateMembers = false;
-        bool pullPrivateMembers = false;
+        // determine whether private members should be pushed/pulled as well: check whether friend declarations for push/pull present
+        // note: the friend declarations we are looking for are expanded from the REFLECTIVE_RAPIDJSON_ENABLE_PRIVATE_MEMBERS macro
+        bool pushPrivateMembers = false, pullPrivateMembers = false;
         for (const clang::FriendDecl *const friendDecl : relevantClass.record->friends()) {
+            // get the actual declaration which must be a function
             const clang::NamedDecl *const actualFriendDecl = friendDecl->getFriendDecl();
             if (!actualFriendDecl || actualFriendDecl->getKind() != clang::Decl::Kind::Function) {
                 continue;
             }
+            // check whether the friend function matches the push/pull helper function
             const string friendName(actualFriendDecl->getQualifiedNameAsString());
             if (friendName == "ReflectiveRapidJSON::JsonReflector::push") {
                 pushPrivateMembers = true;
@@ -119,11 +184,11 @@ void JsonSerializationCodeGenerator::generate(ostream &os) const
             }
         }
 
-        // write comment
-        os << "// define code for (de)serializing " << relevantClass.qualifiedName << " objects\n";
-
         // find relevant base classes
         const vector<const RelevantClass *> relevantBases = findRelevantBaseClasses(relevantClass, relevantClasses);
+
+        // print comment
+        os << "// define code for (de)serializing " << relevantClass.qualifiedName << " objects\n";
 
         // print push method
         os << "template <> " << visibility << " void push<::" << relevantClass.qualifiedName << ">(const ::" << relevantClass.qualifiedName
@@ -173,50 +238,6 @@ void JsonSerializationCodeGenerator::generate(ostream &os) const
     // close namespace ReflectiveRapidJSON::JsonReflector
     os << "} // namespace JsonReflector\n"
           "} // namespace ReflectiveRapidJSON\n";
-}
-
-/*!
- * \brief Returns the qualified name of the specified \a record if it is considered relevant.
- */
-string JsonSerializationCodeGenerator::qualifiedNameIfRelevant(clang::CXXRecordDecl *record) const
-{
-    // consider all classes inheriting from an instantiation of "JsonSerializable" relevant
-    if (inheritsFromInstantiationOf(record, JsonSerializable<void>::qualifiedName)) {
-        return record->getQualifiedNameAsString();
-    }
-
-    // consider all classes for which a specialization of the "AdaptedJsonSerializable" struct is available
-    const string qualifiedName(record->getQualifiedNameAsString());
-    for (const string &adaptionRecord : m_adaptionRecords) {
-        if (adaptionRecord == qualifiedName) {
-            return qualifiedName;
-        }
-    }
-
-    // consider all classes specified via "--additional-classes" argument relevant
-    if (!m_options.additionalClassesArg.isPresent()) {
-        return string();
-    }
-
-    for (const char *className : m_options.additionalClassesArg.values()) {
-        if (className == qualifiedName) {
-            return qualifiedName;
-        }
-    }
-
-    return string();
-}
-
-std::vector<const JsonSerializationCodeGenerator::RelevantClass *> JsonSerializationCodeGenerator::findRelevantBaseClasses(
-    const RelevantClass &relevantClass, const std::vector<RelevantClass> &relevantBases)
-{
-    vector<const RelevantClass *> relevantBaseClasses;
-    for (const RelevantClass &otherClass : relevantBases) {
-        if (relevantClass.record != otherClass.record && relevantClass.record->isDerivedFrom(otherClass.record)) {
-            relevantBaseClasses.push_back(&otherClass);
-        }
-    }
-    return relevantBaseClasses;
 }
 
 } // namespace ReflectiveRapidJSON

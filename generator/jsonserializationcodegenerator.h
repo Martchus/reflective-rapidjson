@@ -34,9 +34,10 @@ public:
 
     void addDeclaration(clang::Decl *decl) override;
     void generate(std::ostream &os) const override;
-    std::string qualifiedNameIfRelevant(clang::CXXRecordDecl *record) const;
 
 private:
+    std::string qualifiedNameIfRelevant(clang::CXXRecordDecl *record) const;
+    std::vector<RelevantClass> findRelevantClasses() const;
     static std::vector<const RelevantClass *> findRelevantBaseClasses(
         const RelevantClass &relevantClass, const std::vector<RelevantClass> &relevantBases);
 

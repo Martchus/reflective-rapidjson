@@ -77,26 +77,26 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
 /*!
  * \brief Pushes the \a reflectable to the specified array.
  */
-template <typename Type, Traits::DisableIf<std::is_base_of<JsonSerializable<Type>, Type>>...>
+template <typename Type, Traits::DisableIfAny<std::is_base_of<JsonSerializable<Type>, Type>, AdaptedJsonSerializable<Type>>...>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator);
 
 /*!
  * \brief Pushes the \a reflectable which has a custom type to the specified array.
  */
-template <typename Type, Traits::EnableIf<std::is_base_of<JsonSerializable<Type>, Type>>...>
+template <typename Type, Traits::EnableIfAny<std::is_base_of<JsonSerializable<Type>, Type>, AdaptedJsonSerializable<Type>>...>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator);
 
 /*!
  * \brief Pushes the specified \a reflectable which has custom type as a member to the specified object.
  */
-template <typename Type, Traits::EnableIf<std::is_base_of<JsonSerializable<Type>, Type>>...>
+template <typename Type, Traits::EnableIfAny<std::is_base_of<JsonSerializable<Type>, Type>, AdaptedJsonSerializable<Type>>...>
 void push(
     const Type &reflectable, const char *name, RAPIDJSON_NAMESPACE::Value::Object &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator);
 
 /*!
  * \brief Pushes the specified \a reflectable as a member to the specified object.
  */
-template <typename Type, Traits::DisableIf<std::is_base_of<JsonSerializable<Type>, Type>>...>
+template <typename Type, Traits::DisableIfAny<std::is_base_of<JsonSerializable<Type>, Type>, AdaptedJsonSerializable<Type>>...>
 void push(
     const Type &reflectable, const char *name, RAPIDJSON_NAMESPACE::Value::Object &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator);
 
@@ -220,7 +220,7 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
 /*!
  * \brief Pushes the specified \a reflectable which has a custom type to the specified array.
  */
-template <typename Type, Traits::EnableIf<std::is_base_of<JsonSerializable<Type>, Type>>...>
+template <typename Type, Traits::EnableIfAny<std::is_base_of<JsonSerializable<Type>, Type>, AdaptedJsonSerializable<Type>>...>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     RAPIDJSON_NAMESPACE::Value objectValue(RAPIDJSON_NAMESPACE::kObjectType);
@@ -232,7 +232,7 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAP
 /*!
  * \brief Pushes the specified \a reflectable to the specified array.
  */
-template <typename Type, Traits::DisableIf<std::is_base_of<JsonSerializable<Type>, Type>>...>
+template <typename Type, Traits::DisableIfAny<std::is_base_of<JsonSerializable<Type>, Type>, AdaptedJsonSerializable<Type>>...>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     RAPIDJSON_NAMESPACE::Value genericValue;
@@ -243,7 +243,7 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAP
 /*!
  * \brief Pushes the specified \a reflectable which has custom type as a member to the specified object.
  */
-template <typename Type, Traits::EnableIf<std::is_base_of<JsonSerializable<Type>, Type>>...>
+template <typename Type, Traits::EnableIfAny<std::is_base_of<JsonSerializable<Type>, Type>, AdaptedJsonSerializable<Type>>...>
 void push(
     const Type &reflectable, const char *name, RAPIDJSON_NAMESPACE::Value::Object &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
@@ -256,7 +256,7 @@ void push(
 /*!
  * \brief Pushes the specified \a reflectable as a member to the specified object.
  */
-template <typename Type, Traits::DisableIf<std::is_base_of<JsonSerializable<Type>, Type>>...>
+template <typename Type, Traits::DisableIfAny<std::is_base_of<JsonSerializable<Type>, Type>, AdaptedJsonSerializable<Type>>...>
 void push(
     const Type &reflectable, const char *name, RAPIDJSON_NAMESPACE::Value::Object &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
@@ -281,18 +281,9 @@ void pull(Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_N
  * \brief Pulls the \a reflectable which has a custom type from the specified value which is supposed and checked to contain an object.
  */
 template <typename Type,
-    Traits::DisableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>,
+    Traits::DisableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>, Traits::IsSpecializationOf<Type, std::tuple>,
         Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>>...>
-void pull(Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
-{
-    if (!value.IsObject()) {
-        if (errors) {
-            errors->reportTypeMismatch<Type>(value.GetType());
-        }
-        return;
-    }
-    pull(reflectable, value.GetObject(), errors);
-}
+void pull(Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors);
 
 /*!
  * \brief Pulls the integer/float/boolean from the specified value which is supposed and checked to contain the right type.
@@ -401,7 +392,7 @@ namespace Detail {
  * \remarks Assumes that the array bounds have been checked before (to match the size of the tuple).
  */
 template <class Tuple, std::size_t N> struct TuplePullHelper {
-    static void pull(Tuple &tuple, const RAPIDJSON_NAMESPACE::Value::Array &value, JsonDeserializationErrors *errors)
+    static void pull(Tuple &tuple, const RAPIDJSON_NAMESPACE::Value::ConstArray value, JsonDeserializationErrors *errors)
     {
         TuplePullHelper<Tuple, N - 1>::pull(tuple, value, errors);
         JsonReflector::pull(std::get<N - 1>(tuple), value[N - 1], errors);
@@ -409,7 +400,7 @@ template <class Tuple, std::size_t N> struct TuplePullHelper {
 };
 
 template <class Tuple> struct TuplePullHelper<Tuple, 1> {
-    static void pull(Tuple &tuple, const RAPIDJSON_NAMESPACE::Value::Array &value, JsonDeserializationErrors *errors)
+    static void pull(Tuple &tuple, const RAPIDJSON_NAMESPACE::Value::ConstArray value, JsonDeserializationErrors *errors)
     {
         JsonReflector::pull(std::get<0>(tuple), value[0], errors);
     }
@@ -420,7 +411,7 @@ template <class Tuple> struct TuplePullHelper<Tuple, 1> {
  * \brief Pulls the speciified \a reflectable which is tuple from the specified value which is checked to contain an array.
  */
 template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::tuple>>...>
-void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
+void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
     if (!value.IsArray()) {
         if (errors) {
@@ -459,7 +450,7 @@ inline void pull(Type &reflectable, const char *name, const rapidjson::GenericVa
     JsonDeserializationErrors *errors)
 {
     // find member
-    auto member = value.FindMember(name);
+    const auto member = value.FindMember(name);
     if (member == value.MemberEnd()) {
         return; // TODO: handle member missing
     }
@@ -472,12 +463,29 @@ inline void pull(Type &reflectable, const char *name, const rapidjson::GenericVa
     }
 
     // actually pull value for member
-    pull<Type>(reflectable, value.FindMember(name)->value, errors);
+    pull<Type>(reflectable, member->value, errors);
 
     // restore previous error context
     if (errors) {
         errors->currentMember = previousMember;
     }
+}
+
+/*!
+ * \brief Pulls the \a reflectable which has a custom type from the specified value which is supposed and checked to contain an object.
+ */
+template <typename Type,
+    Traits::DisableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>, Traits::IsSpecializationOf<Type, std::tuple>,
+        Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>>...>
+void pull(Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
+{
+    if (!value.IsObject()) {
+        if (errors) {
+            errors->reportTypeMismatch<Type>(value.GetType());
+        }
+        return;
+    }
+    pull(reflectable, value.GetObject(), errors);
 }
 
 // define functions providing high-level JSON serialization
@@ -584,9 +592,9 @@ Type fromJson(const char *json, std::size_t jsonSize, JsonDeserializationErrors 
 /*!
  * \brief Deserializes the specified JSON from an std::string to \tparam Type.
  */
-template <typename Type> Type fromJson(const std::string &json)
+template <typename Type> Type fromJson(const std::string &json, JsonDeserializationErrors *errors)
 {
-    return fromJson<Type>(json.data(), json.size());
+    return fromJson<Type>(json.data(), json.size(), errors);
 }
 
 } // namespace JsonReflector

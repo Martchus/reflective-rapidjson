@@ -220,21 +220,41 @@ void JsonGeneratorTests::testCustomSerialization()
  */
 void JsonGeneratorTests::test3rdPartyAdaption()
 {
+    // test whether specializations of AdaptedJsonSerializable are generated
     static_assert(
         ReflectiveRapidJSON::AdaptedJsonSerializable<NotJsonSerializable>::value, "can serialize NotJsonSerializable because of adaption macro");
+    static_assert(ReflectiveRapidJSON::AdaptedJsonSerializable<NestedNotJsonSerializable>::value,
+        "can serialize NestedNotJsonSerializable because of adaption macro");
     static_assert(!ReflectiveRapidJSON::AdaptedJsonSerializable<OtherNotJsonSerializable>::value,
         "can not serialize OtherNotJsonSerializable because adaption macro missing");
     static_assert(!ReflectiveRapidJSON::AdaptedJsonSerializable<ReallyNotJsonSerializable>::value, "can not serialize ReallyNotJsonSerializable");
 
-    const NotJsonSerializable test;
-    const string str("{\"butSerializableAnyways\":\"useful to adapt 3rd party structs\"}");
+    const NotJsonSerializable simple;
+    const string strSimple("{\"butSerializableAnyways\":\"useful to adapt 3rd party structs\"}");
+    const NestedNotJsonSerializable nested{ { "foo" }, { { "1" }, { "2" }, { "3" } }, { 42, { "bar" } } };
+    const string strNested("{\"asMember\":{\"butSerializableAnyways\":\"foo\"},\"asArrayElement\":[{\"butSerializableAnyways\":\"1\"},{"
+                           "\"butSerializableAnyways\":\"2\"},{\"butSerializableAnyways\":\"3\"}],\"asTupleElement\":[42,{\"butSerializableAnyways\":"
+                           "\"bar\"}]}");
 
     // test serialization
-    CPPUNIT_ASSERT_EQUAL(str, string(ReflectiveRapidJSON::JsonReflector::toJson(test).GetString()));
+    CPPUNIT_ASSERT_EQUAL(strSimple, string(ReflectiveRapidJSON::JsonReflector::toJson(simple).GetString()));
+    CPPUNIT_ASSERT_EQUAL(strNested, string(ReflectiveRapidJSON::JsonReflector::toJson(nested).GetString()));
 
     // test deserialization
-    const NotJsonSerializable parsedTest(ReflectiveRapidJSON::JsonReflector::fromJson<NotJsonSerializable>(str));
-    CPPUNIT_ASSERT_EQUAL(test.butSerializableAnyways, parsedTest.butSerializableAnyways);
+    JsonDeserializationErrors errors;
+    const auto parsedSimple(ReflectiveRapidJSON::JsonReflector::fromJson<NotJsonSerializable>(strSimple, &errors));
+    CPPUNIT_ASSERT_EQUAL(0_st, errors.size());
+    CPPUNIT_ASSERT_EQUAL(simple.butSerializableAnyways, parsedSimple.butSerializableAnyways);
+    const auto parsedNested(ReflectiveRapidJSON::JsonReflector::fromJson<NestedNotJsonSerializable>(strNested, &errors));
+    CPPUNIT_ASSERT_EQUAL(0_st, errors.size());
+    CPPUNIT_ASSERT_EQUAL(nested.asMember.butSerializableAnyways, parsedNested.asMember.butSerializableAnyways);
+    CPPUNIT_ASSERT_EQUAL(nested.asMember.butSerializableAnyways, parsedNested.asMember.butSerializableAnyways);
+    CPPUNIT_ASSERT_EQUAL(nested.asArrayElement.size(), parsedNested.asArrayElement.size());
+    CPPUNIT_ASSERT_EQUAL(nested.asArrayElement.at(0).butSerializableAnyways, parsedNested.asArrayElement.at(0).butSerializableAnyways);
+    CPPUNIT_ASSERT_EQUAL(nested.asArrayElement.at(1).butSerializableAnyways, parsedNested.asArrayElement.at(1).butSerializableAnyways);
+    CPPUNIT_ASSERT_EQUAL(nested.asArrayElement.at(2).butSerializableAnyways, parsedNested.asArrayElement.at(2).butSerializableAnyways);
+    CPPUNIT_ASSERT_EQUAL(get<0>(nested.asTupleElement), get<0>(parsedNested.asTupleElement));
+    CPPUNIT_ASSERT_EQUAL(get<1>(nested.asTupleElement).butSerializableAnyways, get<1>(parsedNested.asTupleElement).butSerializableAnyways);
 }
 
 // include file required for reflection of TestStruct and other structs defined in structs.h

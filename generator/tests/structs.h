@@ -88,7 +88,7 @@ struct StructWithCustomTypes : public JsonSerializable<StructWithCustomTypes> {
 };
 
 /*!
- * \brief The NotJsonSerializable struct is used to tests (de)serialization for 3rd party structs (which do not
+ * \brief The NotJsonSerializable struct is used to test (de)serialization for 3rd party structs (which do not
  *        inherit from JsonSerializable instance). It is used in JsonGeneratorTests::test3rdPartyAdaption().
  * \remarks Imagine this struct would have been defined in a 3rd party header.
  */
@@ -96,8 +96,20 @@ struct NotJsonSerializable {
     std::string butSerializableAnyways = "useful to adapt 3rd party structs";
 };
 
-// make "NotJsonSerializable" serializable
+/*!
+ * \brief The NestedNotJsonSerializable struct is used to test (de)serialization for 3rd party structs (which do not
+ *        inherit from JsonSerializable instance). It is used in JsonGeneratorTests::test3rdPartyAdaption().
+ * \remarks Imagine this struct would have been defined in a 3rd party header.
+ */
+struct NestedNotJsonSerializable {
+    NotJsonSerializable asMember;
+    vector<NotJsonSerializable> asArrayElement;
+    tuple<int, NotJsonSerializable> asTupleElement;
+};
+
+// make "NotJsonSerializable" and "NestedNotJsonSerializable" serializable
 REFLECTIVE_RAPIDJSON_MAKE_JSON_SERIALIZABLE(NotJsonSerializable);
+REFLECTIVE_RAPIDJSON_MAKE_JSON_SERIALIZABLE(NestedNotJsonSerializable);
 
 /*!
  * \brief The OtherNotJsonSerializable struct is used to test whether code for (de)serialization is generated for classes explicitely

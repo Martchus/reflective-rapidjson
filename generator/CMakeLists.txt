@@ -63,6 +63,8 @@ add_reflection_generator_invocation(
     JSON_CLASSES
         OtherNotJsonSerializable       # test specifying classes for JSON (de)serialization manually
         SomeOtherClassName             # specifying a class that does not exist should not cause any problems
+    JSON_VISIBILITY
+        LIB_EXPORT                     # not required, just to test setting visibility
 )
 
 # include modules to apply configuration

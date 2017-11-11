@@ -38,10 +38,11 @@ int main(int argc, char *argv[])
     generatorsArg.setCombinable(true);
     ConfigValueArgument clangOptionsArg("clang-opt", 'c', "specifies arguments/options to be passed to Clang", { "option" });
     clangOptionsArg.setRequiredValueCount(Argument::varValueCount);
-    JsonSerializationCodeGenerator::Options jsonOptions;
     HelpArgument helpArg(parser);
     NoColorArgument noColorArg;
-    generateArg.setSubArguments({ &inputFileArg, &outputFileArg, &generatorsArg, &clangOptionsArg, &jsonOptions.additionalClassesArg });
+    generateArg.setSubArguments({ &inputFileArg, &outputFileArg, &generatorsArg, &clangOptionsArg });
+    JsonSerializationCodeGenerator::Options jsonOptions;
+    jsonOptions.appendTo(&generateArg);
     parser.setMainArguments({ &generateArg, &noColorArg, &helpArg });
 
     // parse arguments

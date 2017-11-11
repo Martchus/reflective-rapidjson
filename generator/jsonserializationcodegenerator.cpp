@@ -13,12 +13,17 @@ using namespace ApplicationUtilities;
 
 namespace ReflectiveRapidJSON {
 
+/*!
+ * \brief Initializes the CLI arguments which are specific to the JsonSerializationCodeGenerator.
+ * \todo Find a more general approach to pass CLI arguments from main() to the particular code generators.
+ */
 JsonSerializationCodeGenerator::Options::Options()
-    : additionalClassesArg("json-classes", '\0', "specifies additional classes to consider for JSON serialization")
+    : additionalClassesArg("json-classes", '\0', "specifies additional classes to consider for JSON serialization", { "class-name" })
+    , visibilityArg("json-visibility", '\0', "specifies the \"visibility attribute\" for generated functions", { "attribute" })
 {
-    additionalClassesArg.setCombinable(true);
-    additionalClassesArg.setValueNames({ "class-name" });
     additionalClassesArg.setRequiredValueCount(Argument::varValueCount);
+    additionalClassesArg.setValueCompletionBehavior(ValueCompletionBehavior::None);
+    visibilityArg.setPreDefinedCompletionValues("LIB_EXPORT");
 }
 
 /*!
@@ -86,6 +91,12 @@ void JsonSerializationCodeGenerator::generate(ostream &os) const
     os << "namespace ReflectiveRapidJSON {\n"
           "namespace JsonReflector {\n\n";
 
+    // determine visibility attribute
+    const char *visibility = m_options.visibilityArg.firstValue();
+    if (!visibility) {
+        visibility = "";
+    }
+
     // add push and pull functions for each class, for an example of the resulting
     // output, see ../lib/tests/jsonserializable.cpp (code under comment "pretend serialization code...")
     for (const RelevantClass &relevantClass : relevantClasses) {
@@ -117,7 +128,7 @@ void JsonSerializationCodeGenerator::generate(ostream &os) const
         const vector<const RelevantClass *> relevantBases = findRelevantBaseClasses(relevantClass, relevantClasses);
 
         // print push method
-        os << "template <> inline void push<::" << relevantClass.qualifiedName << ">(const ::" << relevantClass.qualifiedName
+        os << "template <> " << visibility << " void push<::" << relevantClass.qualifiedName << ">(const ::" << relevantClass.qualifiedName
            << " &reflectable, ::RAPIDJSON_NAMESPACE::Value::Object &value, ::RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)\n{\n"
               "    // push base classes\n";
         for (const RelevantClass *baseClass : relevantBases) {
@@ -132,7 +143,7 @@ void JsonSerializationCodeGenerator::generate(ostream &os) const
         os << "}\n";
 
         // print pull method
-        os << "template <> inline void pull<::" << relevantClass.qualifiedName << ">(::" << relevantClass.qualifiedName
+        os << "template <> " << visibility << " void pull<::" << relevantClass.qualifiedName << ">(::" << relevantClass.qualifiedName
            << " &reflectable, const ::RAPIDJSON_NAMESPACE::GenericValue<::RAPIDJSON_NAMESPACE::UTF8<char>>::ConstObject &value, "
               "JsonDeserializationErrors "
               "*errors)\n{\n"

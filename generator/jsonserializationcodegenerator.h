@@ -15,8 +15,10 @@ class JsonSerializationCodeGenerator : public CodeGenerator {
 public:
     struct Options {
         Options();
+        void appendTo(ApplicationUtilities::Argument *arg);
 
-        ApplicationUtilities::Argument additionalClassesArg;
+        ApplicationUtilities::ConfigValueArgument additionalClassesArg;
+        ApplicationUtilities::ConfigValueArgument visibilityArg;
     };
 
 private:
@@ -42,6 +44,12 @@ private:
     std::vector<std::string> m_adaptionRecords;
     const Options &m_options;
 };
+
+inline void JsonSerializationCodeGenerator::Options::appendTo(ApplicationUtilities::Argument *arg)
+{
+    arg->addSubArgument(&additionalClassesArg);
+    arg->addSubArgument(&visibilityArg);
+}
 
 inline JsonSerializationCodeGenerator::JsonSerializationCodeGenerator(CodeFactory &factory, const Options &options)
     : CodeGenerator(factory)

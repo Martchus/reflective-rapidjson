@@ -13,6 +13,7 @@
     - [x] Add additional parameter for code generator to allow specifying relevant classes
           explicitely
     - [x] Fix traits currently relying on `JsonSerializable` being base class
+- [x] Allow exporting symbols
 
 ## Library-only
 - [ ] Support `std::unique_ptr` and `std::shared_ptr`

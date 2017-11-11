@@ -104,7 +104,7 @@ void JsonSerializationCodeGenerator::generate(ostream &os) const
         bool pullPrivateMembers = false;
         for (const clang::FriendDecl *const friendDecl : relevantClass.record->friends()) {
             const clang::NamedDecl *const actualFriendDecl = friendDecl->getFriendDecl();
-            if (!actualFriendDecl /* && decl->getKind() != clang::Decl::Kind::FunctionTemplate */) {
+            if (!actualFriendDecl || actualFriendDecl->getKind() != clang::Decl::Kind::Function) {
                 continue;
             }
             const string friendName(actualFriendDecl->getQualifiedNameAsString());
@@ -114,8 +114,6 @@ void JsonSerializationCodeGenerator::generate(ostream &os) const
             if (friendName == "ReflectiveRapidJSON::JsonReflector::pull") {
                 pullPrivateMembers = true;
             }
-            cout << "friend-kind: " << actualFriendDecl->getDeclKindName() << endl;
-            cout << "friend: " << actualFriendDecl->getQualifiedNameAsString() << endl;
             if (pushPrivateMembers && pullPrivateMembers) {
                 break;
             }

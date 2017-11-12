@@ -13,25 +13,27 @@ generator.
 ## Supported datatypes
 The following table shows the mapping of supported C++ types to supported JSON types:
 
-| C++ type                                 | JSON type |
-| ---------------------------------------- |:---------:|
-| custom structures/classes                | object    |
-| bool                                     | true/false|
-| signed and unsigned integral types       | number    |
-| float and double                         | number    |
-| enum and enum class                      | number    |
-| std::string                              | string    |
-| const char *                             | string    |
-| iteratables (std::vector, std::list, ...)| array     |
-| std::tuple                               | array     |
+| C++ type                                     | JSON type    |
+| -------------------------------------------- |:------------:|
+| custom structures/classes                    | object       |
+| `bool`                                       | true/false   |
+| signed and unsigned integral types           | number       |
+| `float` and `double`                         | number       |
+| `enum` and `enum class`                      | number       |
+| `std::string`                                | string       |
+| `const char *`                               | string       |
+| iteratables (`std::vector`, `std::list`, ...)| array        |
+| `std::tuple`                                 | array        |
+| `std::unique_ptr`, `std::shared_ptr`         | depends/null |
 
 ### Remarks
-* `const char *` is only supported for serialization.
+* Raw pointer are not supported. This prevents
+  forgetting to free memoery which would have to be allocated when deserializing.
+* For the same reason `const char *` strings are only supported for serialization.
 * Enums are only supported for serialization.
 * For deserialization, iteratables must provide an `emplace_back` method. So deserialization of eg. `std::forward_list`
   is currently not supported.
-* Using smart pointers is not supported yet.
-* The JSON type `null` is not supported yet.
+* The JSON type for smart pointer depends on the type the pointer refers to. It can also be `null`.
 * See also TODOs.md.
 
 ## Usage

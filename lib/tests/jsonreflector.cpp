@@ -150,9 +150,13 @@ class JsonReflectorTests : public TestFixture {
     CPPUNIT_TEST(testSerializePrimitives);
     CPPUNIT_TEST(testSerializeSimpleObjects);
     CPPUNIT_TEST(testSerializeNestedObjects);
+    CPPUNIT_TEST(testSerializeUniquePtr);
+    CPPUNIT_TEST(testSerializeSharedPtr);
     CPPUNIT_TEST(testDeserializePrimitives);
     CPPUNIT_TEST(testDeserializeSimpleObjects);
     CPPUNIT_TEST(testDeserializeNestedObjects);
+    CPPUNIT_TEST(testDeserializeUniquePtr);
+    CPPUNIT_TEST(testDeserializeSharedPtr);
     CPPUNIT_TEST(testHandlingParseError);
     CPPUNIT_TEST(testHandlingTypeMismatch);
     CPPUNIT_TEST_SUITE_END();
@@ -165,9 +169,13 @@ public:
     void testSerializePrimitives();
     void testSerializeSimpleObjects();
     void testSerializeNestedObjects();
+    void testSerializeUniquePtr();
+    void testSerializeSharedPtr();
     void testDeserializePrimitives();
     void testDeserializeSimpleObjects();
     void testDeserializeNestedObjects();
+    void testDeserializeUniquePtr();
+    void testDeserializeSharedPtr();
     void testHandlingParseError();
     void testHandlingTypeMismatch();
 
@@ -260,6 +268,60 @@ void JsonReflectorTests::testSerializeNestedObjects()
     CPPUNIT_ASSERT_EQUAL(
         "{\"name\":\"nesting2\",\"testObjects\":[{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false},{\"number\":43,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false}]}"s,
         string(nestingArray.toJson().GetString()));
+}
+
+void JsonReflectorTests::testSerializeUniquePtr()
+{
+    Document doc(kArrayType);
+    Document::AllocatorType &alloc = doc.GetAllocator();
+    doc.SetArray();
+    Document::Array array(doc.GetArray());
+
+    const auto str = make_unique<string>("foo");
+    std::unique_ptr<string> nullStr;
+    const auto obj = make_unique<TestObject>();
+    obj->number = 42;
+    obj->number2 = 3.141592653589793;
+    obj->numbers = { 1, 2, 3, 4 };
+    obj->text = "bar";
+    obj->boolean = false;
+
+    JsonReflector::push(str, array, alloc);
+    JsonReflector::push(nullStr, array, alloc);
+    JsonReflector::push(obj, array, alloc);
+
+    StringBuffer strbuf;
+    Writer<StringBuffer> jsonWriter(strbuf);
+    doc.Accept(jsonWriter);
+    CPPUNIT_ASSERT_EQUAL("[\"foo\",null,{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"bar\",\"boolean\":false}]"s,
+        string(strbuf.GetString()));
+}
+
+void JsonReflectorTests::testSerializeSharedPtr()
+{
+    Document doc(kArrayType);
+    Document::AllocatorType &alloc = doc.GetAllocator();
+    doc.SetArray();
+    Document::Array array(doc.GetArray());
+
+    const auto str = make_shared<string>("foo");
+    std::unique_ptr<string> nullStr;
+    const auto obj = make_shared<TestObject>();
+    obj->number = 42;
+    obj->number2 = 3.141592653589793;
+    obj->numbers = { 1, 2, 3, 4 };
+    obj->text = "bar";
+    obj->boolean = false;
+
+    JsonReflector::push(str, array, alloc);
+    JsonReflector::push(nullStr, array, alloc);
+    JsonReflector::push(obj, array, alloc);
+
+    StringBuffer strbuf;
+    Writer<StringBuffer> jsonWriter(strbuf);
+    doc.Accept(jsonWriter);
+    CPPUNIT_ASSERT_EQUAL("[\"foo\",null,{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"bar\",\"boolean\":false}]"s,
+        string(strbuf.GetString()));
 }
 
 /*!
@@ -356,6 +418,50 @@ void JsonReflectorTests::testDeserializeNestedObjects()
         CPPUNIT_ASSERT_EQUAL("test"s, testObj.text);
         CPPUNIT_ASSERT_EQUAL(false, testObj.boolean);
     }
+}
+
+void JsonReflectorTests::testDeserializeUniquePtr()
+{
+    Document doc(kArrayType);
+    doc.Parse("[\"foo\",null,{\"text\":\"bar\"}]");
+    auto array = doc.GetArray().begin();
+
+    unique_ptr<string> str;
+    unique_ptr<string> nullStr;
+    unique_ptr<TestObject> obj;
+    JsonDeserializationErrors errors;
+    JsonReflector::pull(str, array, &errors);
+    JsonReflector::pull(nullStr, array, &errors);
+    JsonReflector::pull(obj, array, &errors);
+
+    CPPUNIT_ASSERT_EQUAL(0_st, errors.size());
+    CPPUNIT_ASSERT(str);
+    CPPUNIT_ASSERT_EQUAL("foo"s, *str);
+    CPPUNIT_ASSERT(!nullStr);
+    CPPUNIT_ASSERT(obj);
+    CPPUNIT_ASSERT_EQUAL("bar"s, obj->text);
+}
+
+void JsonReflectorTests::testDeserializeSharedPtr()
+{
+    Document doc(kArrayType);
+    doc.Parse("[\"foo\",null,{\"text\":\"bar\"}]");
+    auto array = doc.GetArray().begin();
+
+    shared_ptr<string> str;
+    shared_ptr<string> nullStr;
+    shared_ptr<TestObject> obj;
+    JsonDeserializationErrors errors;
+    JsonReflector::pull(str, array, &errors);
+    JsonReflector::pull(nullStr, array, &errors);
+    JsonReflector::pull(obj, array, &errors);
+
+    CPPUNIT_ASSERT_EQUAL(0_st, errors.size());
+    CPPUNIT_ASSERT(str);
+    CPPUNIT_ASSERT_EQUAL("foo"s, *str);
+    CPPUNIT_ASSERT(!nullStr);
+    CPPUNIT_ASSERT(obj);
+    CPPUNIT_ASSERT_EQUAL("bar"s, obj->text);
 }
 
 /*!

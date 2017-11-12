@@ -16,7 +16,7 @@
 - [x] Allow exporting symbols
 
 ## Library-only
-- [ ] Support `std::unique_ptr` and `std::shared_ptr`
+- [x] Support `std::unique_ptr` and `std::shared_ptr`
 - [ ] Support `std::map` and `std::unordered_map`
 - [ ] Support `std::any`
 - [x] Support/document customized (de)serialization (eg. serialize some `DateTime` object to ISO string representation)

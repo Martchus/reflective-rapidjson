@@ -16,6 +16,7 @@
 #include <rapidjson/writer.h>
 
 #include <limits>
+#include <memory>
 #include <string>
 #include <tuple>
 
@@ -67,7 +68,8 @@ inline RAPIDJSON_NAMESPACE::Document parseJsonDocFromString(const char *json, st
 // define traits to distinguish between "built-in" types like int, std::string, std::vector, ... and custom structs/classes
 template <typename Type>
 using IsBuiltInType = Traits::Any<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>, std::is_enum<Type>,
-    Traits::IsSpecializationOf<Type, std::tuple>, Traits::IsIteratable<Type>>;
+    Traits::IsSpecializationOf<Type, std::tuple>, Traits::IsIteratable<Type>, Traits::IsSpecializationOf<Type, std::unique_ptr>,
+    Traits::IsSpecializationOf<Type, std::shared_ptr>, Traits::IsSpecializationOf<Type, std::weak_ptr>>;
 template <typename Type> using IsCustomType = Traits::Not<IsBuiltInType<Type>>;
 
 // define trait to check for custom structs/classes which are JSON serializable
@@ -113,6 +115,17 @@ void push(
  */
 template <typename Type, Traits::DisableIf<IsBuiltInType<Type>>...>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Object &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator);
+
+/*!
+ * \brief Pushes the specified \a reflectable which has a custom type to the specified value.
+ */
+template <typename Type, Traits::DisableIf<IsBuiltInType<Type>>...>
+inline void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
+{
+    value.SetObject();
+    RAPIDJSON_NAMESPACE::Value::Object obj(value.GetObject());
+    push(reflectable, obj, allocator);
+}
 
 /*!
  * \brief Pushes the specified integer/float/boolean to the specified value.
@@ -220,6 +233,21 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
     RAPIDJSON_NAMESPACE::Value::Array array(value.GetArray());
     array.Reserve(std::tuple_size<Type>::value, allocator);
     Detail::TuplePushHelper<Type, std::tuple_size<Type>::value>::push(reflectable, array, allocator);
+}
+
+/*!
+ * \brief Pushes the specified unique_ptr, shared_ptr or weak_ptr to the specified value.
+ */
+template <typename Type,
+    Traits::EnableIfAny<Traits::IsSpecializationOf<Type, std::unique_ptr>, Traits::IsSpecializationOf<Type, std::shared_ptr>,
+        Traits::IsSpecializationOf<Type, std::weak_ptr>>...>
+void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
+{
+    if (!reflectable) {
+        value.SetNull();
+        return;
+    }
+    push(*reflectable, value, allocator);
 }
 
 /*!
@@ -409,7 +437,7 @@ template <class Tuple> struct TuplePullHelper<Tuple, 1> {
 } // namespace Detail
 
 /*!
- * \brief Pulls the speciified \a reflectable which is tuple from the specified value which is checked to contain an array.
+ * \brief Pulls the speciified \a reflectable which is a tuple from the specified value which is checked to contain an array.
  */
 template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::tuple>>...>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
@@ -429,6 +457,34 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
         return;
     }
     Detail::TuplePullHelper<Type, std::tuple_size<Type>::value>::pull(reflectable, array, errors);
+}
+
+/*!
+ * \brief Pulls the speciified \a reflectable which is a unique_ptr from the specified value which might be null.
+ */
+template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::unique_ptr>>...>
+void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
+{
+    if (value.IsNull()) {
+        reflectable.reset();
+        return;
+    }
+    reflectable = std::make_unique<typename Type::element_type>();
+    pull(*reflectable, value, errors);
+}
+
+/*!
+ * \brief Pulls the speciified \a reflectable which is a shared_ptr from the specified value which might be null.
+ */
+template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::shared_ptr>>...>
+void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
+{
+    if (value.IsNull()) {
+        reflectable.reset();
+        return;
+    }
+    reflectable = std::make_shared<typename Type::element_type>();
+    pull(*reflectable, value, errors);
 }
 
 /*!

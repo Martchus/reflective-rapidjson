@@ -22,9 +22,7 @@ namespace JsonReflector {
 
 // define functions to "push" values to a RapidJSON array or object
 
-template <typename Type,
-    Traits::DisableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>, std::is_enum<Type>,
-        Traits::IsSpecializationOf<Type, std::tuple>, Traits::IsIteratable<Type>>...>
+template <typename Type, Traits::DisableIf<IsBuiltInType<Type>>...>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Object &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     boost::hana::for_each(boost::hana::keys(reflectable), [&reflectable, &value, &allocator](auto key) {
@@ -34,9 +32,7 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Object &value, RA
 
 // define functions to "pull" values from a RapidJSON array or object
 
-template <typename Type,
-    Traits::DisableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>, std::is_enum<Type>,
-        Traits::IsSpecializationOf<Type, std::tuple>, Traits::IsIteratable<Type>>...>
+template <typename Type, Traits::DisableIf<IsBuiltInType<Type>>...>
 void pull(Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstObject &value,
     JsonDeserializationErrors *errors)
 {

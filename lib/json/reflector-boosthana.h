@@ -14,13 +14,17 @@
 
 #include "./reflector.h"
 
-// TODO: find out which header files are actually relevant rather than including the master
-#include <boost/hana.hpp>
+#include <boost/hana/adapt_struct.hpp>
+#include <boost/hana/at_key.hpp>
+#include <boost/hana/define_struct.hpp>
+#include <boost/hana/for_each.hpp>
+#include <boost/hana/intersection.hpp>
+#include <boost/hana/keys.hpp>
 
 namespace ReflectiveRapidJSON {
 namespace JsonReflector {
 
-// define functions to "push" values to a RapidJSON array or object
+// define function to "push" values to a RapidJSON array or object
 
 template <typename Type, Traits::DisableIf<IsBuiltInType<Type>>...>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Object &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
@@ -30,7 +34,7 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Object &value, RA
     });
 }
 
-// define functions to "pull" values from a RapidJSON array or object
+// define function to "pull" values from a RapidJSON array or object
 
 template <typename Type, Traits::DisableIf<IsBuiltInType<Type>>...>
 void pull(Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstObject &value,

@@ -36,4 +36,7 @@ add_subdirectory(lib)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lib/cmake/modules" "${CMAKE_MODULE_PATH}")
 
 # add code generator
-add_subdirectory(generator)
+option(NO_GENERATOR "disables building the generator (useful for cross-compiling)" OFF)
+if(NOT NO_GENERATOR)
+    add_subdirectory(generator)
+endif()

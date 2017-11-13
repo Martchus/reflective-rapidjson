@@ -39,6 +39,7 @@ struct NestedTestStruct : public JsonSerializable<NestedTestStruct> {
     friend class JsonGeneratorTests;
 
     list<vector<TestStruct>> nested;
+    unique_ptr<TestStruct> ptr;
 
 private:
     deque<double> deq;

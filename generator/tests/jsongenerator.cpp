@@ -128,8 +128,8 @@ void JsonGeneratorTests::testNesting()
     NestedTestStruct nested;
     nested.nested.emplace_front(vector<TestStruct>{ test });
     nested.deq.emplace_back(3.14);
-    const string expectedJSON(
-        "{\"nested\":[[{\"someInt\":42,\"someString\":\"the answer\",\"yetAnotherString\":\"but what was the question\"}]],\"deq\":[3.14]}");
+    const string expectedJSON("{\"nested\":[[{\"someInt\":42,\"someString\":\"the answer\",\"yetAnotherString\":\"but what was the "
+                              "question\"}]],\"ptr\":null,\"deq\":[3.14]}");
 
     // test serialization
     CPPUNIT_ASSERT_EQUAL(expectedJSON, string(nested.toJson().GetString()));

@@ -203,6 +203,10 @@ An example for such custom (de)serialization can be found in the file
 `json/reflector-chronoutilities.h`. It provides (de)serialization of `DateTime` and
 `TimeSpan` objects from the C++ utilities library.
 
+### Remarks
+* Static member variables are currently ignored by the generator.
+* It is currently not possible to ignore a specific member.
+
 ### Further examples
 Checkout the test cases for further examples. Relevant files are in
 the directories `lib/tests` and `generator/tests`.

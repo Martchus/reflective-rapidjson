@@ -14,6 +14,8 @@
           explicitely
     - [x] Fix traits currently relying on `JsonSerializable` being base class
 - [x] Allow exporting symbols
+- [ ] Allow (de)serialization of static members (by default?)
+- [ ] Allow ignoring particular members
 
 ## Library-only
 - [x] Support `std::unique_ptr` and `std::shared_ptr`

@@ -23,6 +23,8 @@ struct TestStruct : public JsonSerializable<TestStruct> {
     int someInt = 0;
     string someString = "foo";
     string yetAnotherString = "bar";
+    static constexpr const char *staticMember = "static members are just ignored";
+    static int anotherStaticMember;
 
 private:
     string privateString = "not going to be serialized";

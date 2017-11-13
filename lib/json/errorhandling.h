@@ -59,14 +59,20 @@ template <typename Type, Traits::EnableIfAny<Traits::IsString<Type>, Traits::IsC
     return JsonType::String;
 }
 
-template <typename Type, Traits::EnableIf<Traits::IsIteratable<Type>, Traits::Not<Traits::IsString<Type>>>...> constexpr JsonType jsonType()
+template <typename Type,
+    Traits::EnableIf<Traits::IsIteratable<Type>,
+        Traits::Not<Traits::Any<Traits::IsString<Type>, Traits::IsSpecializationOf<Type, std::map>,
+            Traits::IsSpecializationOf<Type, std::unordered_map>>>>...>
+constexpr JsonType jsonType()
 {
     return JsonType::Array;
 }
 
 template <typename Type,
     Traits::DisableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, Traits::IsString<Type>, Traits::IsCString<Type>,
-        Traits::IsIteratable<Type>>...>
+        Traits::All<Traits::IsIteratable<Type>,
+            Traits::Not<Traits::Any<Traits::IsString<Type>, Traits::IsSpecializationOf<Type, std::map>,
+                Traits::IsSpecializationOf<Type, std::unordered_map>>>>>...>
 constexpr JsonType jsonType()
 {
     return JsonType::Object;

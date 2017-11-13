@@ -16,9 +16,11 @@
 #include <rapidjson/writer.h>
 
 #include <limits>
+#include <map>
 #include <memory>
 #include <string>
 #include <tuple>
+#include <unordered_map>
 
 #include "./errorhandling.h"
 
@@ -74,6 +76,13 @@ template <typename Type> using IsCustomType = Traits::Not<IsBuiltInType<Type>>;
 
 // define trait to check for custom structs/classes which are JSON serializable
 template <typename Type> using IsJsonSerializable = Traits::Any<std::is_base_of<JsonSerializable<Type>, Type>, AdaptedJsonSerializable<Type>>;
+
+// define trait to check for map or hash
+template <typename Type>
+using IsMapOrHash = Traits::Any<Traits::IsSpecializationOf<Type, std::map>, Traits::IsSpecializationOf<Type, std::unordered_map>>;
+template <typename Type>
+using IsArray
+    = Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>, Traits::Not<IsMapOrHash<Type>>>;
 
 // define functions to "push" values to a RapidJSON array or object
 
@@ -175,8 +184,7 @@ inline void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAP
 /*!
  * \brief Pushes the specified iteratable (eg. std::vector, std::list) to the specified value.
  */
-template <typename Type,
-    Traits::EnableIf<Traits::IsIteratable<Type>, Traits::HasSize<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>...>
+template <typename Type, Traits::EnableIf<IsArray<Type>, Traits::HasSize<Type>>...>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     value.SetArray();
@@ -188,17 +196,28 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
 }
 
 /*!
- * \brief Pushes the specified iteratable (eg. std::vector, std::list) to the specified value.
+ * \brief Pushes the specified iteratable list (eg. std::vector, std::list) to the specified value.
  */
-template <typename Type,
-    Traits::EnableIf<Traits::IsIteratable<Type>, Traits::Not<Traits::HasSize<Type>>,
-        Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>...>
+template <typename Type, Traits::EnableIf<IsArray<Type>, Traits::Not<Traits::HasSize<Type>>>...>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     value.SetArray();
     RAPIDJSON_NAMESPACE::Value::Array array(value.GetArray());
     for (const auto &item : reflectable) {
         push(item, array, allocator);
+    }
+}
+
+/*!
+ * \brief Pushes the specified map (std::map, std::unordered_map) to the specified value.
+ */
+template <typename Type, Traits::EnableIf<IsMapOrHash<Type>>...>
+void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
+{
+    value.SetObject();
+    RAPIDJSON_NAMESPACE::Value::Object object(value.GetObject());
+    for (const auto &item : reflectable) {
+        push(item.second, item.first.data(), object, allocator);
     }
 }
 
@@ -349,15 +368,13 @@ inline void pull(
 /*!
  * \brief Pulls the speciified \a reflectable which is an iteratable from the specified array. The \a reflectable is cleared before.
  */
-template <typename Type, Traits::EnableIf<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>...>
+template <typename Type, Traits::EnableIf<IsArray<Type>>...>
 void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstArray array, JsonDeserializationErrors *errors);
 
 /*!
  * \brief Pulls the speciified \a reflectable which is an iteratable without reserve() method from the specified value which is checked to contain an array.
  */
-template <typename Type,
-    Traits::EnableIf<Traits::IsIteratable<Type>, Traits::Not<Traits::IsReservable<Type>>,
-        Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>...>
+template <typename Type, Traits::EnableIf<IsArray<Type>, Traits::Not<Traits::IsReservable<Type>>>...>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
     if (!value.IsArray()) {
@@ -372,8 +389,7 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
 /*!
  * \brief Pulls the speciified \a reflectable which is an iteratable with reserve() method from the specified value which is checked to contain an array.
  */
-template <typename Type,
-    Traits::EnableIf<Traits::IsIteratable<Type>, Traits::IsReservable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>...>
+template <typename Type, Traits::EnableIf<IsArray<Type>, Traits::IsReservable<Type>>...>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
     if (!value.IsArray()) {
@@ -390,7 +406,7 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
 /*!
  * \brief Pulls the speciified \a reflectable which is an iteratable from the specified array. The \a reflectable is cleared before.
  */
-template <typename Type, Traits::EnableIf<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>...>
+template <typename Type, Traits::EnableIf<IsArray<Type>>...>
 void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstArray array, JsonDeserializationErrors *errors)
 {
     // clear previous contents of the array
@@ -411,6 +427,24 @@ void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<c
     // clear error context
     if (errors) {
         errors->currentIndex = JsonDeserializationError::noIndex;
+    }
+}
+
+/*!
+ * \brief Pulls the speciified \a reflectable which is a map from the specified value which is checked to contain an object.
+ */
+template <typename Type, Traits::EnableIf<IsMapOrHash<Type>>...>
+void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
+{
+    if (!value.IsObject()) {
+        if (errors) {
+            errors->reportTypeMismatch<Type>(value.GetType());
+        }
+        return;
+    }
+    auto obj = value.GetObject();
+    for (auto i = obj.MemberBegin(), end = obj.MemberEnd(); i != end; ++i) {
+        pull(reflectable[i->name.GetString()], i->value, errors);
     }
 }
 

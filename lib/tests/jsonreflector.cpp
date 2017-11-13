@@ -15,8 +15,10 @@ using TestUtilities::operator<<; // must be visible prior to the call site
 #include <rapidjson/writer.h>
 
 #include <iostream>
+#include <map>
 #include <string>
 #include <tuple>
+#include <unordered_map>
 #include <vector>
 
 using namespace std;
@@ -28,6 +30,14 @@ using namespace TestUtilities;
 using namespace TestUtilities::Literals;
 using namespace ReflectiveRapidJSON;
 
+// test traits
+static_assert(JsonReflector::IsArray<vector<int>>::value, "vector mapped to array");
+static_assert(JsonReflector::IsArray<list<int>>::value, "list mapped to array");
+static_assert(!JsonReflector::IsArray<string>::value, "string mapped to string");
+static_assert(JsonReflector::IsMapOrHash<map<string, int>>::value, "map mapped to object");
+static_assert(JsonReflector::IsMapOrHash<unordered_map<string, int>>::value, "hash mapped to object");
+static_assert(!JsonReflector::IsMapOrHash<vector<int>>::value, "vector not mapped to object");
+
 /// \cond
 
 // define some structs for testing serialization
@@ -37,6 +47,8 @@ struct TestObject : public JsonSerializable<TestObject> {
     vector<int> numbers;
     string text;
     bool boolean;
+    map<string, int> someMap;
+    unordered_map<string, bool> someHash;
 };
 
 struct NestingObject : public JsonSerializable<NestingObject> {
@@ -72,6 +84,8 @@ template <> inline void push<TestObject>(const TestObject &reflectable, Value::O
     push(reflectable.numbers, "numbers", value, allocator);
     push(reflectable.text, "text", value, allocator);
     push(reflectable.boolean, "boolean", value, allocator);
+    push(reflectable.someMap, "someMap", value, allocator);
+    push(reflectable.someHash, "someHash", value, allocator);
 }
 
 template <> inline void push<NestingObject>(const NestingObject &reflectable, Value::Object &value, Document::AllocatorType &allocator)
@@ -99,6 +113,8 @@ inline void pull<TestObject>(TestObject &reflectable, const GenericValue<UTF8<ch
     pull(reflectable.numbers, "numbers", value, errors);
     pull(reflectable.text, "text", value, errors);
     pull(reflectable.boolean, "boolean", value, errors);
+    pull(reflectable.someMap, "someMap", value, errors);
+    pull(reflectable.someHash, "someHash", value, errors);
     if (errors) {
         errors->currentRecord = previousRecord;
     }
@@ -240,7 +256,10 @@ void JsonReflectorTests::testSerializeSimpleObjects()
     testObj.numbers = { 1, 2, 3, 4 };
     testObj.text = "test";
     testObj.boolean = false;
-    CPPUNIT_ASSERT_EQUAL("{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false}"s,
+    testObj.someMap = { { "a", 1 }, { "b", 2 } };
+    testObj.someHash = { { "c", true }, { "d", false } };
+    CPPUNIT_ASSERT_EQUAL(
+        "{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false,\"someMap\":{\"a\":1,\"b\":2},\"someHash\":{\"d\":false,\"c\":true}}"s,
         string(testObj.toJson().GetString()));
 }
 
@@ -258,7 +277,7 @@ void JsonReflectorTests::testSerializeNestedObjects()
     testObj.text = "test";
     testObj.boolean = false;
     CPPUNIT_ASSERT_EQUAL(
-        "{\"name\":\"nesting\",\"testObj\":{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false}}"s,
+        "{\"name\":\"nesting\",\"testObj\":{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false,\"someMap\":{},\"someHash\":{}}}"s,
         string(nestingObj.toJson().GetString()));
     NestingArray nestingArray;
     nestingArray.name = "nesting2";
@@ -266,7 +285,7 @@ void JsonReflectorTests::testSerializeNestedObjects()
     nestingArray.testObjects.emplace_back(testObj);
     nestingArray.testObjects.back().number = 43;
     CPPUNIT_ASSERT_EQUAL(
-        "{\"name\":\"nesting2\",\"testObjects\":[{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false},{\"number\":43,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false}]}"s,
+        "{\"name\":\"nesting2\",\"testObjects\":[{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false,\"someMap\":{},\"someHash\":{}},{\"number\":43,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false,\"someMap\":{},\"someHash\":{}}]}"s,
         string(nestingArray.toJson().GetString()));
 }
 
@@ -293,7 +312,8 @@ void JsonReflectorTests::testSerializeUniquePtr()
     StringBuffer strbuf;
     Writer<StringBuffer> jsonWriter(strbuf);
     doc.Accept(jsonWriter);
-    CPPUNIT_ASSERT_EQUAL("[\"foo\",null,{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"bar\",\"boolean\":false}]"s,
+    CPPUNIT_ASSERT_EQUAL(
+        "[\"foo\",null,{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"bar\",\"boolean\":false,\"someMap\":{},\"someHash\":{}}]"s,
         string(strbuf.GetString()));
 }
 
@@ -320,7 +340,8 @@ void JsonReflectorTests::testSerializeSharedPtr()
     StringBuffer strbuf;
     Writer<StringBuffer> jsonWriter(strbuf);
     doc.Accept(jsonWriter);
-    CPPUNIT_ASSERT_EQUAL("[\"foo\",null,{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"bar\",\"boolean\":false}]"s,
+    CPPUNIT_ASSERT_EQUAL(
+        "[\"foo\",null,{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"bar\",\"boolean\":false,\"someMap\":{},\"someHash\":{}}]"s,
         string(strbuf.GetString()));
 }
 
@@ -379,14 +400,18 @@ void JsonReflectorTests::testDeserializePrimitives()
  */
 void JsonReflectorTests::testDeserializeSimpleObjects()
 {
-    const TestObject testObj(
-        TestObject::fromJson("{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false}"));
+    const TestObject testObj(TestObject::fromJson("{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":"
+                                                  "false,\"someMap\":{\"a\":1,\"b\":2},\"someHash\":{\"c\":true,\"d\":false}}"));
 
     CPPUNIT_ASSERT_EQUAL(42, testObj.number);
     CPPUNIT_ASSERT_EQUAL(3.141592653589793, testObj.number2);
     CPPUNIT_ASSERT_EQUAL(vector<int>({ 1, 2, 3, 4 }), testObj.numbers);
     CPPUNIT_ASSERT_EQUAL("test"s, testObj.text);
     CPPUNIT_ASSERT_EQUAL(false, testObj.boolean);
+    const map<string, int> expectedMap{ { "a", 1 }, { "b", 2 } };
+    CPPUNIT_ASSERT_EQUAL(expectedMap, testObj.someMap);
+    const unordered_map<string, bool> expectedHash{ { "c", true }, { "d", false } };
+    CPPUNIT_ASSERT_EQUAL(expectedHash, testObj.someHash);
 }
 
 /*!

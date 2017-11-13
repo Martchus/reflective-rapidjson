@@ -13,18 +13,20 @@ generator.
 ## Supported datatypes
 The following table shows the mapping of supported C++ types to supported JSON types:
 
-| C++ type                                     | JSON type    |
-| -------------------------------------------- |:------------:|
-| custom structures/classes                    | object       |
-| `bool`                                       | true/false   |
-| signed and unsigned integral types           | number       |
-| `float` and `double`                         | number       |
-| `enum` and `enum class`                      | number       |
-| `std::string`                                | string       |
-| `const char *`                               | string       |
-| iteratables (`std::vector`, `std::list`, ...)| array        |
-| `std::tuple`                                 | array        |
-| `std::unique_ptr`, `std::shared_ptr`         | depends/null |
+| C++ type                                          | JSON type    |
+| ------------------------------------------------- |:------------:|
+| custom structures/classes                         | object       |
+| `bool`                                            | true/false   |
+| signed and unsigned integral types                | number       |
+| `float` and `double`                              | number       |
+| `enum` and `enum class`                           | number       |
+| `std::string`                                     | string       |
+| `const char *`                                    | string       |
+| iteratable lists (`std::vector`, `std::list`, ...)| array        |
+| `std::tuple`                                      | array        |
+| `std::unique_ptr`, `std::shared_ptr`              | depends/null |
+| `std::map`, `std::unordered_map`                  | object       |
+| `JsonSerializable`                                | object       |
 
 ### Remarks
 * Raw pointer are not supported. This prevents
@@ -34,7 +36,7 @@ The following table shows the mapping of supported C++ types to supported JSON t
 * For deserialization, iteratables must provide an `emplace_back` method. So deserialization of eg. `std::forward_list`
   is currently not supported.
 * The JSON type for smart pointer depends on the type the pointer refers to. It can also be `null`.
-* See also TODOs.md.
+* For custom (de)serialization, see the section below.
 
 ## Usage
 This example shows how the library can be used to make a `struct` serializable:

@@ -40,3 +40,11 @@ option(NO_GENERATOR "disables building the generator (useful for cross-compiling
 if(NOT NO_GENERATOR)
     add_subdirectory(generator)
 endif()
+
+# propagate binary and source directory of library to parent scope
+get_directory_property(HAS_PARENT PARENT_DIRECTORY)
+if(HAS_PARENT)
+    set(REFLECTIVE_RAPIDJSON_BINARY_DIR "${REFLECTIVE_RAPIDJSON_BINARY_DIR}" PARENT_SCOPE)
+    set(REFLECTIVE_RAPIDJSON_SOURCE_DIR "${REFLECTIVE_RAPIDJSON_SOURCE_DIR}" PARENT_SCOPE)
+    set(reflective_rapidjson_DIR "${REFLECTIVE_RAPIDJSON_BINARY_DIR}" PARENT_SCOPE)
+endif()

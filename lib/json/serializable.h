@@ -99,20 +99,14 @@ const JsonSerializable<Type> &as(const Type &serializable)
 }
 
 /*!
- * \brief The AdaptedJsonSerializable class allows considering 3rd party classes as serializable.
- */
-template <typename T> struct AdaptedJsonSerializable : Traits::Bool<false> {
-    static constexpr const char *name = "AdaptedJsonSerializable";
-    static constexpr const char *qualifiedName = "ReflectiveRapidJSON::AdaptedJsonSerializable";
-};
-
-/*!
  * \def The REFLECTIVE_RAPIDJSON_MAKE_JSON_SERIALIZABLE macro allows to adapt (de)serialization for types defined in 3rd party header files.
  * \remarks The struct will not have the toJson() and fromJson() methods available. Use the corresponding functions in the namespace
  *          ReflectiveRapidJSON::JsonReflector instead.
+ * \todo GCC complains when putting :: before "ReflectiveRapidJSON" namespace: "global qualification of class name is invalid before ':' token"
+ *       Find out whether this is a compiler bug or a correct error message.
  */
 #define REFLECTIVE_RAPIDJSON_MAKE_JSON_SERIALIZABLE(T)                                                                                               \
-    template <> struct ::ReflectiveRapidJSON::AdaptedJsonSerializable<T> : Traits::Bool<true> {                                                      \
+    template <> struct ReflectiveRapidJSON::AdaptedJsonSerializable<T> : Traits::Bool<true> {                                                      \
     }
 
 /*!

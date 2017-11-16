@@ -1,11 +1,11 @@
 #ifndef REFLECTIVE_RAPIDJSON_TESTS_STRUCTS_H
 #define REFLECTIVE_RAPIDJSON_TESTS_STRUCTS_H
 
-#include "../../lib/json/reflector-chronoutilities.h"
-#include "../../lib/json/serializable.h"
-
 #include <c++utilities/chrono/datetime.h>
 #include <c++utilities/chrono/timespan.h>
+
+#include "../../lib/json/reflector-chronoutilities.h"
+#include "../../lib/json/serializable.h"
 
 #include <deque>
 #include <list>
@@ -38,6 +38,7 @@ class JsonGeneratorTests;
  */
 struct NestedTestStruct : public JsonSerializable<NestedTestStruct> {
     REFLECTIVE_RAPIDJSON_ENABLE_PRIVATE_MEMBERS(NestedTestStruct);
+
     friend class JsonGeneratorTests;
 
     list<vector<TestStruct>> nested;

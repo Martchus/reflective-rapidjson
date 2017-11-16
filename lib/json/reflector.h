@@ -27,7 +27,14 @@
 namespace ReflectiveRapidJSON {
 
 template <typename Type> struct JsonSerializable;
-template <typename Type> struct AdaptedJsonSerializable;
+
+/*!
+ * \brief The AdaptedJsonSerializable class allows considering 3rd party classes as serializable.
+ */
+template <typename T> struct AdaptedJsonSerializable : public Traits::Bool<false> {
+    static constexpr const char *name = "AdaptedJsonSerializable";
+    static constexpr const char *qualifiedName = "ReflectiveRapidJSON::AdaptedJsonSerializable";
+};
 
 /*!
  * \brief The JsonReflector namespace contains helper functions to ease the use of RapidJSON for automatic (de)serialization.
@@ -75,7 +82,8 @@ using IsBuiltInType = Traits::Any<std::is_integral<Type>, std::is_floating_point
 template <typename Type> using IsCustomType = Traits::Not<IsBuiltInType<Type>>;
 
 // define trait to check for custom structs/classes which are JSON serializable
-template <typename Type> using IsJsonSerializable = Traits::Any<std::is_base_of<JsonSerializable<Type>, Type>, AdaptedJsonSerializable<Type>>;
+// NOTE: the check for Traits::IsComplete is required because std::is_base_of fails for incomplete types when using GCC
+template <typename Type> using IsJsonSerializable = Traits::Any<Traits::Not<Traits::IsComplete<Type>>, std::is_base_of<JsonSerializable<Type>, Type>, AdaptedJsonSerializable<Type>>;
 
 // define trait to check for map or hash
 template <typename Type>

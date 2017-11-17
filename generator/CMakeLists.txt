@@ -72,4 +72,13 @@ add_reflection_generator_invocation(
 include(TestTarget)
 include(ShellCompletion)
 include(Doxygen)
+
+# add paths for include dirs of c++utilities and RapidJSON to config header so test cases can use it
+set(META_CUSTOM_CONFIG "#define CPP_UTILITIES_INCLUDE_DIRS \"${CPP_UTILITIES_INCLUDE_DIRS}\"\n")
+if(RapidJSON_FOUND)
+    string(APPEND META_CUSTOM_CONFIG "#define RAPIDJSON_INCLUDE_DIRS \"${RAPIDJSON_INCLUDE_DIRS}\"\n")
+endif()
+
+# make config header
 include(ConfigHeader)
+

@@ -83,7 +83,9 @@ template <typename Type> using IsCustomType = Traits::Not<IsBuiltInType<Type>>;
 
 // define trait to check for custom structs/classes which are JSON serializable
 // NOTE: the check for Traits::IsComplete is required because std::is_base_of fails for incomplete types when using GCC
-template <typename Type> using IsJsonSerializable = Traits::Any<Traits::Not<Traits::IsComplete<Type>>, std::is_base_of<JsonSerializable<Type>, Type>, AdaptedJsonSerializable<Type>>;
+template <typename Type>
+using IsJsonSerializable
+    = Traits::Any<Traits::Not<Traits::IsComplete<Type>>, std::is_base_of<JsonSerializable<Type>, Type>, AdaptedJsonSerializable<Type>>;
 
 // define trait to check for map or hash
 template <typename Type>

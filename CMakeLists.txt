@@ -47,8 +47,9 @@ endif()
 # find c++utilities
 find_package(c++utilities 4.12.0 REQUIRED)
 
-# use the source directory of c++utilities for includes (rather than the location where headers are going to be installed)
-if(BUNDLED_CPP_UTILITIES_PATH)
+# use the source directory of c++utilities for includes rather than the location where headers are going to be installed
+# note: this enables the tests to find the header files for c++utilities in case it is built within the same project
+if(CPP_UTILITIES_SOURCE_DIR)
     set(CPP_UTILITIES_INCLUDE_DIRS "${CPP_UTILITIES_SOURCE_DIR}/..")
 endif()
 

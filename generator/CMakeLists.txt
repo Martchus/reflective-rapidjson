@@ -34,8 +34,7 @@ set(TEST_SRC_FILES
     tests/jsongenerator.cpp
 )
 
-# find c++utilities and link against the library
-find_package(c++utilities 4.12.0 REQUIRED)
+# link against c++utilities
 use_cpp_utilities()
 
 # find Clang for LibTooling; adding clangTooling should be sufficient as it pulls all transitive dependencies

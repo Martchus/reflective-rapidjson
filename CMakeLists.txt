@@ -23,11 +23,33 @@ enable_testing()
 set(BUNDLED_CPP_UTILITIES_PATH OFF CACHE PATH "specifies the (relative) path to the c++utilities sources for building it together with ${META_PROJECT_NAME}")
 if(NOT BUNDLED_CPP_UTILITIES_PATH)
     message(STATUS "Using system c++utilities")
-elseif(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${BUNDLED_CPP_UTILITIES_PATH}" OR IS_DIRECTORY "${BUNDLED_CPP_UTILITIES_PATH}")
-    add_subdirectory("${BUNDLED_CPP_UTILITIES_PATH}" c++utilities)
-    list(APPEND CMAKE_MODULE_PATH ${CPP_UTILITIES_SOURCE_DIR}/cmake/modules)
 else()
-    message(FATAL_ERROR "Specified directory for c++utilities sources \"${BUNDLED_CPP_UTILITIES_PATH}\" does not exist.")
+    # check whether bundled c++utilities actually exists
+    if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${BUNDLED_CPP_UTILITIES_PATH}")
+        # treat the specified path as relative to the current source dir
+        set(c++utilities_DIR "${CMAKE_CURRENT_SOURCE_DIR}/${BUNDLED_CPP_UTILITIES_PATH}")
+    elseif(IS_DIRECTORY "${BUNDLED_CPP_UTILITIES_PATH}")
+        # treat the specified path as absolute
+        set(c++utilities_DIR "${BUNDLED_CPP_UTILITIES_PATH}")
+    else()
+        # consider the specified path invalid
+        set(c++utilities_DIR "")
+    endif()
+
+    if(c++utilities_DIR)
+        add_subdirectory("${BUNDLED_CPP_UTILITIES_PATH}" c++utilities)
+        list(APPEND CMAKE_MODULE_PATH "${CPP_UTILITIES_SOURCE_DIR}/cmake/modules")
+    else()
+        message(FATAL_ERROR "Specified directory for c++utilities sources \"${BUNDLED_CPP_UTILITIES_PATH}\" does not exist.")
+    endif()
+endif()
+
+# find c++utilities
+find_package(c++utilities 4.12.0 REQUIRED)
+
+# use the source directory of c++utilities for includes (rather than the location where headers are going to be installed)
+if(BUNDLED_CPP_UTILITIES_PATH)
+    set(CPP_UTILITIES_INCLUDE_DIRS "${CPP_UTILITIES_SOURCE_DIR}/..")
 endif()
 
 # add header-only library containing JsonSerializable and helper for using RapidJSON

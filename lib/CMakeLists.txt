@@ -28,11 +28,9 @@ set(DOC_FILES
     README.md
 )
 
-# find c++utilities, but only add the include dirs because we're not depending on the actual library
-find_package(c++utilities 4.11.0 REQUIRED)
-list(APPEND PUBLIC_SHARED_INCLUDE_DIRS ${CPP_UTILITIES_INCLUDE_DIRS})
-list(APPEND PUBLIC_STATIC_INCLUDE_DIRS ${CPP_UTILITIES_INCLUDE_DIRS})
-list(APPEND CMAKE_MODULE_PATH ${CPP_UTILITIES_MODULE_DIRS})
+# add (only) the include dirs for c++utilities because we're not depending on the actual library
+list(APPEND PUBLIC_SHARED_INCLUDE_DIRS "${CPP_UTILITIES_INCLUDE_DIRS}")
+list(APPEND PUBLIC_STATIC_INCLUDE_DIRS "${CPP_UTILITIES_INCLUDE_DIRS}")
 
 # find RapidJSON, also add only the include dirs because RapidJSON is a header-only library
 find_package(RapidJSON)

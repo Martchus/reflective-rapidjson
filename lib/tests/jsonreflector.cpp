@@ -279,6 +279,7 @@ void JsonReflectorTests::testSerializeNestedObjects()
     CPPUNIT_ASSERT_EQUAL(
         "{\"name\":\"nesting\",\"testObj\":{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false,\"someMap\":{},\"someHash\":{}}}"s,
         string(nestingObj.toJson().GetString()));
+
     NestingArray nestingArray;
     nestingArray.name = "nesting2";
     nestingArray.testObjects.emplace_back(testObj);
@@ -287,6 +288,12 @@ void JsonReflectorTests::testSerializeNestedObjects()
     CPPUNIT_ASSERT_EQUAL(
         "{\"name\":\"nesting2\",\"testObjects\":[{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false,\"someMap\":{},\"someHash\":{}},{\"number\":43,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false,\"someMap\":{},\"someHash\":{}}]}"s,
         string(nestingArray.toJson().GetString()));
+
+    vector<TestObject> nestedInVector;
+    nestedInVector.emplace_back(testObj);
+    CPPUNIT_ASSERT_EQUAL(
+        "[{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false,\"someMap\":{},\"someHash\":{}}]"s,
+        string(JsonReflector::toJson(nestedInVector).GetString()));
 }
 
 void JsonReflectorTests::testSerializeUniquePtr()
@@ -419,9 +426,12 @@ void JsonReflectorTests::testDeserializeSimpleObjects()
  */
 void JsonReflectorTests::testDeserializeNestedObjects()
 {
+    JsonDeserializationErrors errors;
     const NestingObject nestingObj(NestingObject::fromJson("{\"name\":\"nesting\",\"testObj\":{\"number\":42,\"number2\":3.141592653589793,"
-                                                           "\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false}}"));
+                                                           "\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false}}",
+        &errors));
     const TestObject &testObj = nestingObj.testObj;
+    CPPUNIT_ASSERT_EQUAL(0_st, errors.size());
     CPPUNIT_ASSERT_EQUAL("nesting"s, nestingObj.name);
     CPPUNIT_ASSERT_EQUAL(42, testObj.number);
     CPPUNIT_ASSERT_EQUAL(3.141592653589793, testObj.number2);
@@ -431,8 +441,10 @@ void JsonReflectorTests::testDeserializeNestedObjects()
 
     const NestingArray nestingArray(NestingArray::fromJson("{\"name\":\"nesting2\",\"testObjects\":[{\"number\":42,\"number2\":3.141592653589793,"
                                                            "\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false},{\"number\":43,\"number2\":3."
-                                                           "141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false}]}"));
+                                                           "141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false}]}",
+        &errors));
     const vector<TestObject> &testObjects = nestingArray.testObjects;
+    CPPUNIT_ASSERT_EQUAL(0_st, errors.size());
     CPPUNIT_ASSERT_EQUAL("nesting2"s, nestingArray.name);
     CPPUNIT_ASSERT_EQUAL(2_st, testObjects.size());
     CPPUNIT_ASSERT_EQUAL(42, testObjects[0].number);
@@ -443,6 +455,15 @@ void JsonReflectorTests::testDeserializeNestedObjects()
         CPPUNIT_ASSERT_EQUAL("test"s, testObj.text);
         CPPUNIT_ASSERT_EQUAL(false, testObj.boolean);
     }
+
+    const auto nestedInVector(JsonReflector::fromJson<vector<TestObject>>(
+        "[{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false,\"someMap\":{},\"someHash\":{}}]",
+        &errors));
+    CPPUNIT_ASSERT_EQUAL(0_st, errors.size());
+    CPPUNIT_ASSERT_EQUAL(1_st, nestedInVector.size());
+    CPPUNIT_ASSERT_EQUAL(42, nestedInVector[0].number);
+    CPPUNIT_ASSERT_EQUAL(4_st, nestedInVector[0].numbers.size());
+    CPPUNIT_ASSERT_EQUAL("test"s, nestedInVector[0].text);
 }
 
 void JsonReflectorTests::testDeserializeUniquePtr()

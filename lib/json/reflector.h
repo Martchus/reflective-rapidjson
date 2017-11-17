@@ -590,9 +590,10 @@ void pull(Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_N
 // define functions providing high-level JSON serialization
 
 /*!
- * \brief Serializes the specified \a reflectable which has a custom type.
+ * \brief Serializes the specified \a reflectable which has a custom type or can be mapped to and object.
  */
-template <typename Type, Traits::EnableIf<IsJsonSerializable<Type>>...> RAPIDJSON_NAMESPACE::StringBuffer toJson(const Type &reflectable)
+template <typename Type, Traits::EnableIfAny<IsJsonSerializable<Type>, IsMapOrHash<Type>>...>
+RAPIDJSON_NAMESPACE::StringBuffer toJson(const Type &reflectable)
 {
     RAPIDJSON_NAMESPACE::Document document(RAPIDJSON_NAMESPACE::kObjectType);
     RAPIDJSON_NAMESPACE::Document::Object object(document.GetObject());
@@ -614,7 +615,7 @@ RAPIDJSON_NAMESPACE::StringBuffer toJson(Type reflectable)
 /*!
  * \brief Serializes the specified \a reflectable which is an std::string.
  */
-template <typename Type, Traits::EnableIfAny<std::is_same<Type, std::string>>...>
+template <typename Type, Traits::EnableIf<std::is_same<Type, std::string>>...>
 RAPIDJSON_NAMESPACE::StringBuffer toJson(const std::string &reflectable)
 {
     RAPIDJSON_NAMESPACE::Document document(RAPIDJSON_NAMESPACE::kStringType);
@@ -625,19 +626,29 @@ RAPIDJSON_NAMESPACE::StringBuffer toJson(const std::string &reflectable)
 /*!
  * \brief Serializes the specified \a reflectable which is a C-string.
  */
-template <typename Type, Traits::EnableIfAny<std::is_same<Type, const char *>>...> RAPIDJSON_NAMESPACE::StringBuffer toJson(const char *reflectable)
+template <typename Type, Traits::EnableIf<std::is_same<Type, const char *>>...> RAPIDJSON_NAMESPACE::StringBuffer toJson(const char *reflectable)
 {
     RAPIDJSON_NAMESPACE::Document document(RAPIDJSON_NAMESPACE::kStringType);
     document.SetString(RAPIDJSON_NAMESPACE::StringRef(reflectable), document.GetAllocator());
     return serializeJsonDocToString(document);
 }
 
+/*!
+ * \brief Serializes the specified \a reflectable which can be mapped to an array.
+ */
+template <typename Type, Traits::EnableIf<IsArray<Type>>...> RAPIDJSON_NAMESPACE::StringBuffer toJson(const Type &reflectable)
+{
+    RAPIDJSON_NAMESPACE::Document document(RAPIDJSON_NAMESPACE::kArrayType);
+    push(reflectable, document, document.GetAllocator());
+    return serializeJsonDocToString(document);
+}
+
 // define functions providing high-level JSON deserialization
 
 /*!
- * \brief Deserializes the specified JSON to \tparam Type which is a custom type.
+ * \brief Deserializes the specified JSON to \tparam Type which is a custom type or can be mapped to an object.
  */
-template <typename Type, Traits::EnableIf<IsJsonSerializable<Type>>...>
+template <typename Type, Traits::EnableIfAny<IsJsonSerializable<Type>, IsMapOrHash<Type>>...>
 Type fromJson(const char *json, std::size_t jsonSize, JsonDeserializationErrors *errors = nullptr)
 {
     RAPIDJSON_NAMESPACE::Document doc(parseJsonDocFromString(json, jsonSize));
@@ -657,7 +668,7 @@ Type fromJson(const char *json, std::size_t jsonSize, JsonDeserializationErrors 
  * \brief Deserializes the specified JSON to \tparam Type which is an integer, float or boolean.
  */
 template <typename Type, Traits::EnableIfAny<std::is_integral<Type>, std::is_floating_point<Type>>...>
-Type fromJson(const char *json, std::size_t jsonSize, JsonDeserializationErrors *errors)
+Type fromJson(const char *json, std::size_t jsonSize, JsonDeserializationErrors *errors = nullptr)
 {
     RAPIDJSON_NAMESPACE::Document doc(parseJsonDocFromString(json, jsonSize));
     if (!doc.Is<Type>()) {
@@ -673,8 +684,8 @@ Type fromJson(const char *json, std::size_t jsonSize, JsonDeserializationErrors 
 /*!
  * \brief Deserializes the specified JSON to \tparam Type which is a std::string.
  */
-template <typename Type, Traits::EnableIfAny<std::is_same<Type, std::string>>...>
-Type fromJson(const char *json, std::size_t jsonSize, JsonDeserializationErrors *errors)
+template <typename Type, Traits::EnableIf<std::is_same<Type, std::string>>...>
+Type fromJson(const char *json, std::size_t jsonSize, JsonDeserializationErrors *errors = nullptr)
 {
     RAPIDJSON_NAMESPACE::Document doc(parseJsonDocFromString(json, jsonSize));
     if (!doc.IsString()) {
@@ -688,9 +699,36 @@ Type fromJson(const char *json, std::size_t jsonSize, JsonDeserializationErrors 
 }
 
 /*!
+ * \brief Deserializes the specified JSON to \tparam Type which can be mapped to an array.
+ */
+template <typename Type, Traits::EnableIf<IsArray<Type>>...>
+Type fromJson(const char *json, std::size_t jsonSize, JsonDeserializationErrors *errors = nullptr)
+{
+    RAPIDJSON_NAMESPACE::Document doc(parseJsonDocFromString(json, jsonSize));
+    if (!doc.IsArray()) {
+        if (errors) {
+            errors->reportTypeMismatch<Type>(doc.GetType());
+        }
+        return Type();
+    }
+
+    Type res;
+    pull<Type>(res, doc.GetArray(), errors);
+    return res;
+}
+
+/*!
+ * \brief Deserializes the specified JSON from an null-terminated C-string to \tparam Type.
+ */
+template <typename Type> Type fromJson(const char *json, JsonDeserializationErrors *errors = nullptr)
+{
+    return fromJson<Type>(json, std::strlen(json), errors);
+}
+
+/*!
  * \brief Deserializes the specified JSON from an std::string to \tparam Type.
  */
-template <typename Type> Type fromJson(const std::string &json, JsonDeserializationErrors *errors)
+template <typename Type> Type fromJson(const std::string &json, JsonDeserializationErrors *errors = nullptr)
 {
     return fromJson<Type>(json.data(), json.size(), errors);
 }

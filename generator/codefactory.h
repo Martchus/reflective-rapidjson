@@ -29,7 +29,7 @@ class CodeFactory {
 
 public:
     CodeFactory(
-        const char *applicationPath, const std::vector<const char *> &sourceFiles, const std::vector<const char *> &clangOptions, std::ostream &os);
+        const char *applicationPath, const std::vector<const char *> &sourceFiles, const std::vector<std::string> &clangOptions, std::ostream &os);
     ~CodeFactory();
 
     const std::vector<std::unique_ptr<CodeGenerator>> &generators() const;
@@ -48,7 +48,7 @@ private:
 
     const char *const m_applicationPath;
     const std::vector<const char *> &m_sourceFiles;
-    const std::vector<const char *> &m_clangOptions;
+    const std::vector<std::string> &m_clangOptions;
     std::ostream &m_os;
     std::vector<std::unique_ptr<CodeGenerator>> m_generators;
     std::unique_ptr<ToolInvocation> m_toolInvocation;

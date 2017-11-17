@@ -59,6 +59,8 @@ add_reflection_generator_invocation(
         json
     OUTPUT_LISTS
         TEST_HEADER_FILES
+    CLANG_OPTIONS_FROM_TARGETS
+        reflective_rapidjson_generator_tests
     JSON_CLASSES
         OtherNotJsonSerializable       # test specifying classes for JSON (de)serialization manually
         SomeOtherClassName             # specifying a class that does not exist should not cause any problems

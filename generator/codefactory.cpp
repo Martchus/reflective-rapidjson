@@ -25,8 +25,7 @@ CodeFactory::ToolInvocation::ToolInvocation(CodeFactory &factory)
     fileManager.Retain();
 }
 
-CodeFactory::CodeFactory(
-    const char *applicationPath, const std::vector<const char *> &sourceFiles, const std::vector<const char *> &clangOptions, std::ostream &os)
+CodeFactory::CodeFactory(const char *applicationPath, const std::vector<const char *> &sourceFiles, const std::vector<string> &clangOptions, std::ostream &os)
     : m_applicationPath(applicationPath)
     , m_sourceFiles(sourceFiles)
     , m_clangOptions(clangOptions)

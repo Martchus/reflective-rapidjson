@@ -52,6 +52,12 @@ if(BUNDLED_CPP_UTILITIES_PATH)
     set(CPP_UTILITIES_INCLUDE_DIRS "${CPP_UTILITIES_SOURCE_DIR}/..")
 endif()
 
+# find RapidJSON
+find_package(RapidJSON)
+if(NOT RapidJSON_FOUND)
+    message(FATAL_ERROR "Unable to find RapidJSON. Since this is the only supported reflection application at this time, it makes no sense to continue.")
+endif()
+
 # add header-only library containing JsonSerializable and helper for using RapidJSON
 add_subdirectory(lib)
 # allow inclusion of CMake modules from that lib in other parts of the project

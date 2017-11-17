@@ -26,13 +26,21 @@ set(SRC_FILES
     main.cpp
 )
 set(TEST_HEADER_FILES
-    tests/structs.h
     tests/helper.h
 )
 set(TEST_SRC_FILES
     tests/cppunit.cpp
-    tests/jsongenerator.cpp
 )
+
+# add JSON-specific test cases
+if(RapidJSON_FOUND)
+    list(APPEND TEST_HEADER_FILES
+        tests/structs.h
+    )
+    list(APPEND TEST_SRC_FILES
+        tests/jsongenerator.cpp
+    )
+endif()
 
 # link against c++utilities
 use_cpp_utilities()

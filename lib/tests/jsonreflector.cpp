@@ -359,18 +359,20 @@ void JsonReflectorTests::testDeserializePrimitives()
 {
     Document doc(kArrayType);
 
-    doc.Parse("[\"a\", 5, 5e6, \"test\", true, 4.125, false]");
+    doc.Parse("[\"a\", 5, 5.0, 5e6, 4, \"test\", true, 4.125, false]");
     auto array = doc.GetArray().begin();
 
     string str1, str2;
-    int int1 = 0;
+    int int1 = 0, int2 = 0;
     bool bool1 = false, bool2 = true;
-    float float1 = 0.0;
+    float float1 = 0.0f, float2 = 0.0f;
     double double1 = 0.0;
     JsonDeserializationErrors errors;
     JsonReflector::pull(str1, array, &errors);
     JsonReflector::pull(int1, array, &errors);
+    JsonReflector::pull(int2, array, &errors);
     JsonReflector::pull(float1, array, &errors);
+    JsonReflector::pull(float2, array, &errors);
     JsonReflector::pull(str2, array, &errors);
     JsonReflector::pull(bool1, array, &errors);
     JsonReflector::pull(double1, array, &errors);
@@ -379,23 +381,27 @@ void JsonReflectorTests::testDeserializePrimitives()
     CPPUNIT_ASSERT_EQUAL(0_st, errors.size());
     CPPUNIT_ASSERT_EQUAL("a"s, str1);
     CPPUNIT_ASSERT_EQUAL(5, int1);
+    CPPUNIT_ASSERT_EQUAL(5, int2);
     CPPUNIT_ASSERT_EQUAL(5e6f, float1);
+    CPPUNIT_ASSERT_EQUAL(4.f, float2);
     CPPUNIT_ASSERT_EQUAL("test"s, str2);
     CPPUNIT_ASSERT_EQUAL(true, bool1);
     CPPUNIT_ASSERT_EQUAL(4.125, double1);
     CPPUNIT_ASSERT_EQUAL(false, bool2);
 
     // deserialize primitives as tuple
-    tuple<string, int, float, string, bool, double, bool> arrayAsTuple;
+    tuple<string, int, int, float, float, string, bool, double, bool> arrayAsTuple;
     JsonReflector::pull(arrayAsTuple, doc, &errors);
     CPPUNIT_ASSERT_EQUAL(0_st, errors.size());
     CPPUNIT_ASSERT_EQUAL("a"s, get<0>(arrayAsTuple));
     CPPUNIT_ASSERT_EQUAL(5, get<1>(arrayAsTuple));
-    CPPUNIT_ASSERT_EQUAL(5e6f, get<2>(arrayAsTuple));
-    CPPUNIT_ASSERT_EQUAL("test"s, get<3>(arrayAsTuple));
-    CPPUNIT_ASSERT_EQUAL(true, get<4>(arrayAsTuple));
-    CPPUNIT_ASSERT_EQUAL(4.125, get<5>(arrayAsTuple));
-    CPPUNIT_ASSERT_EQUAL(false, get<6>(arrayAsTuple));
+    CPPUNIT_ASSERT_EQUAL(5, get<2>(arrayAsTuple));
+    CPPUNIT_ASSERT_EQUAL(5e6f, get<3>(arrayAsTuple));
+    CPPUNIT_ASSERT_EQUAL(4.f, get<4>(arrayAsTuple));
+    CPPUNIT_ASSERT_EQUAL("test"s, get<5>(arrayAsTuple));
+    CPPUNIT_ASSERT_EQUAL(true, get<6>(arrayAsTuple));
+    CPPUNIT_ASSERT_EQUAL(4.125, get<7>(arrayAsTuple));
+    CPPUNIT_ASSERT_EQUAL(false, get<8>(arrayAsTuple));
     tuple<string, int> anotherTuple;
     JsonReflector::pull(anotherTuple, doc, &errors);
     CPPUNIT_ASSERT_EQUAL(1_st, errors.size());

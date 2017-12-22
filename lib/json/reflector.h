@@ -350,7 +350,7 @@ template <typename Type, Traits::EnableIfAny<std::is_integral<Type>, std::is_flo
 inline void pull(
     Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
-    if (!value.Is<Type>()) {
+    if (!value.IsNumber()) {
         if (errors) {
             errors->reportTypeMismatch<Type>(value.GetType());
         }

@@ -394,13 +394,13 @@ inline void pull(
 }
 
 /*!
- * \brief Pulls the speciified \a reflectable which is an iteratable from the specified array. The \a reflectable is cleared before.
+ * \brief Pulls the specified \a reflectable which is an iteratable from the specified array. The \a reflectable is cleared before.
  */
 template <typename Type, Traits::EnableIf<IsArray<Type>>...>
 void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstArray array, JsonDeserializationErrors *errors);
 
 /*!
- * \brief Pulls the speciified \a reflectable which is an iteratable without reserve() method from the specified value which is checked to contain an array.
+ * \brief Pulls the specified \a reflectable which is an iteratable without reserve() method from the specified value which is checked to contain an array.
  */
 template <typename Type, Traits::EnableIf<IsArray<Type>, Traits::Not<Traits::IsReservable<Type>>>...>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
@@ -415,7 +415,7 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
 }
 
 /*!
- * \brief Pulls the speciified \a reflectable which is an iteratable with reserve() method from the specified value which is checked to contain an array.
+ * \brief Pulls the specified \a reflectable which is an iteratable with reserve() method from the specified value which is checked to contain an array.
  */
 template <typename Type, Traits::EnableIf<IsArray<Type>, Traits::IsReservable<Type>>...>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
@@ -432,7 +432,7 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
 }
 
 /*!
- * \brief Pulls the speciified \a reflectable which is an iteratable from the specified array. The \a reflectable is cleared before.
+ * \brief Pulls the specified \a reflectable which is an iteratable from the specified array. The \a reflectable is cleared before.
  */
 template <typename Type, Traits::EnableIf<IsArray<Type>>...>
 void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstArray array, JsonDeserializationErrors *errors)
@@ -459,7 +459,7 @@ void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<c
 }
 
 /*!
- * \brief Pulls the speciified \a reflectable which is a map from the specified value which is checked to contain an object.
+ * \brief Pulls the specified \a reflectable which is a map from the specified value which is checked to contain an object.
  */
 template <typename Type, Traits::EnableIf<IsMapOrHash<Type>>...>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
@@ -499,7 +499,7 @@ template <class Tuple> struct TuplePullHelper<Tuple, 1> {
 } // namespace Detail
 
 /*!
- * \brief Pulls the speciified \a reflectable which is a tuple from the specified value which is checked to contain an array.
+ * \brief Pulls the specified \a reflectable which is a tuple from the specified value which is checked to contain an array.
  */
 template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::tuple>>...>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
@@ -522,7 +522,7 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
 }
 
 /*!
- * \brief Pulls the speciified \a reflectable which is a unique_ptr from the specified value which might be null.
+ * \brief Pulls the specified \a reflectable which is a unique_ptr from the specified value which might be null.
  */
 template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::unique_ptr>>...>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
@@ -536,7 +536,7 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
 }
 
 /*!
- * \brief Pulls the speciified \a reflectable which is a shared_ptr from the specified value which might be null.
+ * \brief Pulls the specified \a reflectable which is a shared_ptr from the specified value which might be null.
  */
 template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::shared_ptr>>...>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
@@ -550,7 +550,7 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
 }
 
 /*!
- * \brief Pulls the speciified \a reflectable from the specified value iterator which is checked to contain the right type.
+ * \brief Pulls the specified \a reflectable from the specified value iterator which is checked to contain the right type.
  */
 template <typename Type>
 inline void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ValueIterator &value, JsonDeserializationErrors *errors)
@@ -560,7 +560,7 @@ inline void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE:
 }
 
 /*!
- * \brief Pulls the speciified member of \a reflectable which has a custom type from the specified object.
+ * \brief Pulls the specified member of \a reflectable which has a custom type from the specified object.
  * \remarks It is checked whether the object actually contains the member. If not, the missing member is ignored. So currently all members
  *          are optional.
  */

@@ -161,7 +161,7 @@ inline void push(Type reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
 template <typename Type, Traits::EnableIfAny<std::is_enum<Type>>...>
 inline void push(Type reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
-    value.Set(static_cast<typename std::underlying_type<Type>::type>(reflectable), allocator);
+    value.Set(static_cast<Traits::Conditional<std::is_unsigned<typename std::underlying_type<Type>::type>, uint64, int64>>(reflectable), allocator);
 }
 
 /*!

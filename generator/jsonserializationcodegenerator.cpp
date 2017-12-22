@@ -53,7 +53,7 @@ void JsonSerializationCodeGenerator::addDeclaration(clang::Decl *decl)
                 if (!templateRecord) {
                     return; // FIXME: use Clang diagnostics to print warning
                 }
-                m_adaptionRecords.emplace_back(templateRecord->getNameAsString());
+                m_adaptionRecords.emplace_back(templateRecord->getQualifiedNameAsString());
                 return;
             }
         }

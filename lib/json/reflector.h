@@ -360,6 +360,24 @@ inline void pull(
 }
 
 /*!
+ * \brief Pulls the specified enumeration item from the specified value which is supposed and checked to be compatible with the underlying type.
+ * \remarks It is *not* checked, whether \a value is actually a valid enum item.
+ */
+template <typename Type, Traits::EnableIfAny<std::is_enum<Type>>...>
+inline void pull(
+    Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
+{
+    using ExpectedType = Traits::Conditional<std::is_unsigned<typename std::underlying_type<Type>::type>, uint64, int64>;
+    if (!value.Is<ExpectedType>()) {
+        if (errors) {
+            errors->reportTypeMismatch<ExpectedType>(value.GetType());
+        }
+        return;
+    }
+    reflectable = static_cast<Type>(value.Get<ExpectedType>());
+}
+
+/*!
  * \brief Pulls the std::string from the specified value which is supposed and checked to contain a string.
  */
 template <typename Type, Traits::EnableIf<std::is_same<Type, std::string>>...>

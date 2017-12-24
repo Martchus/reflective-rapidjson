@@ -408,9 +408,10 @@ template <typename Type, Traits::DisableIf<IsBuiltInType<Type>>...>
 void pull(Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors);
 
 /*!
- * \brief Pulls the integer/float/boolean from the specified value which is supposed and checked to contain the right type.
+ * \brief Pulls the integer or float from the specified value which is supposed and checked to contain the right type.
  */
-template <typename Type, Traits::EnableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>>...>
+template <typename Type,
+    Traits::EnableIf<Traits::Not<std::is_same<Type, bool>>, Traits::Any<std::is_integral<Type>, std::is_floating_point<Type>>>...>
 inline void pull(
     Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
@@ -420,7 +421,23 @@ inline void pull(
         }
         return;
     }
-    reflectable = value.Get<Type>();
+    reflectable = value.Is<Type>() ? value.Get<Type>() : static_cast<Type>(value.GetDouble());
+}
+
+/*!
+ * \brief Pulls the boolean from the specified value which is supposed and checked to contain the right type.
+ */
+template <typename Type, Traits::EnableIf<std::is_same<Type, bool>>...>
+inline void pull(
+    Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
+{
+    if (!value.IsBool()) {
+        if (errors) {
+            errors->reportTypeMismatch<Type>(value.GetType());
+        }
+        return;
+    }
+    reflectable = value.GetBool();
 }
 
 /*!

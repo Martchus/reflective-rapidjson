@@ -46,16 +46,16 @@ private:
     const Options &m_options;
 };
 
-inline void JsonSerializationCodeGenerator::Options::appendTo(ApplicationUtilities::Argument *arg)
-{
-    arg->addSubArgument(&additionalClassesArg);
-    arg->addSubArgument(&visibilityArg);
-}
-
 inline JsonSerializationCodeGenerator::JsonSerializationCodeGenerator(CodeFactory &factory, const Options &options)
     : CodeGenerator(factory)
     , m_options(options)
 {
+}
+
+inline void JsonSerializationCodeGenerator::Options::appendTo(ApplicationUtilities::Argument *arg)
+{
+    arg->addSubArgument(&additionalClassesArg);
+    arg->addSubArgument(&visibilityArg);
 }
 
 inline JsonSerializationCodeGenerator::RelevantClass::RelevantClass(std::string &&qualifiedName, clang::CXXRecordDecl *record)

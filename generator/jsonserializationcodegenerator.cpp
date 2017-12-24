@@ -73,6 +73,11 @@ void JsonSerializationCodeGenerator::addDeclaration(clang::Decl *decl)
  */
 string JsonSerializationCodeGenerator::qualifiedNameIfRelevant(clang::CXXRecordDecl *record) const
 {
+    // skip all classes which are only included
+    if (isOnlyIncluded(record)) {
+        return string();
+    }
+
     // consider all classes inheriting from an instantiation of "JsonSerializable" relevant
     if (inheritsFromInstantiationOf(record, JsonSerializable<void>::qualifiedName)) {
         return record->getQualifiedNameAsString();
@@ -143,6 +148,9 @@ ostream &operator<<(ostream &os, llvm::StringRef str)
  */
 void JsonSerializationCodeGenerator::generate(ostream &os) const
 {
+    // initialize source manager to make use of isOnlyIncluded() for skipping records which are only included
+    lazyInitializeSourceManager();
+
     // find relevant classes
     const auto relevantClasses = findRelevantClasses();
     if (relevantClasses.empty()) {

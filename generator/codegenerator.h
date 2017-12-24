@@ -8,6 +8,7 @@
 namespace clang {
 class Decl;
 class CXXRecordDecl;
+class SourceManager;
 } // namespace clang
 
 namespace ReflectiveRapidJSON {
@@ -29,14 +30,18 @@ public:
 
 protected:
     CodeFactory &factory() const;
+    void lazyInitializeSourceManager() const;
+    bool isOnlyIncluded(const clang::Decl *declaration) const;
     static bool inheritsFromInstantiationOf(clang::CXXRecordDecl *record, const char *templateClass);
 
 private:
     CodeFactory &m_factory;
+    const clang::SourceManager *m_sourceManager;
 };
 
 inline CodeGenerator::CodeGenerator(CodeFactory &factory)
     : m_factory(factory)
+    , m_sourceManager(nullptr)
 {
 }
 

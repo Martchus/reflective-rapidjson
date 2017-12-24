@@ -205,6 +205,11 @@ void JsonSerializationCodeGenerator::generate(ostream &os) const
         }
         os << "}\n";
 
+        // skip printing the pull method for classes without default constructor because deserializing those is currently not supported
+        if (!relevantClass.record->hasDefaultConstructor()) {
+            continue;
+        }
+
         // print pull method
         os << "template <> " << visibility << " void pull<::" << relevantClass.qualifiedName << ">(::" << relevantClass.qualifiedName
            << " &reflectable, const ::RAPIDJSON_NAMESPACE::GenericValue<::RAPIDJSON_NAMESPACE::UTF8<char>>::ConstObject &value, "

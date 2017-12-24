@@ -34,9 +34,11 @@ The following table shows the mapping of supported C++ types to supported JSON t
 * For the same reason `const char *` strings are only supported for serialization.
 * Enums are (de)serialized as their underlying integer value. When deserializing, it is currently *not* checked
   whether the present integer value is a valid enumeration item.
-* For deserialization, iteratables must provide an `emplace_back` method. So deserialization of eg. `std::forward_list`
-  is currently not supported.
 * The JSON type for smart pointer depends on the type the pointer refers to. It can also be `null`.
+* For deserialization
+    * iteratables must provide an `emplace_back` method. So deserialization of eg. `std::forward_list`
+      is currently not supported.
+    * custom types must provide a default constructor.
 * For custom (de)serialization, see the section below.
 
 ## Usage

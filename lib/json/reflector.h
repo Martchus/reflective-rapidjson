@@ -475,6 +475,21 @@ inline void pull(
 }
 
 /*!
+ * \brief Checks whether the specified value contains a string.
+ * \remarks Does not actually store the value since the ownership would not be clear (see README.md).
+ */
+template <typename Type, Traits::EnableIfAny<std::is_same<Type, const char *>, std::is_same<Type, const char *const &>>...>
+inline void pull(Type &, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
+{
+    if (!value.IsString()) {
+        if (errors) {
+            errors->reportTypeMismatch<std::string>(value.GetType());
+        }
+        return;
+    }
+}
+
+/*!
  * \brief Pulls the specified \a reflectable which is an iteratable without reserve() method from the specified value which is checked to contain an array.
  */
 template <typename Type, Traits::EnableIf<IsArray<Type>, Traits::Not<Traits::IsReservable<Type>>>...>

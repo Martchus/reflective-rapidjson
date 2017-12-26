@@ -43,17 +43,21 @@ void JsonSerializationCodeGenerator::addDeclaration(clang::Decl *decl)
 
         // check for template specializations to adapt a 3rd party class/struct
         if (decl->getKind() == clang::Decl::Kind::ClassTemplateSpecialization) {
-            auto *const templRecord = static_cast<clang::ClassTemplateSpecializationDecl *>(decl);
-            if (templRecord->getQualifiedNameAsString() == AdaptedJsonSerializable<void>::qualifiedName) {
-                const clang::TemplateArgumentList &templateArgs = templRecord->getTemplateArgs();
+            auto *const templateSpecializationRecord = static_cast<clang::ClassTemplateSpecializationDecl *>(decl);
+            // check whether the name of the template specialization matches
+            if (templateSpecializationRecord->getQualifiedNameAsString() == AdaptedJsonSerializable<void>::qualifiedName) {
+                // get the template argument of the template specialization (exactly one argument expected)
+                const auto &templateArgs = templateSpecializationRecord->getTemplateArgs();
                 if (templateArgs.size() != 1 || templateArgs.get(0).getKind() != clang::TemplateArgument::Type) {
                     return; // FIXME: use Clang diagnostics to print warning
                 }
-                const clang::CXXRecordDecl *templateRecord = templateArgs.get(0).getAsType()->getAsCXXRecordDecl();
+                // get the type the template argument refers to (that's the type of the 3rd party class/struct to adapt)
+                auto *const templateRecord = templateArgs.get(0).getAsType()->getAsCXXRecordDecl();
                 if (!templateRecord) {
                     return; // FIXME: use Clang diagnostics to print warning
                 }
-                m_adaptionRecords.emplace_back(templateRecord->getQualifiedNameAsString());
+                // save the relevant information for the code generation
+                m_adaptionRecords.emplace_back(templateRecord->getQualifiedNameAsString(), templateSpecializationRecord);
                 return;
             }
         }
@@ -73,6 +77,18 @@ void JsonSerializationCodeGenerator::addDeclaration(clang::Decl *decl)
  */
 string JsonSerializationCodeGenerator::qualifiedNameIfRelevant(clang::CXXRecordDecl *record) const
 {
+    // consider all classes for which a specialization of the "AdaptedJsonSerializable" struct is available
+    const string qualifiedName(record->getQualifiedNameAsString());
+    for (const auto &adaptionRecord : m_adaptionRecords) {
+        // skip all adaption records which are only included
+        if (isOnlyIncluded(adaptionRecord.record)) {
+            continue;
+        }
+        if (adaptionRecord.qualifiedName == qualifiedName) {
+            return qualifiedName;
+        }
+    }
+
     // skip all classes which are only included
     if (isOnlyIncluded(record)) {
         return string();
@@ -80,15 +96,7 @@ string JsonSerializationCodeGenerator::qualifiedNameIfRelevant(clang::CXXRecordD
 
     // consider all classes inheriting from an instantiation of "JsonSerializable" relevant
     if (inheritsFromInstantiationOf(record, JsonSerializable<void>::qualifiedName)) {
-        return record->getQualifiedNameAsString();
-    }
-
-    // consider all classes for which a specialization of the "AdaptedJsonSerializable" struct is available
-    const string qualifiedName(record->getQualifiedNameAsString());
-    for (const string &adaptionRecord : m_adaptionRecords) {
-        if (adaptionRecord == qualifiedName) {
-            return qualifiedName;
-        }
+        return qualifiedName;
     }
 
     // consider all classes specified via "--additional-classes" argument relevant

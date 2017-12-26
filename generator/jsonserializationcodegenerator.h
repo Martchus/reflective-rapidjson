@@ -42,7 +42,7 @@ private:
         const RelevantClass &relevantClass, const std::vector<RelevantClass> &relevantBases);
 
     std::vector<clang::CXXRecordDecl *> m_records;
-    std::vector<std::string> m_adaptionRecords;
+    std::vector<RelevantClass> m_adaptionRecords;
     const Options &m_options;
 };
 

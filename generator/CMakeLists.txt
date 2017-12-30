@@ -36,6 +36,7 @@ set(TEST_SRC_FILES
 if(RapidJSON_FOUND)
     list(APPEND TEST_HEADER_FILES
         tests/structs.h
+        tests/morestructs.h
     )
     list(APPEND TEST_SRC_FILES
         tests/jsongenerator.cpp
@@ -61,8 +62,9 @@ include(AppTarget)
 include(ReflectionGenerator)
 add_reflection_generator_invocation(
     INPUT_FILES
-        tests/structs.h               # used by test cases
-        tests/cppunit.cpp             # just for testing multiple input files and the "empty file" case
+        tests/structs.h                # used by test cases
+        tests/morestructs.h            # used by test cases
+        tests/cppunit.cpp              # just for testing multiple input files and the "empty file" case
     GENERATORS
         json
     OUTPUT_LISTS

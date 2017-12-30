@@ -263,6 +263,10 @@ void JsonGeneratorTests::test3rdPartyAdaption()
 //       * the include must happen in exactly one translation unit of the project at a point where the structs are defined
 #include "reflection/structs.h"
 
+// include file required for reflection of structs defined in morestructs.h
+// NOTE: this inclusion should not lead to multiple definition errors (despite the fact that structs.h included morestructs.h)
+#include "reflection/morestructs.h"
+
 // this file should also be generated via add_reflection_generator_invocation() and hence includeable
 // it is included to test the "empty" case when a unit doesn't contain relevant classes
 #include "reflection/cppunit.h"

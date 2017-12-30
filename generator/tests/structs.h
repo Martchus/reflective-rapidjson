@@ -4,6 +4,10 @@
 #include <c++utilities/chrono/datetime.h>
 #include <c++utilities/chrono/timespan.h>
 
+// including this header should *not* cause the code generator to generate code for the
+// contained structs as well (to prevent violating the one definition rule)
+#include "./morestructs.h"
+
 #include "../../lib/json/reflector-chronoutilities.h"
 #include "../../lib/json/serializable.h"
 

@@ -245,6 +245,10 @@ void JsonSerializationCodeGenerator::generate(ostream &os) const
               "    }\n"
               "    // pull members\n";
         for (const clang::FieldDecl *field : relevantClass.record->fields()) {
+            // skip const members
+            if (field->getType().isConstant(field->getASTContext())) {
+                continue;
+            }
             if (pullPrivateMembers || field->getAccess() == clang::AS_public) {
                 os << "    pull(reflectable." << field->getName() << ", \"" << field->getName() << "\", value, errors);\n";
             }

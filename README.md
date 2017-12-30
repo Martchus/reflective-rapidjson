@@ -39,6 +39,7 @@ The following table shows the mapping of supported C++ types to supported JSON t
     * iteratables must provide an `emplace_back` method. So deserialization of eg. `std::forward_list`
       is currently not supported.
     * custom types must provide a default constructor.
+    * constant member variables are skipped.
 * For custom (de)serialization, see the section below.
 
 ## Usage

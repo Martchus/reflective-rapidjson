@@ -19,4 +19,13 @@ struct IncludedStruct : public JsonSerializable<IncludedStruct> {
     int someInt = 0;
 };
 
+/*!
+ * \brief The ConstStruct struct is used to test handling of const members.
+ * \remarks Those members should be ignored when deserializing.
+ */
+struct ConstStruct : public JsonSerializable<ConstStruct> {
+    int modifiableInt = 23;
+    const int constInt = 42;
+};
+
 #endif // REFLECTIVE_RAPIDJSON_TESTS_MORE_STRUCTS_H

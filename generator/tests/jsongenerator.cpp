@@ -34,6 +34,7 @@ class JsonGeneratorTests : public TestFixture {
     CPPUNIT_TEST(testMultipleInheritence);
     CPPUNIT_TEST(testCustomSerialization);
     CPPUNIT_TEST(test3rdPartyAdaption);
+    CPPUNIT_TEST(testHandlingConstMembers);
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -46,6 +47,7 @@ public:
     void testMultipleInheritence();
     void testCustomSerialization();
     void test3rdPartyAdaption();
+    void testHandlingConstMembers();
 
 private:
     const vector<string> m_expectedCode;
@@ -256,6 +258,24 @@ void JsonGeneratorTests::test3rdPartyAdaption()
     CPPUNIT_ASSERT_EQUAL(nested.asArrayElement.at(2).butSerializableAnyways, parsedNested.asArrayElement.at(2).butSerializableAnyways);
     CPPUNIT_ASSERT_EQUAL(get<0>(nested.asTupleElement), get<0>(parsedNested.asTupleElement));
     CPPUNIT_ASSERT_EQUAL(get<1>(nested.asTupleElement).butSerializableAnyways, get<1>(parsedNested.asTupleElement).butSerializableAnyways);
+}
+
+/*!
+ * \brief Tests whether const member variables are ignored when deserializing.
+ * \remarks This test is very simple since no checks/diagnostics for const members have been implemented yet.
+ */
+void JsonGeneratorTests::testHandlingConstMembers()
+{
+    ConstStruct constStruct;
+    constStruct.modifiableInt = 24;
+    const string strConstStruct("{\"modifiableInt\":24,\"constInt\":42}");
+    CPPUNIT_ASSERT_EQUAL(strConstStruct, string(constStruct.toJson().GetString()));
+
+    JsonDeserializationErrors errors;
+    auto parsedConstStruct(constStruct.fromJson(strConstStruct));
+    CPPUNIT_ASSERT_EQUAL(0_st, errors.size());
+    CPPUNIT_ASSERT_EQUAL(24, parsedConstStruct.modifiableInt);
+    CPPUNIT_ASSERT_EQUAL(42, parsedConstStruct.constInt);
 }
 
 // include file required for reflection of TestStruct and other structs defined in structs.h

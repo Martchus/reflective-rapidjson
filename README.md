@@ -6,9 +6,14 @@ using Clang and RapidJSON.
 However, extending the generator to generate code for other applications of reflection or to provide generic
 reflection would be possible as well.
 
-This repository also contains a small, additional header to use RapidJSON with Boost.Hana. This allows to serialize
-or dezerialize simple data structures using the `BOOST_HANA_DEFINE_STRUCT` macro rather than requiring the code
-generator.
+## Open for other reflection approaches
+The reflection implementation used behind the scenes of this library is exchangeable:
+
+* This repository already provides a small, additional header to use RapidJSON with Boost.Hana. This allows to
+  serialize or dezerialize simple data structures declared using the `BOOST_HANA_DEFINE_STRUCT` macro rather than
+  requiring the code generator.
+* When native reflection becomes standardized, it would be possible to make use of it as well. In this case,
+  the code generator could still act as a fallback.
 
 ## Supported datatypes
 The following table shows the mapping of supported C++ types to supported JSON types:
@@ -234,15 +239,16 @@ The following dependencies are required at build time. Note that Reflective Rapi
 and *none* of these dependencies are required at runtime by an application which makes use of
 Reflective RapidJSON.
 
-* C++ compiler and standard library supporting at least C++14
+* C++ compiler and C++ standard library supporting at least C++14
 * the [CMake](https://cmake.org) build system
-* LibTooling from [Clang](https://clang.llvm.org) for the code generator
+* LibTooling from [Clang](https://clang.llvm.org) for the code generator (optional when using
+  Boost.Hana)
 * [RapidJSON](https://github.com/Tencent/rapidjson) for JSON (de)serialization
-* [Boost.Hana](http://www.boost.org/doc/libs/1_65_1/libs/hana/doc/html/index.html) for using
-  `BOOST_HANA_DEFINE_STRUCT` instead of code generator
 * [C++ utilities](https://github.com/Martchus/cpp-utilities) for various helper functions
 
 #### Optional
+* [Boost.Hana](http://www.boost.org/doc/libs/1_65_1/libs/hana/doc/html/index.html) for using
+  `BOOST_HANA_DEFINE_STRUCT` instead of code generator
 * [CppUnit](https://www.freedesktop.org/wiki/Software/cppunit) for building and running the tests
 * [Doxygen](http://www.doxygen.org) for generating API documentation
 * [Graphviz](http://www.graphviz.org) for diagrams in the API documentation
@@ -251,6 +257,18 @@ Reflective RapidJSON.
 * It is not required to use CMake as build system for your own project. However, when using a
   different build system, there is no helper for adding the code generator to the build process
   provided (so far).
+* I usually develop using the latest version of those dependencies. So it is recommend to get the
+  the latest versions as well. I tested the following versions so far:
+    * GCC 7.2.1 or Clang 5.0 as compiler
+    * libstdc++ from GCC 7.2.1
+    * CMake 3.10.1
+    * Clang 5.0.0/5.0.1 for LibTooling
+    * RapidJSON 1.1.0
+    * C++ utilities 4.12
+    * Boost.Hana 1.65.1 and 1.66.0
+    * CppUnit 1.14.0
+    * Doxygen 1.8.13
+    * Graphviz 2.40.1
 
 ### How to build
 #### 1. Install dependencies

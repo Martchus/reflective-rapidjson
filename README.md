@@ -341,3 +341,10 @@ make apidoc
 make install DESTDIR="/temporary/install/location"
 ```
 Add eg. `-j$(nproc)` to `make` arguments for using all cores.
+
+### Packages
+I currently only provide an
+[Arch Linux package](https://github.com/Martchus/PKGBUILDs/blob/master/reflective-rapidjson/git/PKGBUILD)
+for the current Git version. This package shows the required dependencies and commands to build
+in a plain way. So it might be useful for making Reflective RapidJSON available under other platforms,
+too.

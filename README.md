@@ -232,6 +232,15 @@ An example for such custom (de)serialization can be found in the file
 Checkout the test cases for further examples. Relevant files are in
 the directories `lib/tests` and `generator/tests`.
 
+## Architecture
+The following diagram gives an overview about the architecture of the code generator and wrapper library
+around RapidJSON:
+
+![Architectue overview](/doc/arch.svg)
+
+* blue: classes from LibTooling/Clang
+* grey: conceivable extension or use
+
 ## Install instructions
 
 ### Dependencies

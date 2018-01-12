@@ -36,7 +36,8 @@ if(RapidJSON_FOUND)
     )
 endif()
 
-# add (only) the include dirs for c++utilities because we're not depending on the actual library
+# add (only) the CMake module and include dirs for c++utilities because we're not depending on the actual library
+list(APPEND CMAKE_MODULE_PATH ${CPP_UTILITIES_MODULE_DIRS})
 list(APPEND PUBLIC_SHARED_INCLUDE_DIRS "${CPP_UTILITIES_INCLUDE_DIRS}")
 list(APPEND PUBLIC_STATIC_INCLUDE_DIRS "${CPP_UTILITIES_INCLUDE_DIRS}")
 

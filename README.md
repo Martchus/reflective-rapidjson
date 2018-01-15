@@ -15,6 +15,28 @@ The reflection implementation used behind the scenes of this library is exchange
 * When native reflection becomes standardized, it would be possible to make use of it as well. In this case,
   the code generator could still act as a fallback.
 
+## Current state
+The basic functionality is implemented, tested and documented:
+
+* serialization and deserialization of datatypes listed above
+    * nesting and inheritance is possible
+* basic error handling when deserializing
+* CMake macro to conveniently include the code generator into the build process
+* allow to use Boost.Hana
+
+### TODOs
+There are still things missing which would likely be very useful in practise. The following list contains
+the most important TODOs:
+
+* [ ] Allow to specify which member variables should be considered.
+    * This could work similar to Qt's Signals & Slots
+    * but there should also be a way to do this for 3rdparty types.
+    * Note that currently, *all* public member variables are (de)serialized.
+* [ ] Support getter/setter methods
+    * [ ] Allow to serialize the result of methods.
+    * [ ] Allow to pass a deserialized value to a method.
+* [ ] Validate enum values when deserializing.
+
 ## Supported datatypes
 The following table shows the mapping of supported C++ types to supported JSON types:
 
@@ -229,8 +251,13 @@ An example for such custom (de)serialization can be found in the file
 * It is currently not possible to ignore a specific member.
 
 ### Further examples
-Checkout the test cases for further examples. Relevant files are in
-the directories `lib/tests` and `generator/tests`.
+* Checkout the test cases for further examples. Relevant files are in
+  the directories `lib/tests` and `generator/tests`.
+* There's also my
+  [tag editor](https://github.com/Martchus/tageditor), which uses Reflective RapidJSON to provide
+  a JSON export.
+  See [json.h](https://github.com/Martchus/tageditor/blob/master/cli/json.h) and
+  [mainfeatures.cpp#exportToJson](https://github.com/Martchus/tageditor/blob/master/cli/mainfeatures.cpp#L856).
 
 ## Architecture
 The following diagram gives an overview about the architecture of the code generator and wrapper library

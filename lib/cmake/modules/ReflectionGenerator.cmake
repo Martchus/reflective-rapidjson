@@ -8,13 +8,12 @@ set(REFLECTION_GENERATOR_MODULE_LOADED YES)
 
 # find code generator
 set(DEFAULT_REFLECTION_GENERATOR_EXECUTABLE "reflective_rapidjson_generator")
-set(CUSTOM_REFLECTION_GENERATOR_EXECUTABLE "" CACHE FILEPATH "path to executable of reflection generator")
-if(CUSTOM_REFLECTION_GENERATOR_EXECUTABLE)
+set(REFLECTION_GENERATOR_EXECUTABLE "" CACHE FILEPATH "path to executable of reflection generator")
+if(REFLECTION_GENERATOR_EXECUTABLE)
     # use custom generator executable
-    if(NOT FILE "${CUSTOM_REFLECTION_GENERATOR_EXECUTABLE}")
-        message(FATAL_ERROR "The specified code generator executable \"${CUSTOM_REFLECTION_GENERATOR_EXECUTABLE}\" does not exist.")
+    if(NOT EXISTS "${REFLECTION_GENERATOR_EXECUTABLE}" OR IS_DIRECTORY "${REFLECTION_GENERATOR_EXECUTABLE}")
+        message(FATAL_ERROR "The specified code generator executable \"${REFLECTION_GENERATOR_EXECUTABLE}\" is not a file.")
     endif()
-    set(REFLECTION_GENERATOR_EXECUTABLE "${CUSTOM_REFLECTION_GENERATOR_EXECUTABLE}")
 elseif(CMAKE_CROSSCOMPILING OR NOT TARGET "${DEFAULT_REFLECTION_GENERATOR_EXECUTABLE}")
     # find native/external "reflective_rapidjson_generator"
     find_program(REFLECTION_GENERATOR_EXECUTABLE "${DEFAULT_REFLECTION_GENERATOR_EXECUTABLE}")
@@ -23,8 +22,12 @@ else()
     set(REFLECTION_GENERATOR_EXECUTABLE "${DEFAULT_REFLECTION_GENERATOR_EXECUTABLE}")
 endif()
 if(NOT REFLECTION_GENERATOR_EXECUTABLE)
-    message(FATAL_ERROR "Unable to find executable of generator for reflection code.")
+    message(FATAL_ERROR "Unable to find executable of generator for reflection code. Set REFLECTION_GENERATOR_EXECUTABLE to specify the path.")
 endif()
+
+# allow to specify a custom include path and use first implicit include directory as default
+# (useful for cross-compilation when header files are under custom prefix)
+set(REFLECTION_GENERATOR_INCLUDE_DIRECTORIES "${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES}" CACHE FILEPATH "include directories for code generator")
 
 # define helper function to add a reflection generator invocation for a specified list of source files
 include(CMakeParseArguments)
@@ -50,6 +53,34 @@ function(add_reflection_generator_invocation)
         set(ARGS_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/reflection")
         file(MAKE_DIRECTORY "${ARGS_OUTPUT_DIRECTORY}")
     endif()
+
+    # apply specified REFLECTION_GENERATOR_INCLUDE_DIRECTORIES
+    foreach(INCLUDE_DIR ${REFLECTION_GENERATOR_INCLUDE_DIRECTORIES})
+        list(APPEND ARGS_CLANG_OPTIONS "-isystem ${INCLUDE_DIR}")
+    endforeach()
+
+    # add options required for cross compiling with mingw-w64
+    if(MINGW)
+        # find MinGW version of stdlib.h to ensure that only this version is processed
+        find_file(MINGW_W64_STDLIB_H stdlib.h ${REFLECTION_GENERATOR_INCLUDE_DIRECTORIES})
+        if(NOT EXISTS "${MINGW_W64_STDLIB_H}")
+            message(FATAL_ERROR "Unable to locate MinGW version of stdlib.h. Ensure it is in REFLECTION_GENERATOR_INCLUDE_DIRECTORIES.")
+        endif()
+
+        list(APPEND ARGS_CLANG_OPTIONS
+            # allow __declspec
+            "-fdeclspec"
+            # make sure platform detection works as expected
+            "-D_WIN32"
+            # ensure libtooling processes the MinGW version of stdlib.h rather than the host version
+            # (not sure why specifying REFLECTION_GENERATOR_INCLUDE_DIRECTORIES is not enough to let it find the correct header file)
+            "-include ${MINGW_W64_STDLIB_H}"
+            # prevent processing of host stdlib.h
+            "-D_STDLIB_H"
+        )
+    endif()
+
+    # TODO: add options for other targets
 
     # add options to be passed to clang from the specified targets
     if(ARGS_CLANG_OPTIONS_FROM_TARGETS)

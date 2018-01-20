@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 
 # metadata
 set(META_PROJECT_TYPE library)
+set(META_HEADER_ONLY_LIB ON)
 
 # add project files
 set(HEADER_FILES
@@ -49,7 +50,6 @@ endif()
 
 # include modules to apply configuration
 include(BasicConfig)
-include(WindowsResources)
 include(LibraryTarget)
 include(TestTarget)
 include(Doxygen)

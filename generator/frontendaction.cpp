@@ -32,6 +32,7 @@ FrontendAction::CreateASTConsumer(clang::CompilerInstance &compilerInstance, llv
 
     // enable all extensions
     lngOpts.MicrosoftExt = true;
+    lngOpts.DeclSpecKeyword = true;
     lngOpts.DollarIdents = true;
     lngOpts.CPlusPlus11 = true;
 #if CLANG_VERSION_MAJOR == 3 && CLANG_VERSION_MINOR <= 5

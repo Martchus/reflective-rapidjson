@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
     ArgumentParser parser;
     OperationArgument generateArg("generate", 'g', "runs the code generator");
     generateArg.setImplicit(true);
-    ConfigValueArgument inputFileArg("input-file", 'i', "specifies the input file", { "path" });
+    ConfigValueArgument inputFileArg("input-file", '\0', "specifies the input file", { "path" });
     inputFileArg.setRequired(true);
     ConfigValueArgument outputFileArg("output-file", 'o', "specifies the output file", { "path" });
     Argument generatorsArg("generators", 'g', "specifies the generators (by default all generators are enabled)");

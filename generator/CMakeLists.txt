@@ -57,31 +57,33 @@ list(APPEND PRIVATE_LIBRARIES reflective_rapidjson)
 include(BasicConfig)
 include(WindowsResources)
 include(AppTarget)
-
-# trigger code generator for tests because the tests already contain structs to be (de)serialized
-include(ReflectionGenerator)
-add_reflection_generator_invocation(
-    INPUT_FILES
-        tests/structs.h                # used by test cases
-        tests/morestructs.h            # used by test cases
-        tests/cppunit.cpp              # just for testing multiple input files and the "empty file" case
-    GENERATORS
-        json
-    OUTPUT_LISTS
-        TEST_HEADER_FILES
-    CLANG_OPTIONS_FROM_TARGETS
-        reflective_rapidjson_generator_tests
-    JSON_CLASSES
-        OtherNotJsonSerializable       # test specifying classes for JSON (de)serialization manually
-        SomeOtherClassName             # specifying a class that does not exist should not cause any problems
-    JSON_VISIBILITY
-        LIB_EXPORT                     # not required, just to test setting visibility
-)
-
-# include modules to apply configuration
 include(TestTarget)
 include(ShellCompletion)
 include(Doxygen)
+
+# trigger code generator for tests because the tests already contain structs to be (de)serialized
+if(TARGET reflective_rapidjson_generator_tests)
+    include(ReflectionGenerator)
+    add_reflection_generator_invocation(
+        INPUT_FILES
+            tests/structs.h                # used by test cases
+            tests/morestructs.h            # used by test cases
+            tests/cppunit.cpp              # just for testing multiple input files and the "empty file" case
+        GENERATORS
+            json
+        OUTPUT_LISTS
+            TEST_GENERATED_HEADER_FILES
+        CLANG_OPTIONS_FROM_TARGETS
+            reflective_rapidjson_generator_tests
+        JSON_CLASSES
+            OtherNotJsonSerializable       # test specifying classes for JSON (de)serialization manually
+            SomeOtherClassName             # specifying a class that does not exist should not cause any problems
+        JSON_VISIBILITY
+            LIB_EXPORT                     # not required, just to test setting visibility
+    )
+    list(APPEND TEST_HEADER_FILES ${TEST_GENERATED_HEADER_FILES})
+    target_sources(reflective_rapidjson_generator_tests PRIVATE ${TEST_GENERATED_HEADER_FILES})
+endif()
 
 # add paths for include dirs of c++utilities and RapidJSON to config header so test cases can use it
 set(META_CUSTOM_CONFIG "#define CPP_UTILITIES_INCLUDE_DIRS \"${CPP_UTILITIES_INCLUDE_DIRS}\"\n")

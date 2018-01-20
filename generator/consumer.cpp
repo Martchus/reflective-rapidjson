@@ -22,7 +22,7 @@ bool Consumer::HandleTopLevelDecl(clang::DeclGroupRef groupRefDecl)
 {
     for (clang::Decl *decl : groupRefDecl) {
         if (clang::NamespaceDecl *namespaceDecl = llvm::dyn_cast<clang::NamespaceDecl>(decl)) {
-            if (!shouldParseDecl(decl)) {
+            if (!shouldParseDecl(namespaceDecl)) {
                 continue;
             }
         }

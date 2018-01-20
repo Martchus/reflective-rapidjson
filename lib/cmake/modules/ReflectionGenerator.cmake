@@ -16,7 +16,10 @@ if(REFLECTION_GENERATOR_EXECUTABLE)
     endif()
 elseif(CMAKE_CROSSCOMPILING OR NOT TARGET "${DEFAULT_REFLECTION_GENERATOR_EXECUTABLE}")
     # find native/external "reflective_rapidjson_generator"
-    find_program(REFLECTION_GENERATOR_EXECUTABLE "${DEFAULT_REFLECTION_GENERATOR_EXECUTABLE}")
+    find_program(REFLECTION_GENERATOR_EXECUTABLE
+        "${DEFAULT_REFLECTION_GENERATOR_EXECUTABLE}"
+        PATHS "/usr/bin" "/bin"
+    )
 else()
     # use "reflective_rapidjson_generator" target
     set(REFLECTION_GENERATOR_EXECUTABLE "${DEFAULT_REFLECTION_GENERATOR_EXECUTABLE}")

@@ -29,17 +29,17 @@ int main(int argc, char *argv[])
 
     // setup argument parser
     ArgumentParser parser;
-    OperationArgument generateArg("generate", 'g', "runs the code generator");
+    OperationArgument generateArg("generate", '\0', "runs the code generator");
     generateArg.setImplicit(true);
     ConfigValueArgument inputFileArg("input-file", '\0', "specifies the input file", { "path" });
     inputFileArg.setRequired(true);
-    ConfigValueArgument outputFileArg("output-file", 'o', "specifies the output file", { "path" });
-    Argument generatorsArg("generators", 'g', "specifies the generators (by default all generators are enabled)");
+    ConfigValueArgument outputFileArg("output-file", '\0', "specifies the output file", { "path" });
+    Argument generatorsArg("generators", '\0', "specifies the generators (by default all generators are enabled)");
     generatorsArg.setValueNames({ "json" });
     generatorsArg.setPreDefinedCompletionValues("json");
     generatorsArg.setRequiredValueCount(Argument::varValueCount);
     generatorsArg.setCombinable(true);
-    ConfigValueArgument clangOptionsArg("clang-opt", 'c', "specifies arguments/options to be passed to Clang", { "option" });
+    ConfigValueArgument clangOptionsArg("clang-opt", '\0', "specifies arguments/options to be passed to Clang", { "option" });
     clangOptionsArg.setRequiredValueCount(Argument::varValueCount);
     HelpArgument helpArg(parser);
     NoColorArgument noColorArg;

@@ -90,7 +90,7 @@ void JsonGeneratorTests::testCLI()
     string stdout, stderr;
 
     const string inputFilePath(testFilePath("some_structs.h"));
-    const char *const args1[] = { PROJECT_NAME, "-i", inputFilePath.data(), "--json-classes", "TestNamespace2::ThirdPartyStruct", "--clang-opt",
+    const char *const args1[] = { PROJECT_NAME, "--input-file", inputFilePath.data(), "--json-classes", "TestNamespace2::ThirdPartyStruct", "--clang-opt",
         "-I" CPP_UTILITIES_INCLUDE_DIRS, "-I" RAPIDJSON_INCLUDE_DIRS, nullptr };
     TESTUTILS_ASSERT_EXEC(args1);
     assertEqualityLinewise(m_expectedCode, toArrayOfLines(stdout));

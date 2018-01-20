@@ -110,14 +110,20 @@ reflective_rapidjson_generator -i "$srcdir/code-defining-structs.cpp" -o "$build
 #### Invoking code generator with CMake macro
 It is possible to use the provided CMake macro to automate this task:
 ```
+# find the package and make macro available
 find_package(reflective-rapidjson REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${REFLECTIVE_RAPIDJSON_MODULE_DIRS})
 include(ReflectionGenerator)
 
+# "link" against reflective_rapidjson (it is a header-only lib so this will only add the required include paths to your target)
+target_link_libraries(mytarget PRIVATE reflective_rapidjson)
+
+# invoke macro
 add_reflection_generator_invocation(
     INPUT_FILES code-defining-structs.cpp
     GENERATORS json
     OUTPUT_LISTS LIST_OF_GENERATED_HEADERS
+    CLANG_OPTIONS_FROM_TARGETS mytarget
 )
 ```
 
@@ -131,14 +137,31 @@ will always have the extension "`.h`", independently of the extension of the inp
 The full paths of the generated files are also appended to the variable `LIST_OF_GENERATED_HEADERS` which then can be added
 to the sources of your target. Of course this can be skipped if not required/wanted.
 
+For an explanation of the `CLANG_OPTIONS_FROM_TARGETS` argument, read the next section.
+
 #### Passing Clang options
 It is possible to pass additional options to the Clang tool invocation used by the code generator.
 This can be done using the `--clang-opt` argument or the `CLANG_OPTIONS` argument when using the CMake macro.
 
-It makes most sense to specify the same options as during compilation so the code generator uses the same flags,
-defines and include directories as the compiler and hence behaves like the compiler.  
-When using the CMake macro it is possible to automatically pass all compile flags, compile definitions and include directories
-from certain targets to the code generator. The targets can ge specified using the `CLANG_OPTIONS_FROM_TARGETS` argument.
+It makes most sense to specify the same options for the code generator as during the actual compilation. This way the code
+generator uses the same flags, defines and include directories as the compiler and hence behaves like the compiler.  
+When using the CMake macro, it is possible to automatically pass all compile flags, compile definitions and include directories
+from certain targets to the code generator. The targets can be specified using the `CLANG_OPTIONS_FROM_TARGETS` argument.
+
+#### Notes regarding cross-compilation
+* For cross compilation, it is required to build the code generator for the platform you're building on.
+* Since the code generator is likely not required under the target platform, you should add `-DNO_GENERATOR:BOOL=ON` to the CMake
+  arguments when building Reflective RapidJSON for the target platform.
+* When using the `add_reflection_generator_invocation` macro, you need to set the following CMake variables:
+    * `REFLECTION_GENERATOR_EXECUTABLE:FILEPATH=/path/to/executable`: path of the code generator executable to run under the platform
+      you're building on
+    * `REFLECTION_GENERATOR_INCLUDE_DIRECTORIES:STRING=/custom/prefix/include`: directories containing header files for target
+      platform (not required if you set `CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES` anyways since it defaults to that variable)
+* It is likely required to pass additional options for the target platform. For example, to cross compile with MingGW, is is
+  required to add `-fdeclspec`, `-D_WIN32` and some more options (see `lib/cmake/modules/ReflectionGenerator.cmake`). The
+   `add_reflection_generator_invocation` macro is supposed to take care of this, but currently only MingGW is supported.
+* The Arch Linux packages mentioned at the end of the README file also include `mingw-w64` variants which give a concrete example how
+  cross-compilation can be done.
 
 ### Using Boost.Hana instead of the code generator
 The same example as above. However, this time Boost.Hana is used - so it doesn't require invoking the generator.

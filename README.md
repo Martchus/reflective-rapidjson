@@ -36,6 +36,7 @@ the most important TODOs:
     * [ ] Allow to serialize the result of methods.
     * [ ] Allow to pass a deserialized value to a method.
 * [ ] Validate enum values when deserializing.
+* [ ] Untie serialization and deserialization.
 
 ## Supported datatypes
 The following table shows the mapping of supported C++ types to supported JSON types:

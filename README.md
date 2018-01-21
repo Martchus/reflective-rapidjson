@@ -25,18 +25,19 @@ The basic functionality is implemented, tested and documented:
 * allow to use Boost.Hana
 
 ### TODOs
-There are still things missing which would likely be very useful in practise. The following list contains
-the most important TODOs:
+There are still things missing which would likely be very useful in practise. The following list contains the open TODOs which are supposed to be most relevant in practise:
 
-* [ ] Allow to specify which member variables should be considered.
-    * This could work similar to Qt's Signals & Slots
+* [ ] Allow to specify which member variables should be considered
+    * This could work similar to Qt's Signals & Slots macros.
     * but there should also be a way to do this for 3rdparty types.
     * Note that currently, *all* public member variables are (de)serialized.
 * [ ] Support getter/setter methods
-    * [ ] Allow to serialize the result of methods.
-    * [ ] Allow to pass a deserialized value to a method.
-* [ ] Validate enum values when deserializing.
-* [ ] Untie serialization and deserialization.
+    * [ ] Allow to serialize the result of methods
+    * [ ] Allow to pass a deserialized value to a method
+* [ ] Validate enum values when deserializing
+* [ ] Untie serialization and deserialization
+
+For a full list of TODOs, see [TODOs.md](./TODOs.md).
 
 ## Supported datatypes
 The following table shows the mapping of supported C++ types to supported JSON types:

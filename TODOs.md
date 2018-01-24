@@ -10,7 +10,7 @@
           explicitely
     - [x] Fix traits currently relying on `JsonSerializable` being base class
 - [x] Allow exporting symbols
-- [ ] Fix the massive number of warnings which are currently being created
+- [ ] Fix the massive number of warnings which are currently being created by the code generator
 - [ ] Test with libc++ (currently only tested with libstdc++)
 - [ ] Support templated classes
 - [ ] Allow (de)serialization of static members (if that makes sense?)

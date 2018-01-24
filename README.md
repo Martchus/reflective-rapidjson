@@ -18,8 +18,9 @@ The reflection implementation used behind the scenes of this library is exchange
 ## Current state
 The basic functionality is implemented, tested and documented:
 
-* serialization and deserialization of datatypes listed above
+* serialization and deserialization of datatypes listed under "Supported datatypes"
     * nesting and inheritance is possible
+    * adapting 3rdparty structs/classes is supported
 * basic error handling when deserializing
 * CMake macro to conveniently include the code generator into the build process
 * allow to use Boost.Hana

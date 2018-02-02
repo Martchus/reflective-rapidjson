@@ -14,6 +14,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <unordered_map>
 
 using namespace std;
 using namespace ApplicationUtilities;
@@ -80,16 +81,28 @@ int main(int argc, char *argv[])
             }
         }
 
-        // configure code generator
+        // instantiate the code factory and add generators to it
         CodeFactory factory(parser.executable(), inputFileArg.values(0), clangOptions, *os);
-        // add only specified generators if the --generator argument is present
+        // add specified generators if the --generator argument is present; otherwise add default generators
         if (generatorsArg.isPresent()) {
+            // define mapping of generator names to generator constructions (add new generators here!)
+            // clang-format off
+            const std::unordered_map<std::string, std::function<void()>> generatorsByName{
+                { "json", factory.bindGenerator<JsonSerializationCodeGenerator, const JsonSerializationCodeGenerator::Options &>(jsonOptions) }
+            };
+            // clang-format on
+
             // find and construct generators by name
             for (const char *generatorName : generatorsArg.values(0)) {
-                if (!strcmp(generatorName, "json")) {
-                    factory.addGenerator<JsonSerializationCodeGenerator>(jsonOptions);
-                } else {
-                    cerr << Phrases::Error << "The specified generator \"" << generatorName << "\" does not exist." << Phrases::EndFlush;
+                try {
+                    generatorsByName.at(generatorName)();
+                } catch (const out_of_range &) {
+                    cerr << Phrases::Error << "The specified generator \"" << generatorName << "\" does not exist." << Phrases::End;
+                    cerr << "Available generators:";
+                    for (const auto &generators : generatorsByName) {
+                        cerr << ' ' << generators.first;
+                    }
+                    cerr << endl;
                     return -5;
                 }
             }

@@ -3,6 +3,7 @@
 
 #include "./codegenerator.h"
 
+#include <functional>
 #include <iosfwd>
 #include <memory>
 #include <string>
@@ -34,6 +35,7 @@ public:
 
     const std::vector<std::unique_ptr<CodeGenerator>> &generators() const;
     template <typename GeneratorType, typename... Args> void addGenerator(Args &&... args);
+    template <typename GeneratorType, typename... Args> auto bindGenerator(Args &&... args);
 
     bool run();
     clang::CompilerInstance *compilerInstance();
@@ -58,6 +60,28 @@ private:
 template <typename GeneratorType, typename... Args> void CodeFactory::addGenerator(Args &&... args)
 {
     m_generators.emplace_back(std::make_unique<GeneratorType>(*this, std::forward<Args>(args)...));
+}
+
+namespace Detail {
+template <typename T> std::reference_wrapper<const T> wrapReferences(const T &val)
+{
+    return std::cref(val);
+}
+
+template <typename T> std::reference_wrapper<T> wrapReferences(T &val)
+{
+    return std::ref(val);
+}
+
+template <typename T> T &&wrapReferences(T &&val)
+{
+    return std::forward<T>(val);
+}
+} // namespace Detail
+
+template <typename GeneratorType, typename... Args> auto CodeFactory::bindGenerator(Args &&... args)
+{
+    return std::bind(&CodeFactory::addGenerator<GeneratorType, Args...>, this, Detail::wrapReferences(std::forward<Args>(args)...));
 }
 
 inline const std::vector<std::unique_ptr<CodeGenerator>> &CodeFactory::generators() const

@@ -15,6 +15,7 @@ class JsonSerializationCodeGenerator : public CodeGenerator {
 public:
     struct Options {
         Options();
+        Options(const Options &other) = delete;
         void appendTo(ApplicationUtilities::Argument *arg);
 
         ApplicationUtilities::ConfigValueArgument additionalClassesArg;

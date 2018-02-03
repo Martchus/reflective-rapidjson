@@ -23,7 +23,7 @@ FrontendAction::CreateASTConsumer(clang::CompilerInstance &compilerInstance, llv
 
     // turn some errors into warnings
     compilerInstance.getDiagnostics().setClient(
-        new DiagConsumer(std::unique_ptr<clang::DiagnosticConsumer>(compilerInstance.getDiagnostics().takeClient())));
+        new DiagConsumer(std::unique_ptr<clang::DiagnosticConsumer>(compilerInstance.getDiagnostics().takeClient()), m_factory.isErrorResilient()));
 
     return maybe_unique(new Consumer(m_factory, compilerInstance));
 }

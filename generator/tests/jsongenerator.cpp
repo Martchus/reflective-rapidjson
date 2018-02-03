@@ -107,9 +107,11 @@ void JsonGeneratorTests::testIncludingGeneratedHeader()
 {
     TestStruct test;
     test.someInt = 42;
+    test.someSize = 0xAAAAAAAA;
     test.someString = "the answer";
     test.yetAnotherString = "but what was the question";
-    const string expectedJSON("{\"someInt\":42,\"someString\":\"the answer\",\"yetAnotherString\":\"but what was the question\"}");
+    const string expectedJSON(
+        "{\"someInt\":42,\"someSize\":2863311530,\"someString\":\"the answer\",\"yetAnotherString\":\"but what was the question\"}");
 
     // test serialization
     CPPUNIT_ASSERT_EQUAL(expectedJSON, string(test.toJson().GetString()));
@@ -117,6 +119,7 @@ void JsonGeneratorTests::testIncludingGeneratedHeader()
     // test deserialization
     const TestStruct parsedTest(TestStruct::fromJson(expectedJSON));
     CPPUNIT_ASSERT_EQUAL(test.someInt, parsedTest.someInt);
+    CPPUNIT_ASSERT_EQUAL(test.someSize, parsedTest.someSize);
     CPPUNIT_ASSERT_EQUAL(test.someString, parsedTest.someString);
     CPPUNIT_ASSERT_EQUAL(test.yetAnotherString, parsedTest.yetAnotherString);
 }
@@ -128,13 +131,15 @@ void JsonGeneratorTests::testNesting()
 {
     TestStruct test;
     test.someInt = 42;
+    test.someSize = 0xAAAAAAAA;
     test.someString = "the answer";
     test.yetAnotherString = "but what was the question";
     NestedTestStruct nested;
     nested.nested.emplace_front(vector<TestStruct>{ test });
     nested.deq.emplace_back(3.14);
-    const string expectedJSON("{\"nested\":[[{\"someInt\":42,\"someString\":\"the answer\",\"yetAnotherString\":\"but what was the "
-                              "question\"}]],\"ptr\":null,\"deq\":[3.14]}");
+    const string expectedJSON(
+        "{\"nested\":[[{\"someInt\":42,\"someSize\":2863311530,\"someString\":\"the answer\",\"yetAnotherString\":\"but what was the "
+        "question\"}]],\"ptr\":null,\"deq\":[3.14]}");
 
     // test serialization
     CPPUNIT_ASSERT_EQUAL(expectedJSON, string(nested.toJson().GetString()));
@@ -146,6 +151,7 @@ void JsonGeneratorTests::testNesting()
     CPPUNIT_ASSERT_EQUAL(1_st, parsedNested.deq.size());
     const TestStruct &parsedTest(parsedNested.nested.front().front());
     CPPUNIT_ASSERT_EQUAL(test.someInt, parsedTest.someInt);
+    CPPUNIT_ASSERT_EQUAL(test.someSize, parsedTest.someSize);
     CPPUNIT_ASSERT_EQUAL(test.someString, parsedTest.someString);
     CPPUNIT_ASSERT_EQUAL(test.yetAnotherString, parsedTest.yetAnotherString);
     CPPUNIT_ASSERT_EQUAL(3.14, parsedNested.deq.front());
@@ -158,12 +164,14 @@ void JsonGeneratorTests::testSingleInheritence()
 {
     DerivedTestStruct test;
     test.someInt = 42;
+    test.someSize = 5;
     test.someString = "the answer";
     test.yetAnotherString = "but what was the question";
     test.someBool = false;
-    const string expectedJSONForBase("{\"someInt\":42,\"someString\":\"the answer\",\"yetAnotherString\":\"but what was the question\"}");
+    const string expectedJSONForBase(
+        "{\"someInt\":42,\"someSize\":5,\"someString\":\"the answer\",\"yetAnotherString\":\"but what was the question\"}");
     const string expectedJSONForDerived(
-        "{\"someInt\":42,\"someString\":\"the answer\",\"yetAnotherString\":\"but what was the question\",\"someBool\":false}");
+        "{\"someInt\":42,\"someSize\":5,\"someString\":\"the answer\",\"yetAnotherString\":\"but what was the question\",\"someBool\":false}");
 
     // test serialization
     CPPUNIT_ASSERT_EQUAL(expectedJSONForBase, string(as<TestStruct>(test).toJson().GetString()));
@@ -172,6 +180,7 @@ void JsonGeneratorTests::testSingleInheritence()
     // test deserialization
     const DerivedTestStruct parsedTest(JsonSerializable<DerivedTestStruct>::fromJson(expectedJSONForDerived));
     CPPUNIT_ASSERT_EQUAL(test.someInt, parsedTest.someInt);
+    CPPUNIT_ASSERT_EQUAL(test.someSize, parsedTest.someSize);
     CPPUNIT_ASSERT_EQUAL(test.someString, parsedTest.someString);
     CPPUNIT_ASSERT_EQUAL(test.yetAnotherString, parsedTest.yetAnotherString);
     CPPUNIT_ASSERT_EQUAL(test.someBool, parsedTest.someBool);
@@ -184,12 +193,14 @@ void JsonGeneratorTests::testMultipleInheritence()
 {
     MultipleDerivedTestStruct test;
     test.someInt = 42;
+    test.someSize = 4294967274;
     test.someString = "the answer";
     test.yetAnotherString = "but what was the question";
     test.someBool = false;
     test.arrayOfStrings = { "array", "of", "strings" };
-    const string expectedJSONForDerived("{\"someInt\":42,\"someString\":\"the answer\",\"yetAnotherString\":\"but what was the "
-                                        "question\",\"arrayOfStrings\":[\"array\",\"of\",\"strings\"],\"someBool\":false}");
+    const string expectedJSONForDerived(
+        "{\"someInt\":42,\"someSize\":4294967274,\"someString\":\"the answer\",\"yetAnotherString\":\"but what was the "
+        "question\",\"arrayOfStrings\":[\"array\",\"of\",\"strings\"],\"someBool\":false}");
 
     // test serialization
     CPPUNIT_ASSERT_EQUAL(expectedJSONForDerived, string(as<MultipleDerivedTestStruct>(test).toJson().GetString()));
@@ -197,6 +208,7 @@ void JsonGeneratorTests::testMultipleInheritence()
     // test deserialization
     const MultipleDerivedTestStruct parsedTest(JsonSerializable<MultipleDerivedTestStruct>::fromJson(expectedJSONForDerived));
     CPPUNIT_ASSERT_EQUAL(test.someInt, parsedTest.someInt);
+    CPPUNIT_ASSERT_EQUAL(test.someSize, parsedTest.someSize);
     CPPUNIT_ASSERT_EQUAL(test.someString, parsedTest.someString);
     CPPUNIT_ASSERT_EQUAL(test.yetAnotherString, parsedTest.yetAnotherString);
     CPPUNIT_ASSERT_EQUAL(test.someBool, parsedTest.someBool);

@@ -25,6 +25,7 @@ using namespace ReflectiveRapidJSON;
  */
 struct TestStruct : public JsonSerializable<TestStruct> {
     int someInt = 0;
+    size_t someSize = 1;
     string someString = "foo";
     string yetAnotherString = "bar";
     static constexpr const char *staticMember = "static members are just ignored";

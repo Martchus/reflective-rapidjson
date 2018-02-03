@@ -28,7 +28,6 @@ The basic functionality is implemented, tested and documented:
 ### TODOs
 There are still things missing which would likely be very useful in practise. The following list contains the open TODOs which are supposed to be most relevant in practise:
 
-* [ ] Fix the massive number of warnings which are currently being created by the code generator
 * [ ] Allow to specify which member variables should be considered
     * This could work similar to Qt's Signals & Slots macros.
     * but there should also be a way to do this for 3rdparty types.
@@ -157,13 +156,17 @@ from certain targets to the code generator. The targets can be specified using t
 * Since the code generator is likely not required under the target platform, you should add `-DNO_GENERATOR:BOOL=ON` to the CMake
   arguments when building Reflective RapidJSON for the target platform.
 * When using the `add_reflection_generator_invocation` macro, you need to set the following CMake cache variables:
-    * `REFLECTION_GENERATOR_EXECUTABLE:FILEPATH=/path/to/executable`: path of the code generator executable built for the platform
-      you're building on
-    * `REFLECTION_GENERATOR_INCLUDE_DIRECTORIES:STRING=/custom/prefix/include`: directories containing header files for target
-      platform (not required if you set `CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES` anyways since it defaults to that variable)
-* It is likely required to pass additional options for the target platform. For example, to cross compile with MingGW, is is
-  required to add `-fdeclspec`, `-D_WIN32` and some more options (see `lib/cmake/modules/ReflectionGenerator.cmake`). The
-   `add_reflection_generator_invocation` macro is supposed to take care of this, but currently only MingGW under GNU/Linux is supported.
+    * `REFLECTION_GENERATOR_EXECUTABLE:FILEPATH=/path/to/executable`
+        * specifies the path of the code generator executable built for the platform you're building on
+        * only required if executable not in path anyways
+    * `REFLECTION_GENERATOR_TRIPLE:STRING=machine-vendor-operatingsystem`
+        * specifies the GNU platform triple for the target platform
+        * examples for cross compiling with mingw-w64 under GNU/Linux:
+          `x86_64-w64-mingw32`, `i686-w64-mingw32`
+    * `REFLECTION_GENERATOR_INCLUDE_DIRECTORIES:STRING=/custom/prefix/include`
+        * directories containing header files for target platform
+        * example for cross compiling with mingw-w64 under GNU/Linux:
+          `/usr/lib/gcc/x86_64-w64-mingw32/7.2.1/include;/usr/x86_64-w64-mingw32/include/c++/7.2.1/x86_64-w64-mingw32;/usr/x86_64-w64-mingw32/include`
 * The Arch Linux packages mentioned at the end of the README file also include `mingw-w64` variants which give a concrete example how
   cross-compilation can be done.
 

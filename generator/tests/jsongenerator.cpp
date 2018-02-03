@@ -67,7 +67,8 @@ void JsonGeneratorTests::testGeneratorItself()
 {
     const string inputFilePath(testFilePath("some_structs.h"));
     const vector<const char *> inputFiles{ inputFilePath.data() };
-    const vector<string> clangOptions{ "-I" CPP_UTILITIES_INCLUDE_DIRS, "-I" RAPIDJSON_INCLUDE_DIRS };
+    const vector<string> clangOptions{ "-resource-dir", REFLECTION_GENERATOR_CLANG_RESOURCE_DIR, "-I", CPP_UTILITIES_INCLUDE_DIRS, "-I",
+        RAPIDJSON_INCLUDE_DIRS };
 
     stringstream buffer;
     JsonSerializationCodeGenerator::Options jsonOptions;
@@ -90,8 +91,9 @@ void JsonGeneratorTests::testCLI()
     string stdout, stderr;
 
     const string inputFilePath(testFilePath("some_structs.h"));
-    const char *const args1[] = { PROJECT_NAME, "--input-file", inputFilePath.data(), "--json-classes", "TestNamespace2::ThirdPartyStruct", "--clang-opt",
-        "-I" CPP_UTILITIES_INCLUDE_DIRS, "-I" RAPIDJSON_INCLUDE_DIRS, nullptr };
+    const char *const args1[]
+        = { PROJECT_NAME, "--input-file", inputFilePath.data(), "--json-classes", "TestNamespace2::ThirdPartyStruct", "--clang-opt", "-resource-dir",
+              REFLECTION_GENERATOR_CLANG_RESOURCE_DIR, "-I", CPP_UTILITIES_INCLUDE_DIRS, "-I", RAPIDJSON_INCLUDE_DIRS, nullptr };
     TESTUTILS_ASSERT_EXEC(args1);
     assertEqualityLinewise(m_expectedCode, toArrayOfLines(stdout));
 #endif

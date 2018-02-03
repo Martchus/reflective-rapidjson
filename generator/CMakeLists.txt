@@ -91,6 +91,9 @@ if(RapidJSON_FOUND)
     string(APPEND META_CUSTOM_CONFIG "#define RAPIDJSON_INCLUDE_DIRS \"${RAPIDJSON_INCLUDE_DIRS}\"\n")
 endif()
 
+# add path of Clang's resource dir to config header so test cases can use it
+string(APPEND META_CUSTOM_CONFIG "#define REFLECTION_GENERATOR_CLANG_RESOURCE_DIR \"${REFLECTION_GENERATOR_CLANG_RESOURCE_DIR}\"\n")
+
 # make config header
 include(ConfigHeader)
 

@@ -28,9 +28,30 @@ if(NOT REFLECTION_GENERATOR_EXECUTABLE)
     message(FATAL_ERROR "Unable to find executable of generator for reflection code. Set REFLECTION_GENERATOR_EXECUTABLE to specify the path.")
 endif()
 
-# allow to specify a custom include path and use first implicit include directory as default
-# (useful for cross-compilation when header files are under custom prefix)
-set(REFLECTION_GENERATOR_INCLUDE_DIRECTORIES "${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES}" CACHE FILEPATH "include directories for code generator")
+# determine Clang's resource directory
+set(REFLECTION_GENERATOR_CLANG_RESOURCE_DIR "" CACHE PATH "directory containing Clang's builtin headers, usually /usr/lib/clang/version")
+if(NOT REFLECTION_GENERATOR_CLANG_RESOURCE_DIR)
+    if(NOT REFLECTION_GENERATOR_CLANG_BIN)
+        find_program(REFLECTION_GENERATOR_CLANG_BIN clang
+            NAMES clang++
+            PATHS "/usr/bin" "/bin"
+        )
+        if(NOT REFLECTION_GENERATOR_CLANG_BIN)
+            message(FATAL_ERROR "Unable to find the clang executable to determine Clang's resource directory")
+        endif()
+    endif()
+    exec_program(${REFLECTION_GENERATOR_CLANG_BIN} ARGS -print-resource-dir OUTPUT_VARIABLE REFLECTION_GENERATOR_CLANG_RESOURCE_DIR)
+endif()
+if(NOT REFLECTION_GENERATOR_CLANG_RESOURCE_DIR OR NOT IS_DIRECTORY "${REFLECTION_GENERATOR_CLANG_RESOURCE_DIR}")
+    message(FATAL_ERROR "Unable to find Clang's resource directory. Set REFLECTION_GENERATOR_CLANG_RESOURCE_DIR manually to the corresponding path (usually /usr/lib/clang/\$version).")
+endif()
+message(STATUS "Using ${REFLECTION_GENERATOR_CLANG_RESOURCE_DIR} as Clang's resource directory for Reflective RapidJSON")
+
+# allow to specify a custom include paths (useful for cross-compilation when header files are under custom prefix)
+set(REFLECTION_GENERATOR_INCLUDE_DIRECTORIES "" CACHE FILEPATH "include directories for code generator")
+
+# allow to specify a custom platform tiple (useful for cross-compilation to specify the target platform)
+set(REFLECTION_GENERATOR_TRIPLE "" CACHE STRING "platform triple for code generator")
 
 # define helper function to add a reflection generator invocation for a specified list of source files
 include(CMakeParseArguments)
@@ -57,33 +78,37 @@ function(add_reflection_generator_invocation)
         file(MAKE_DIRECTORY "${ARGS_OUTPUT_DIRECTORY}")
     endif()
 
+    # specify Clang's resource directory
+    list(APPEND ARGS_CLANG_OPTIONS -resource-dir "${REFLECTION_GENERATOR_CLANG_RESOURCE_DIR}")
+
+    # apply specified REFLECTION_GENERATOR_TRIPLET
+    if(REFLECTION_GENERATOR_TRIPLE)
+        list(APPEND ARGS_CLANG_OPTIONS
+            -Xclang -triple
+            -Xclang "${REFLECTION_GENERATOR_TRIPLE}"
+        )
+    endif()
+
     # apply specified REFLECTION_GENERATOR_INCLUDE_DIRECTORIES
     foreach(INCLUDE_DIR ${REFLECTION_GENERATOR_INCLUDE_DIRECTORIES})
-        list(APPEND ARGS_CLANG_OPTIONS "-isystem ${INCLUDE_DIR}")
+        list(APPEND ARGS_CLANG_OPTIONS -I "${INCLUDE_DIR}")
     endforeach()
 
-    # add options required for cross compiling with mingw-w64
+    # add workaround for cross compiling with mingw-w64 to prevent host stdlib.h being included
+    # (not sure why specifying REFLECTION_GENERATOR_INCLUDE_DIRECTORIES is not enough to let it find this particular header file)
     if(MINGW)
-        # find MinGW version of stdlib.h to ensure that only this version is processed
+        # find MinGW version of stdlib.h
         find_file(MINGW_W64_STDLIB_H stdlib.h ${REFLECTION_GENERATOR_INCLUDE_DIRECTORIES})
         if(NOT EXISTS "${MINGW_W64_STDLIB_H}")
             message(FATAL_ERROR "Unable to locate MinGW version of stdlib.h. Ensure it is in REFLECTION_GENERATOR_INCLUDE_DIRECTORIES.")
         endif()
 
+        # ensure libtooling includes the MinGW version of stdlib.h rather than the host version
         list(APPEND ARGS_CLANG_OPTIONS
-            # allow __declspec
-            "-fdeclspec"
-            # make sure platform detection works as expected
-            "-D_WIN32"
-            # ensure libtooling processes the MinGW version of stdlib.h rather than the host version
-            # (not sure why specifying REFLECTION_GENERATOR_INCLUDE_DIRECTORIES is not enough to let it find the correct header file)
-            "-include ${MINGW_W64_STDLIB_H}"
-            # prevent processing of host stdlib.h
-            "-D_STDLIB_H"
+            -include "${MINGW_W64_STDLIB_H}"
+            -D_STDLIB_H # prevent processing of host stdlib.h
         )
     endif()
-
-    # TODO: add options for other targets
 
     # add options to be passed to clang from the specified targets
     if(ARGS_CLANG_OPTIONS_FROM_TARGETS)

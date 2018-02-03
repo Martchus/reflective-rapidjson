@@ -45,7 +45,7 @@ CodeFactory::~CodeFactory()
 std::vector<string> CodeFactory::makeClangArgs() const
 {
     static const initializer_list<const char *> flags
-        = { m_applicationPath, "-x", "c++", "-fPIE", "-fPIC", "-Wno-microsoft", "-Wno-pragma-once-outside-header", "-std=c++14", "-fsyntax-only" };
+        = { m_applicationPath, "-x", "c++", "-Wno-pragma-once-outside-header", "-std=c++14", "-fsyntax-only" };
     vector<string> clangArgs;
     clangArgs.reserve(flags.size() + m_clangOptions.size() + m_sourceFiles.size());
     clangArgs.insert(clangArgs.end(), flags.begin(), flags.end());

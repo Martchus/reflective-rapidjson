@@ -21,27 +21,6 @@ FrontendAction::CreateASTConsumer(clang::CompilerInstance &compilerInstance, llv
     // propagate compiler instance to factory
     m_factory.setCompilerInstance(&compilerInstance);
 
-    // configure frontent, preporocessor and language options
-    clang::FrontendOptions &frontendOpts = compilerInstance.getFrontendOpts();
-    clang::Preprocessor &pp = compilerInstance.getPreprocessor();
-    clang::LangOptions &lngOpts = compilerInstance.getLangOpts();
-    frontendOpts.SkipFunctionBodies = true;
-    pp.enableIncrementalProcessing(true);
-    pp.SetSuppressIncludeNotFoundError(true);
-    lngOpts.DelayedTemplateParsing = true;
-
-    // enable all extensions
-    lngOpts.MicrosoftExt = true;
-    lngOpts.DeclSpecKeyword = true;
-    lngOpts.DollarIdents = true;
-    lngOpts.CPlusPlus11 = true;
-#if CLANG_VERSION_MAJOR == 3 && CLANG_VERSION_MINOR <= 5
-    lngOpts.CPlusPlus1y = true;
-#else
-    lngOpts.CPlusPlus14 = true;
-#endif
-    lngOpts.GNUMode = true;
-
     // turn some errors into warnings
     compilerInstance.getDiagnostics().setClient(
         new DiagConsumer(std::unique_ptr<clang::DiagnosticConsumer>(compilerInstance.getDiagnostics().takeClient())));

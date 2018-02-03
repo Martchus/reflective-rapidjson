@@ -25,6 +25,10 @@ CodeFactory::ToolInvocation::ToolInvocation(CodeFactory &factory)
     fileManager.Retain();
 }
 
+/*!
+ * \brief Constructs a new instance.
+ * \remarks The specified arguments are not copied and must remain valid for the live-time of the code factory.
+ */
 CodeFactory::CodeFactory(
     const char *applicationPath, const std::vector<const char *> &sourceFiles, const std::vector<string> &clangOptions, std::ostream &os)
     : m_applicationPath(applicationPath)

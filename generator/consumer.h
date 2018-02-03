@@ -16,7 +16,7 @@ class CodeFactory;
 /*!
  * \brief The Consumer class is passed to FrontendAction for handling occurrences of different elements of the file.
  *
- * These elements consist of top-level declarations, namespace definitions and most imporantly the whole translation unit.
+ * These elements consist of top-level declarations, namespace definitions and most importantly the whole translation unit.
  * If the translations unit has occurred, that means nested elements (eg. classes) have been read completely.
  * In this case, the Consumer class will trigger traversing the translation unit using a Visitor instance.
  */
@@ -45,7 +45,7 @@ inline Consumer::Consumer(CodeFactory &factory, clang::CompilerInstance &compile
 }
 
 /*!
- * \brief The DiagConsumer class changes most errors into warnings.
+ * \brief The DiagConsumer class allows turning most errors into warnings.
  * \remarks This class is based on MocDiagConsumer from https://github.com/woboq/moc-ng.
  */
 class DiagConsumer : public clang::DiagnosticConsumer {
@@ -70,6 +70,9 @@ inline DiagConsumer::DiagConsumer(std::unique_ptr<clang::DiagnosticConsumer> Pre
 {
 }
 
+/*!
+ * \brief Returns the number of errors which actually would have been occurred if we would not turn most errors into warnings.
+ */
 inline unsigned int DiagConsumer::realErrorCount() const
 {
     return m_realErrorCount;

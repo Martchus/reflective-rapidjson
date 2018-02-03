@@ -57,7 +57,7 @@ void DiagConsumer::finish()
 }
 
 /*!
- * \brief Turns most errors into warnings so it works despite issues when parsing libstdc++ headers.
+ * \brief Turns most errors into warnings so the code generator can even work when parsing incomplete headers.
  */
 void DiagConsumer::HandleDiagnostic(clang::DiagnosticsEngine::Level diagLevel, const clang::Diagnostic &info)
 {

@@ -57,43 +57,73 @@ private:
     clang::CompilerInstance *m_compilerInstance;
 };
 
+/*!
+ * \brief Instantiates a code generator of the specified type and adds it to the current instance.
+ * \remarks The specified \a args are forwarded to the generator's constructor.
+ */
 template <typename GeneratorType, typename... Args> void CodeFactory::addGenerator(Args &&... args)
 {
     m_generators.emplace_back(std::make_unique<GeneratorType>(*this, std::forward<Args>(args)...));
 }
 
 namespace Detail {
+/*!
+ * \brief Wraps const references using std::cref() for use with std::bind().
+ */
 template <typename T> std::reference_wrapper<const T> wrapReferences(const T &val)
 {
     return std::cref(val);
 }
 
+/*!
+ * \brief Wraps mutable references using std::ref() for use with std::bind().
+ */
 template <typename T> std::reference_wrapper<T> wrapReferences(T &val)
 {
     return std::ref(val);
 }
 
+/*!
+ * \brief Forwards non-references for use with std::bind().
+ */
 template <typename T> T &&wrapReferences(T &&val)
 {
     return std::forward<T>(val);
 }
 } // namespace Detail
 
+/*!
+ * \brief Returns a function which instantiates a code generator of the specified type and adds it to the current instance.
+ * \remarks
+ * - The specified \a args are forwarded to the generator's constructor.
+ * - No copy of \a args passed by reference is made.
+ */
 template <typename GeneratorType, typename... Args> auto CodeFactory::bindGenerator(Args &&... args)
 {
     return std::bind(&CodeFactory::addGenerator<GeneratorType, Args...>, this, Detail::wrapReferences(std::forward<Args>(args)...));
 }
 
+/*!
+ * \brief Returns the added generators.
+ */
 inline const std::vector<std::unique_ptr<CodeGenerator>> &CodeFactory::generators() const
 {
     return m_generators;
 }
 
+/*!
+ * \brief Returns the compiler instance.
+ * \remarks The is nullptr for a newly constructed factory and should be assigned by the frontend action.
+ */
 inline clang::CompilerInstance *CodeFactory::compilerInstance()
 {
     return m_compilerInstance;
 }
 
+/*!
+ * \brief Assigns the compiler instance.
+ * \remarks The factory does *not* take ownership.
+ */
 inline void CodeFactory::setCompilerInstance(clang::CompilerInstance *compilerInstance)
 {
     m_compilerInstance = compilerInstance;

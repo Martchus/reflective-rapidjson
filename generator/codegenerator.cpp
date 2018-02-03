@@ -29,7 +29,7 @@ void CodeGenerator::addDeclaration(clang::Decl *decl)
 void CodeGenerator::lazyInitializeSourceManager() const
 {
     if (factory().compilerInstance()) {
-        const_cast<CodeGenerator *>(this)->m_sourceManager = &factory().compilerInstance()->getSourceManager();
+        m_sourceManager = &factory().compilerInstance()->getSourceManager();
     }
 }
 

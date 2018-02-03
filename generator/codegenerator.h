@@ -36,7 +36,7 @@ protected:
 
 private:
     CodeFactory &m_factory;
-    const clang::SourceManager *m_sourceManager;
+    mutable const clang::SourceManager *m_sourceManager;
 };
 
 inline CodeGenerator::CodeGenerator(CodeFactory &factory)

@@ -61,18 +61,20 @@ void DiagConsumer::finish()
  */
 void DiagConsumer::HandleDiagnostic(clang::DiagnosticsEngine::Level diagLevel, const clang::Diagnostic &info)
 {
-    const auto diagId = info.getID();
-    const auto category = info.getDiags()->getDiagnosticIDs()->getCategoryNumberForDiag(diagId);
-
     bool shouldReset = false;
-    if (diagLevel >= clang::DiagnosticsEngine::Error) {
-        if (category == 2 /* 2 means "Semantic Issue" */) {
-            if (!m_realErrorCount) {
-                shouldReset = true;
+    if (m_errorResilient) {
+        const auto diagId = info.getID();
+        const auto category = info.getDiags()->getDiagnosticIDs()->getCategoryNumberForDiag(diagId);
+
+        if (diagLevel >= clang::DiagnosticsEngine::Error) {
+            if (category == 2 /* 2 means "Semantic Issue" */) {
+                if (!m_realErrorCount) {
+                    shouldReset = true;
+                }
+                diagLevel = clang::DiagnosticsEngine::Warning;
+            } else {
+                ++m_realErrorCount;
             }
-            diagLevel = clang::DiagnosticsEngine::Warning;
-        } else {
-            ++m_realErrorCount;
         }
     }
 

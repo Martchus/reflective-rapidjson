@@ -42,9 +42,10 @@ int main(int argc, char *argv[])
     generatorsArg.setCombinable(true);
     ConfigValueArgument clangOptionsArg("clang-opt", '\0', "specifies arguments/options to be passed to Clang", { "option" });
     clangOptionsArg.setRequiredValueCount(Argument::varValueCount);
+    ConfigValueArgument errorResilientArg("error-resilient", '\0', "turns most errors into warnings");
     HelpArgument helpArg(parser);
     NoColorArgument noColorArg;
-    generateArg.setSubArguments({ &inputFileArg, &outputFileArg, &generatorsArg, &clangOptionsArg });
+    generateArg.setSubArguments({ &inputFileArg, &outputFileArg, &generatorsArg, &clangOptionsArg, &errorResilientArg });
     JsonSerializationCodeGenerator::Options jsonOptions;
     jsonOptions.appendTo(&generateArg);
     parser.setMainArguments({ &generateArg, &noColorArg, &helpArg });
@@ -83,9 +84,10 @@ int main(int argc, char *argv[])
 
         // instantiate the code factory and add generators to it
         CodeFactory factory(parser.executable(), inputFileArg.values(0), clangOptions, *os);
+        factory.setErrorResilient(errorResilientArg.isPresent());
         // add specified generators if the --generator argument is present; otherwise add default generators
         if (generatorsArg.isPresent()) {
-            // define mapping of generator names to generator constructions (add new generators here!)
+            // define mapping of generator names to generator constructors (add new generators here!)
             // clang-format off
             const std::unordered_map<std::string, std::function<void()>> generatorsByName{
                 { "json", factory.bindGenerator<JsonSerializationCodeGenerator, const JsonSerializationCodeGenerator::Options &>(jsonOptions) }

@@ -40,6 +40,8 @@ public:
     bool run();
     clang::CompilerInstance *compilerInstance();
     void setCompilerInstance(clang::CompilerInstance *compilerInstance);
+    bool isErrorResilient() const;
+    void setErrorResilient(bool errorResilient);
 
 private:
     struct ToolInvocation;
@@ -55,6 +57,7 @@ private:
     std::vector<std::unique_ptr<CodeGenerator>> m_generators;
     std::unique_ptr<ToolInvocation> m_toolInvocation;
     clang::CompilerInstance *m_compilerInstance;
+    bool m_errorResilient;
 };
 
 /*!
@@ -127,6 +130,22 @@ inline clang::CompilerInstance *CodeFactory::compilerInstance()
 inline void CodeFactory::setCompilerInstance(clang::CompilerInstance *compilerInstance)
 {
     m_compilerInstance = compilerInstance;
+}
+
+/*!
+ * \brief Returns whether most errors will be turned into warnings (by default false).
+ */
+inline bool CodeFactory::isErrorResilient() const
+{
+    return m_errorResilient;
+}
+
+/*!
+ * \brief Sets whether most errors will be turned into warnings (by default false).
+ */
+inline void CodeFactory::setErrorResilient(bool errorResilient)
+{
+    m_errorResilient = errorResilient;
 }
 
 } // namespace ReflectiveRapidJSON

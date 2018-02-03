@@ -50,7 +50,7 @@ inline Consumer::Consumer(CodeFactory &factory, clang::CompilerInstance &compile
  */
 class DiagConsumer : public clang::DiagnosticConsumer {
 public:
-    DiagConsumer(std::unique_ptr<DiagnosticConsumer> Previous);
+    DiagConsumer(std::unique_ptr<DiagnosticConsumer> previous, bool errorResilient);
     unsigned int realErrorCount() const;
 
     void BeginSourceFile(const clang::LangOptions &langOpts, const clang::Preprocessor *pp = nullptr) override;
@@ -62,11 +62,13 @@ public:
 private:
     std::unique_ptr<DiagnosticConsumer> m_proxy;
     unsigned int m_realErrorCount;
+    bool m_errorResilient;
 };
 
-inline DiagConsumer::DiagConsumer(std::unique_ptr<clang::DiagnosticConsumer> Previous)
-    : m_proxy(std::move(Previous))
+inline DiagConsumer::DiagConsumer(std::unique_ptr<clang::DiagnosticConsumer> previous, bool errorResilient)
+    : m_proxy(std::move(previous))
     , m_realErrorCount(0)
+    , m_errorResilient(errorResilient)
 {
 }
 

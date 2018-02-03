@@ -36,6 +36,7 @@ CodeFactory::CodeFactory(
     , m_clangOptions(clangOptions)
     , m_os(os)
     , m_compilerInstance(nullptr)
+    , m_errorResilient(true)
 {
 }
 

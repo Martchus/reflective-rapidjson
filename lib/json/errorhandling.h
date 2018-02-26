@@ -25,6 +25,7 @@ enum class JsonDeserializationErrorKind : byte {
     TypeMismatch, /**< The expected type does not match the type actually present in the JSON document. */
     ArraySizeMismatch, /**< The expected array size does not match the actual size of the JSON array. A fixed size is expected when deserializing an std::tuple. */
     ConversionError, /**< The expected type matches the type present in the JSON document, but further conversion of the value failed. */
+    UnexpectedDuplicate, /**< The expected type matches the type present in the JSON document, but the value can not be added to the container because it is already present and duplicates are not allowed. */
 };
 
 /*!
@@ -154,6 +155,7 @@ struct JsonDeserializationErrors : public std::vector<JsonDeserializationError> 
     template <typename ExpectedType> void reportTypeMismatch(RAPIDJSON_NAMESPACE::Type presentType);
     void reportArraySizeMismatch();
     void reportConversionError(JsonType jsonType);
+    void reportUnexpectedDuplicate(JsonType jsonType);
 
     /// \brief The name of the class or struct which is currently being processed.
     const char *currentRecord;
@@ -162,7 +164,7 @@ struct JsonDeserializationErrors : public std::vector<JsonDeserializationError> 
     /// \brief The index in the array which is currently processed.
     std::size_t currentIndex;
     /// \brief The list of fatal error types in form of flags.
-    enum class ThrowOn : byte { None = 0, TypeMismatch = 0x1, ArraySizeMismatch = 0x2, ConversionError = 0x4 } throwOn;
+    enum class ThrowOn : byte { None = 0, TypeMismatch = 0x1, ArraySizeMismatch = 0x2, ConversionError = 0x4, UnexpectedDuplicate = 0x8 } throwOn;
 
 private:
     void throwMaybe(ThrowOn on) const;
@@ -229,6 +231,17 @@ inline void JsonDeserializationErrors::reportConversionError(JsonType jsonType)
 {
     emplace_back(JsonDeserializationErrorKind::ConversionError, jsonType, jsonType, currentRecord, currentMember, currentIndex);
     throwMaybe(ThrowOn::ConversionError);
+}
+
+/*!
+ * \brief Reports an unexpected duplicate. An error of that kind occurs when the JSON type matched the expected type, but the value can not be inserted in the container because it is already present and duplicates are not allowed.
+ * \todo Allow specifying the error message.
+ * \remarks This can happen when doing custom mapping (eg. when interpreting a JSON string as time value).
+ */
+inline void JsonDeserializationErrors::reportUnexpectedDuplicate(JsonType jsonType)
+{
+    emplace_back(JsonDeserializationErrorKind::UnexpectedDuplicate, jsonType, jsonType, currentRecord, currentMember, currentIndex);
+    throwMaybe(ThrowOn::UnexpectedDuplicate);
 }
 
 } // namespace ReflectiveRapidJSON

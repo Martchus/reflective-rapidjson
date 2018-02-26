@@ -44,20 +44,21 @@ For a full list of further ideas, see [TODOs.md](./TODOs.md).
 ## Supported datatypes
 The following table shows the mapping of supported C++ types to supported JSON types:
 
-| C++ type                                          | JSON type    |
-| ------------------------------------------------- |:------------:|
-| custom structures/classes                         | object       |
-| `bool`                                            | true/false   |
-| signed and unsigned integral types                | number       |
-| `float` and `double`                              | number       |
-| `enum` and `enum class`                           | number       |
-| `std::string`                                     | string       |
-| `const char *`                                    | string       |
-| iteratable lists (`std::vector`, `std::list`, ...)| array        |
-| `std::tuple`                                      | array        |
-| `std::unique_ptr`, `std::shared_ptr`              | depends/null |
-| `std::map`, `std::unordered_map`                  | object       |
-| `JsonSerializable`                                | object       |
+| C++ type                                                      | JSON type    |
+| ------------------------------------------------------------- |:------------:|
+| custom structures/classes                                     | object       |
+| `bool`                                                        | true/false   |
+| signed and unsigned integral types                            | number       |
+| `float` and `double`                                          | number       |
+| `enum` and `enum class`                                       | number       |
+| `std::string`                                                 | string       |
+| `const char *`                                                | string       |
+| iteratable lists (`std::vector`, `std::list`, ...)            | array        |
+| sets (`std::set`, `std::unordered_set`, `std::multiset`, ...) | array        |
+| `std::tuple`                                                  | array        |
+| `std::unique_ptr`, `std::shared_ptr`                          | depends/null |
+| `std::map`, `std::unordered_map`                              | object       |
+| `JsonSerializable`                                            | object       |
 
 ### Remarks
 * Raw pointer are not supported. This prevents
@@ -313,7 +314,7 @@ An example for such custom (de)serialization can be found in the file
 The following diagram gives an overview about the architecture of the code generator and wrapper library
 around RapidJSON:
 
-![Architectue overview](/doc/arch.svg)
+![Architectue overview](./doc/arch.svg)
 
 * blue: classes from LibTooling/Clang
 * grey: conceivable extension or use

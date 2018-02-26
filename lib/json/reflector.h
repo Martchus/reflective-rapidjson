@@ -18,9 +18,11 @@
 #include <limits>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <tuple>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "./errorhandling.h"
 
@@ -90,9 +92,15 @@ using IsJsonSerializable
 // define trait to check for map or hash
 template <typename Type>
 using IsMapOrHash = Traits::Any<Traits::IsSpecializationOf<Type, std::map>, Traits::IsSpecializationOf<Type, std::unordered_map>>;
+template <typename Type> using IsSet = Traits::Any<Traits::IsSpecializationOf<Type, std::set>, Traits::IsSpecializationOf<Type, std::unordered_set>>;
 template <typename Type>
-using IsArray
+using IsMultiSet = Traits::Any<Traits::IsSpecializationOf<Type, std::multiset>, Traits::IsSpecializationOf<Type, std::unordered_multiset>>;
+template <typename Type>
+using IsArrayOrSet
     = Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>, Traits::Not<IsMapOrHash<Type>>>;
+template <typename Type>
+using IsArray = Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>,
+    Traits::Not<IsMapOrHash<Type>>, Traits::Not<IsSet<Type>>, Traits::Not<IsMultiSet<Type>>>;
 
 // define functions to "push" values to a RapidJSON array or object
 
@@ -194,7 +202,7 @@ inline void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAP
 /*!
  * \brief Pushes the specified iteratable (eg. std::vector, std::list) to the specified value.
  */
-template <typename Type, Traits::EnableIf<IsArray<Type>, Traits::HasSize<Type>>...>
+template <typename Type, Traits::EnableIf<IsArrayOrSet<Type>, Traits::HasSize<Type>>...>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     value.SetArray();
@@ -208,7 +216,7 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
 /*!
  * \brief Pushes the specified iteratable list (eg. std::vector, std::list) to the specified value.
  */
-template <typename Type, Traits::EnableIf<IsArray<Type>, Traits::Not<Traits::HasSize<Type>>>...>
+template <typename Type, Traits::EnableIf<IsArrayOrSet<Type>, Traits::Not<Traits::HasSize<Type>>>...>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     value.SetArray();
@@ -346,19 +354,31 @@ void pull(Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_N
 /*!
  * \brief Pulls the specified \a reflectable which is an iteratable without reserve() method from the specified value which is checked to contain an array.
  */
-template <typename Type, Traits::EnableIf<IsArray<Type>, Traits::Not<Traits::IsReservable<Type>>>...>
+template <typename Type, Traits::EnableIf<IsArrayOrSet<Type>, Traits::Not<Traits::IsReservable<Type>>>...>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors);
 
 /*!
  * \brief Pulls the specified \a reflectable which is an iteratable with reserve() method from the specified value which is checked to contain an array.
  */
-template <typename Type, Traits::EnableIf<IsArray<Type>, Traits::IsReservable<Type>>...>
+template <typename Type, Traits::EnableIf<IsArrayOrSet<Type>, Traits::IsReservable<Type>>...>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors);
 
 /*!
- * \brief Pulls the specified \a reflectable which is an iteratable from the specified array. The \a reflectable is cleared before.
+ * \brief Pulls the specified \a reflectable which is an array/vector/list from the specified array. The \a reflectable is cleared before.
  */
 template <typename Type, Traits::EnableIf<IsArray<Type>>...>
+void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstArray array, JsonDeserializationErrors *errors);
+
+/*!
+ * \brief Pulls the specified \a reflectable which is a set from the specified array. The \a reflectable is cleared before.
+ */
+template <typename Type, Traits::EnableIf<IsSet<Type>>...>
+void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstArray array, JsonDeserializationErrors *errors);
+
+/*!
+ * \brief Pulls the specified \a reflectable which is a multiset from the specified array. The \a reflectable is cleared before.
+ */
+template <typename Type, Traits::EnableIf<IsMultiSet<Type>>...>
 void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstArray array, JsonDeserializationErrors *errors);
 
 /*!
@@ -492,7 +512,7 @@ inline void pull(Type &, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMES
 /*!
  * \brief Pulls the specified \a reflectable which is an iteratable without reserve() method from the specified value which is checked to contain an array.
  */
-template <typename Type, Traits::EnableIf<IsArray<Type>, Traits::Not<Traits::IsReservable<Type>>>...>
+template <typename Type, Traits::EnableIf<IsArrayOrSet<Type>, Traits::Not<Traits::IsReservable<Type>>>...>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
     if (!value.IsArray()) {
@@ -507,7 +527,7 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
 /*!
  * \brief Pulls the specified \a reflectable which is an iteratable with reserve() method from the specified value which is checked to contain an array.
  */
-template <typename Type, Traits::EnableIf<IsArray<Type>, Traits::IsReservable<Type>>...>
+template <typename Type, Traits::EnableIf<IsArrayOrSet<Type>, Traits::IsReservable<Type>>...>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
     if (!value.IsArray()) {
@@ -522,7 +542,7 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
 }
 
 /*!
- * \brief Pulls the specified \a reflectable which is an iteratable from the specified array. The \a reflectable is cleared before.
+ * \brief Pulls the specified \a reflectable which is an array/vector/list from the specified array. The \a reflectable is cleared before.
  */
 template <typename Type, Traits::EnableIf<IsArray<Type>>...>
 void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstArray array, JsonDeserializationErrors *errors)
@@ -537,9 +557,67 @@ void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<c
         if (errors) {
             errors->currentIndex = index;
         }
+        ++index;
         reflectable.emplace_back();
         pull(reflectable.back(), item, errors);
+    }
+
+    // clear error context
+    if (errors) {
+        errors->currentIndex = JsonDeserializationError::noIndex;
+    }
+}
+
+/*!
+ * \brief Pulls the specified \a reflectable which is a multiset from the specified array. The \a reflectable is cleared before.
+ */
+template <typename Type, Traits::EnableIf<IsMultiSet<Type>>...>
+void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstArray array, JsonDeserializationErrors *errors)
+{
+    // clear previous contents of the array
+    reflectable.clear();
+
+    // pull all array elements of the specified value
+    std::size_t index = 0;
+    for (const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &item : array) {
+        // set error context for current index
+        if (errors) {
+            errors->currentIndex = index;
+        }
         ++index;
+        typename Type::value_type itemObj;
+        pull(itemObj, item, errors);
+        reflectable.emplace(move(itemObj));
+    }
+
+    // clear error context
+    if (errors) {
+        errors->currentIndex = JsonDeserializationError::noIndex;
+    }
+}
+
+/*!
+ * \brief Pulls the specified \a reflectable which is a set from the specified array. The \a reflectable is cleared before.
+ */
+template <typename Type, Traits::EnableIf<IsSet<Type>>...>
+void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstArray array, JsonDeserializationErrors *errors)
+{
+    // clear previous contents of the array
+    reflectable.clear();
+
+    // pull all array elements of the specified value
+    std::size_t index = 0;
+    for (const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &item : array) {
+        // set error context for current index
+        if (errors) {
+            errors->currentIndex = index;
+        }
+        ++index;
+        typename Type::value_type itemObj;
+        pull(itemObj, item, errors);
+        if (!reflectable.emplace(move(itemObj)).second) {
+            errors->reportUnexpectedDuplicate(JsonType::Array);
+        }
     }
 
     // clear error context

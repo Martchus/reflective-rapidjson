@@ -40,7 +40,7 @@ template <typename T> MaybeUnique<T> maybe_unique(std::unique_ptr<T> val)
     return { val.release() };
 }
 
-    /*!
+/*!
  * \def REFLECTIVE_RAPIDJSON_MAYBE_UNIQUE
  * \brief The REFLECTIVE_RAPIDJSON_MAYBE_UNIQUE macro either expands to a std::unique_ptr or a raw pointer depending on the Clang version.
  */

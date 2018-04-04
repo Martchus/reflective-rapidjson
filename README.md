@@ -421,8 +421,15 @@ make install DESTDIR="/temporary/install/location"
 Add eg. `-j$(nproc)` to `make` arguments for using all cores.
 
 ### Packages
-I currently only provide an
-[Arch Linux package](https://github.com/Martchus/PKGBUILDs/blob/master/reflective-rapidjson/git/PKGBUILD)
-for the current Git version. This package shows the required dependencies and commands to build
-in a plain way. So it might be useful for making Reflective RapidJSON available under other platforms,
-too.
+* Arch Linux
+    * for PKGBUILDs checkout [my GitHub repository](https://github.com/Martchus/PKGBUILDs) or
+      [the AUR](https://aur.archlinux.org/packages?SeB=m&K=Martchus)
+    * for a binary repository checkout [my website](http://martchus.no-ip.biz/website/page.php?name=programming)
+* Tumbleweed
+    * for RPM \*.spec files and binary repository checkout
+      [openSUSE Build Servide](https://build.opensuse.org/project/show/home:mkittler)
+* Windows
+    * for mingw-w64 PKGBUILDs checkout [my GitHub repository](https://github.com/Martchus/PKGBUILDs)
+
+These packages shows the required dependencies and commands to build in a plain way. So they might be useful for
+making Reflective RapidJSON available under other platforms, too.

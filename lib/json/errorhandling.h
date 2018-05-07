@@ -44,18 +44,18 @@ enum class JsonType : byte {
 // define helper functions which return the JsonType for the C++ type specified as template parameter
 
 template <typename Type,
-    Traits::EnableIf<Traits::Not<std::is_same<Type, bool>>, Traits::Any<std::is_integral<Type>, std::is_floating_point<Type>>>...>
+    Traits::EnableIf<Traits::Not<std::is_same<Type, bool>>, Traits::Any<std::is_integral<Type>, std::is_floating_point<Type>>>* = nullptr>
 constexpr JsonType jsonType()
 {
     return JsonType::Number;
 }
 
-template <typename Type, Traits::EnableIfAny<std::is_same<Type, bool>>...> constexpr JsonType jsonType()
+template <typename Type, Traits::EnableIfAny<std::is_same<Type, bool>>* = nullptr> constexpr JsonType jsonType()
 {
     return JsonType::Bool;
 }
 
-template <typename Type, Traits::EnableIfAny<Traits::IsString<Type>, Traits::IsCString<Type>>...> constexpr JsonType jsonType()
+template <typename Type, Traits::EnableIfAny<Traits::IsString<Type>, Traits::IsCString<Type>>* = nullptr> constexpr JsonType jsonType()
 {
     return JsonType::String;
 }
@@ -63,7 +63,7 @@ template <typename Type, Traits::EnableIfAny<Traits::IsString<Type>, Traits::IsC
 template <typename Type,
     Traits::EnableIf<Traits::IsIteratable<Type>,
         Traits::Not<Traits::Any<Traits::IsString<Type>, Traits::IsSpecializationOf<Type, std::map>,
-            Traits::IsSpecializationOf<Type, std::unordered_map>>>>...>
+            Traits::IsSpecializationOf<Type, std::unordered_map>>>>* = nullptr>
 constexpr JsonType jsonType()
 {
     return JsonType::Array;
@@ -73,7 +73,7 @@ template <typename Type,
     Traits::DisableIfAny<std::is_integral<Type>, std::is_floating_point<Type>, Traits::IsString<Type>, Traits::IsCString<Type>,
         Traits::All<Traits::IsIteratable<Type>,
             Traits::Not<Traits::Any<Traits::IsString<Type>, Traits::IsSpecializationOf<Type, std::map>,
-                Traits::IsSpecializationOf<Type, std::unordered_map>>>>>...>
+                Traits::IsSpecializationOf<Type, std::unordered_map>>>>>* = nullptr>
 constexpr JsonType jsonType()
 {
     return JsonType::Object;

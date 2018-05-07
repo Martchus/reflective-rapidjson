@@ -84,7 +84,7 @@ template <typename Type> Type JsonSerializable<Type>::fromJson(const std::string
 /*!
  * \brief Helps to disambiguate when inheritance is used.
  */
-template <typename Type, Traits::EnableIf<std::is_base_of<JsonSerializable<Type>, Type>>...> JsonSerializable<Type> &as(Type &serializable)
+template <typename Type, Traits::EnableIf<std::is_base_of<JsonSerializable<Type>, Type>>* = nullptr> JsonSerializable<Type> &as(Type &serializable)
 {
     return static_cast<JsonSerializable<Type> &>(serializable);
 }
@@ -92,7 +92,7 @@ template <typename Type, Traits::EnableIf<std::is_base_of<JsonSerializable<Type>
 /*!
  * \brief Helps to disambiguate when inheritance is used.
  */
-template <typename Type, Traits::EnableIf<std::is_base_of<JsonSerializable<Type>, Type>>...>
+template <typename Type, Traits::EnableIf<std::is_base_of<JsonSerializable<Type>, Type>>* = nullptr>
 const JsonSerializable<Type> &as(const Type &serializable)
 {
     return static_cast<const JsonSerializable<Type> &>(serializable);

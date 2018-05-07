@@ -107,32 +107,32 @@ using IsArray = Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSp
 /*!
  * \brief Pushes the specified \a reflectable to the specified value.
  */
-template <typename Type, Traits::DisableIf<IsBuiltInType<Type>>...>
+template <typename Type, Traits::DisableIf<IsBuiltInType<Type>>* = nullptr>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator);
 
 /*!
  * \brief Pushes the \a reflectable to the specified array.
  */
-template <typename Type, Traits::DisableIf<IsJsonSerializable<Type>>...>
+template <typename Type, Traits::DisableIf<IsJsonSerializable<Type>>* = nullptr>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator);
 
 /*!
  * \brief Pushes the \a reflectable which has a custom type to the specified array.
  */
-template <typename Type, Traits::EnableIf<IsJsonSerializable<Type>>...>
+template <typename Type, Traits::EnableIf<IsJsonSerializable<Type>>* = nullptr>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator);
 
 /*!
  * \brief Pushes the specified \a reflectable which has custom type as a member to the specified object.
  */
-template <typename Type, Traits::EnableIf<IsJsonSerializable<Type>>...>
+template <typename Type, Traits::EnableIf<IsJsonSerializable<Type>>* = nullptr>
 void push(
     const Type &reflectable, const char *name, RAPIDJSON_NAMESPACE::Value::Object &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator);
 
 /*!
  * \brief Pushes the specified \a reflectable as a member to the specified object.
  */
-template <typename Type, Traits::DisableIf<IsJsonSerializable<Type>>...>
+template <typename Type, Traits::DisableIf<IsJsonSerializable<Type>>* = nullptr>
 void push(
     const Type &reflectable, const char *name, RAPIDJSON_NAMESPACE::Value::Object &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator);
 
@@ -140,13 +140,13 @@ void push(
  * \brief Pushes the \a reflectable which has a custom type to the specified object.
  * \remarks The definition of this function must be provided by the code generator or Boost.Hana.
  */
-template <typename Type, Traits::DisableIf<IsBuiltInType<Type>>...>
+template <typename Type, Traits::DisableIf<IsBuiltInType<Type>>* = nullptr>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Object &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator);
 
 /*!
  * \brief Pushes the specified \a reflectable which has a custom type to the specified value.
  */
-template <typename Type, Traits::DisableIf<IsBuiltInType<Type>>...>
+template <typename Type, Traits::DisableIf<IsBuiltInType<Type>>*>
 inline void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     value.SetObject();
@@ -157,7 +157,7 @@ inline void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAP
 /*!
  * \brief Pushes the specified integer/float/boolean to the specified value.
  */
-template <typename Type, Traits::EnableIfAny<std::is_integral<Type>, std::is_floating_point<Type>>...>
+template <typename Type, Traits::EnableIfAny<std::is_integral<Type>, std::is_floating_point<Type>>* = nullptr>
 inline void push(Type reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     value.Set(reflectable, allocator);
@@ -166,7 +166,7 @@ inline void push(Type reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
 /*!
  * \brief Pushes the specified enumeration item to the specified value.
  */
-template <typename Type, Traits::EnableIfAny<std::is_enum<Type>>...>
+template <typename Type, Traits::EnableIfAny<std::is_enum<Type>>* = nullptr>
 inline void push(Type reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     value.Set(static_cast<Traits::Conditional<std::is_unsigned<typename std::underlying_type<Type>::type>, uint64, int64>>(reflectable), allocator);
@@ -175,7 +175,7 @@ inline void push(Type reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
 /*!
  * \brief Pushes the specified C-string to the specified value.
  */
-template <typename Type, Traits::EnableIf<std::is_same<Type, const char *>>...>
+template <typename Type, Traits::EnableIf<std::is_same<Type, const char *>>* = nullptr>
 inline void push(Type reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     value.SetString(RAPIDJSON_NAMESPACE::StringRef(reflectable), allocator);
@@ -184,7 +184,7 @@ inline void push(Type reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
 /*!
  * \brief Pushes the specified constant C-string to the specified value.
  */
-template <typename Type, Traits::EnableIf<std::is_same<Type, const char *const &>>...>
+template <typename Type, Traits::EnableIf<std::is_same<Type, const char *const &>>* = nullptr>
 inline void push(const char *const &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     value.SetString(RAPIDJSON_NAMESPACE::StringRef(reflectable), allocator);
@@ -193,7 +193,7 @@ inline void push(const char *const &reflectable, RAPIDJSON_NAMESPACE::Value &val
 /*!
  * \brief Pushes the specified std::string to the specified value.
  */
-template <typename Type, Traits::EnableIf<std::is_same<Type, std::string>>...>
+template <typename Type, Traits::EnableIf<std::is_same<Type, std::string>>* = nullptr>
 inline void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     value.SetString(RAPIDJSON_NAMESPACE::StringRef(reflectable.data(), reflectable.size()), allocator);
@@ -202,7 +202,7 @@ inline void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAP
 /*!
  * \brief Pushes the specified iteratable (eg. std::vector, std::list) to the specified value.
  */
-template <typename Type, Traits::EnableIf<IsArrayOrSet<Type>, Traits::HasSize<Type>>...>
+template <typename Type, Traits::EnableIf<IsArrayOrSet<Type>, Traits::HasSize<Type>>* = nullptr>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     value.SetArray();
@@ -216,7 +216,7 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
 /*!
  * \brief Pushes the specified iteratable list (eg. std::vector, std::list) to the specified value.
  */
-template <typename Type, Traits::EnableIf<IsArrayOrSet<Type>, Traits::Not<Traits::HasSize<Type>>>...>
+template <typename Type, Traits::EnableIf<IsArrayOrSet<Type>, Traits::Not<Traits::HasSize<Type>>>* = nullptr>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     value.SetArray();
@@ -229,7 +229,7 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
 /*!
  * \brief Pushes the specified map (std::map, std::unordered_map) to the specified value.
  */
-template <typename Type, Traits::EnableIf<IsMapOrHash<Type>>...>
+template <typename Type, Traits::EnableIf<IsMapOrHash<Type>>* = nullptr>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     value.SetObject();
@@ -263,7 +263,7 @@ template <class Tuple> struct TuplePushHelper<Tuple, 1> {
 /*!
  * \brief Pushes the specified tuple to the specified value.
  */
-template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::tuple>>...>
+template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::tuple>>* = nullptr>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     value.SetArray();
@@ -277,7 +277,7 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
  */
 template <typename Type,
     Traits::EnableIfAny<Traits::IsSpecializationOf<Type, std::unique_ptr>, Traits::IsSpecializationOf<Type, std::shared_ptr>,
-        Traits::IsSpecializationOf<Type, std::weak_ptr>>...>
+        Traits::IsSpecializationOf<Type, std::weak_ptr>>* = nullptr>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     if (!reflectable) {
@@ -290,7 +290,7 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
 /*!
  * \brief Pushes the specified \a reflectable which has a custom type to the specified array.
  */
-template <typename Type, Traits::EnableIf<IsJsonSerializable<Type>>...>
+template <typename Type, Traits::EnableIf<IsJsonSerializable<Type>>*>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     RAPIDJSON_NAMESPACE::Value objectValue(RAPIDJSON_NAMESPACE::kObjectType);
@@ -302,7 +302,7 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAP
 /*!
  * \brief Pushes the specified \a reflectable to the specified array.
  */
-template <typename Type, Traits::DisableIf<IsJsonSerializable<Type>>...>
+template <typename Type, Traits::DisableIf<IsJsonSerializable<Type>>*>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     RAPIDJSON_NAMESPACE::Value genericValue;
@@ -313,7 +313,7 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value::Array &value, RAP
 /*!
  * \brief Pushes the specified \a reflectable which has custom type as a member to the specified object.
  */
-template <typename Type, Traits::EnableIf<IsJsonSerializable<Type>>...>
+template <typename Type, Traits::EnableIf<IsJsonSerializable<Type>>*>
 void push(
     const Type &reflectable, const char *name, RAPIDJSON_NAMESPACE::Value::Object &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
@@ -326,7 +326,7 @@ void push(
 /*!
  * \brief Pushes the specified \a reflectable as a member to the specified object.
  */
-template <typename Type, Traits::DisableIf<IsJsonSerializable<Type>>...>
+template <typename Type, Traits::DisableIf<IsJsonSerializable<Type>>*>
 void push(
     const Type &reflectable, const char *name, RAPIDJSON_NAMESPACE::Value::Object &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
@@ -341,68 +341,68 @@ void push(
  * \brief Pulls the \a reflectable which has a custom type from the specified object.
  * \remarks The definition of this function must be provided by the code generator or Boost.Hana.
  */
-template <typename Type, Traits::DisableIf<IsBuiltInType<Type>>...>
+template <typename Type, Traits::DisableIf<IsBuiltInType<Type>>* = nullptr>
 void pull(Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstObject &value,
     JsonDeserializationErrors *errors);
 
 /*!
  * \brief Pulls the \a reflectable which has a custom type from the specified value which is supposed and checked to contain an object.
  */
-template <typename Type, Traits::DisableIf<IsBuiltInType<Type>>...>
+template <typename Type, Traits::DisableIf<IsBuiltInType<Type>>* = nullptr>
 void pull(Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors);
 
 /*!
  * \brief Pulls the specified \a reflectable which is an iteratable without reserve() method from the specified value which is checked to contain an array.
  */
-template <typename Type, Traits::EnableIf<IsArrayOrSet<Type>, Traits::Not<Traits::IsReservable<Type>>>...>
+template <typename Type, Traits::EnableIf<IsArrayOrSet<Type>, Traits::Not<Traits::IsReservable<Type>>>* = nullptr>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors);
 
 /*!
  * \brief Pulls the specified \a reflectable which is an iteratable with reserve() method from the specified value which is checked to contain an array.
  */
-template <typename Type, Traits::EnableIf<IsArrayOrSet<Type>, Traits::IsReservable<Type>>...>
+template <typename Type, Traits::EnableIf<IsArrayOrSet<Type>, Traits::IsReservable<Type>>* = nullptr>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors);
 
 /*!
  * \brief Pulls the specified \a reflectable which is an array/vector/list from the specified array. The \a reflectable is cleared before.
  */
-template <typename Type, Traits::EnableIf<IsArray<Type>>...>
+template <typename Type, Traits::EnableIf<IsArray<Type>>* = nullptr>
 void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstArray array, JsonDeserializationErrors *errors);
 
 /*!
  * \brief Pulls the specified \a reflectable which is a set from the specified array. The \a reflectable is cleared before.
  */
-template <typename Type, Traits::EnableIf<IsSet<Type>>...>
+template <typename Type, Traits::EnableIf<IsSet<Type>>* = nullptr>
 void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstArray array, JsonDeserializationErrors *errors);
 
 /*!
  * \brief Pulls the specified \a reflectable which is a multiset from the specified array. The \a reflectable is cleared before.
  */
-template <typename Type, Traits::EnableIf<IsMultiSet<Type>>...>
+template <typename Type, Traits::EnableIf<IsMultiSet<Type>>* = nullptr>
 void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstArray array, JsonDeserializationErrors *errors);
 
 /*!
  * \brief Pulls the specified \a reflectable which is a map from the specified value which is checked to contain an object.
  */
-template <typename Type, Traits::EnableIf<IsMapOrHash<Type>>...>
+template <typename Type, Traits::EnableIf<IsMapOrHash<Type>>* = nullptr>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors);
 
 /*!
  * \brief Pulls the specified \a reflectable which is a tuple from the specified value which is checked to contain an array.
  */
-template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::tuple>>...>
+template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::tuple>>* = nullptr>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors);
 
 /*!
  * \brief Pulls the specified \a reflectable which is a unique_ptr from the specified value which might be null.
  */
-template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::unique_ptr>>...>
+template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::unique_ptr>>* = nullptr>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors);
 
 /*!
  * \brief Pulls the specified \a reflectable which is a shared_ptr from the specified value which might be null.
  */
-template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::shared_ptr>>...>
+template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::shared_ptr>>* = nullptr>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors);
 
 /*!
@@ -424,14 +424,14 @@ inline void pull(Type &reflectable, const char *name, const rapidjson::GenericVa
 /*!
  * \brief Pulls the \a reflectable which has a custom type from the specified value which is supposed and checked to contain an object.
  */
-template <typename Type, Traits::DisableIf<IsBuiltInType<Type>>...>
+template <typename Type, Traits::DisableIf<IsBuiltInType<Type>>*>
 void pull(Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors);
 
 /*!
  * \brief Pulls the integer or float from the specified value which is supposed and checked to contain the right type.
  */
 template <typename Type,
-    Traits::EnableIf<Traits::Not<std::is_same<Type, bool>>, Traits::Any<std::is_integral<Type>, std::is_floating_point<Type>>>...>
+    Traits::EnableIf<Traits::Not<std::is_same<Type, bool>>, Traits::Any<std::is_integral<Type>, std::is_floating_point<Type>>>* = nullptr>
 inline void pull(
     Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
@@ -447,7 +447,7 @@ inline void pull(
 /*!
  * \brief Pulls the boolean from the specified value which is supposed and checked to contain the right type.
  */
-template <typename Type, Traits::EnableIf<std::is_same<Type, bool>>...>
+template <typename Type, Traits::EnableIf<std::is_same<Type, bool>>* = nullptr>
 inline void pull(
     Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
@@ -464,7 +464,7 @@ inline void pull(
  * \brief Pulls the specified enumeration item from the specified value which is supposed and checked to be compatible with the underlying type.
  * \remarks It is *not* checked, whether \a value is actually a valid enum item.
  */
-template <typename Type, Traits::EnableIfAny<std::is_enum<Type>>...>
+template <typename Type, Traits::EnableIfAny<std::is_enum<Type>>* = nullptr>
 inline void pull(
     Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
@@ -481,7 +481,7 @@ inline void pull(
 /*!
  * \brief Pulls the std::string from the specified value which is supposed and checked to contain a string.
  */
-template <typename Type, Traits::EnableIf<std::is_same<Type, std::string>>...>
+template <typename Type, Traits::EnableIf<std::is_same<Type, std::string>>* = nullptr>
 inline void pull(
     Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
@@ -498,7 +498,7 @@ inline void pull(
  * \brief Checks whether the specified value contains a string.
  * \remarks Does not actually store the value since the ownership would not be clear (see README.md).
  */
-template <typename Type, Traits::EnableIfAny<std::is_same<Type, const char *>, std::is_same<Type, const char *const &>>...>
+template <typename Type, Traits::EnableIfAny<std::is_same<Type, const char *>, std::is_same<Type, const char *const &>>* = nullptr>
 inline void pull(Type &, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
     if (!value.IsString()) {
@@ -512,7 +512,7 @@ inline void pull(Type &, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMES
 /*!
  * \brief Pulls the specified \a reflectable which is an iteratable without reserve() method from the specified value which is checked to contain an array.
  */
-template <typename Type, Traits::EnableIf<IsArrayOrSet<Type>, Traits::Not<Traits::IsReservable<Type>>>...>
+template <typename Type, Traits::EnableIf<IsArrayOrSet<Type>, Traits::Not<Traits::IsReservable<Type>>>*>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
     if (!value.IsArray()) {
@@ -527,7 +527,7 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
 /*!
  * \brief Pulls the specified \a reflectable which is an iteratable with reserve() method from the specified value which is checked to contain an array.
  */
-template <typename Type, Traits::EnableIf<IsArrayOrSet<Type>, Traits::IsReservable<Type>>...>
+template <typename Type, Traits::EnableIf<IsArrayOrSet<Type>, Traits::IsReservable<Type>>*>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
     if (!value.IsArray()) {
@@ -544,7 +544,7 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
 /*!
  * \brief Pulls the specified \a reflectable which is an array/vector/list from the specified array. The \a reflectable is cleared before.
  */
-template <typename Type, Traits::EnableIf<IsArray<Type>>...>
+template <typename Type, Traits::EnableIf<IsArray<Type>>*>
 void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstArray array, JsonDeserializationErrors *errors)
 {
     // clear previous contents of the array
@@ -571,7 +571,7 @@ void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<c
 /*!
  * \brief Pulls the specified \a reflectable which is a multiset from the specified array. The \a reflectable is cleared before.
  */
-template <typename Type, Traits::EnableIf<IsMultiSet<Type>>...>
+template <typename Type, Traits::EnableIf<IsMultiSet<Type>>*>
 void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstArray array, JsonDeserializationErrors *errors)
 {
     // clear previous contents of the array
@@ -599,7 +599,7 @@ void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<c
 /*!
  * \brief Pulls the specified \a reflectable which is a set from the specified array. The \a reflectable is cleared before.
  */
-template <typename Type, Traits::EnableIf<IsSet<Type>>...>
+template <typename Type, Traits::EnableIf<IsSet<Type>>*>
 void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>>::ConstArray array, JsonDeserializationErrors *errors)
 {
     // clear previous contents of the array
@@ -629,7 +629,7 @@ void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<c
 /*!
  * \brief Pulls the specified \a reflectable which is a map from the specified value which is checked to contain an object.
  */
-template <typename Type, Traits::EnableIf<IsMapOrHash<Type>>...>
+template <typename Type, Traits::EnableIf<IsMapOrHash<Type>>*>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
     if (!value.IsObject()) {
@@ -669,7 +669,7 @@ template <class Tuple> struct TuplePullHelper<Tuple, 1> {
 /*!
  * \brief Pulls the specified \a reflectable which is a tuple from the specified value which is checked to contain an array.
  */
-template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::tuple>>...>
+template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::tuple>>*>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
     if (!value.IsArray()) {
@@ -692,7 +692,7 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
 /*!
  * \brief Pulls the specified \a reflectable which is a unique_ptr from the specified value which might be null.
  */
-template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::unique_ptr>>...>
+template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::unique_ptr>>*>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
     if (value.IsNull()) {
@@ -706,7 +706,7 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
 /*!
  * \brief Pulls the specified \a reflectable which is a shared_ptr from the specified value which might be null.
  */
-template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::shared_ptr>>...>
+template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::shared_ptr>>*>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
     if (value.IsNull()) {
@@ -761,7 +761,7 @@ inline void pull(Type &reflectable, const char *name, const rapidjson::GenericVa
 /*!
  * \brief Pulls the \a reflectable which has a custom type from the specified value which is supposed and checked to contain an object.
  */
-template <typename Type, Traits::DisableIf<IsBuiltInType<Type>>...>
+template <typename Type, Traits::DisableIf<IsBuiltInType<Type>>*>
 void pull(Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
     if (!value.IsObject()) {
@@ -778,7 +778,7 @@ void pull(Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_N
 /*!
  * \brief Serializes the specified \a reflectable which has a custom type or can be mapped to and object.
  */
-template <typename Type, Traits::EnableIfAny<IsJsonSerializable<Type>, IsMapOrHash<Type>>...>
+template <typename Type, Traits::EnableIfAny<IsJsonSerializable<Type>, IsMapOrHash<Type>>* = nullptr>
 RAPIDJSON_NAMESPACE::StringBuffer toJson(const Type &reflectable)
 {
     RAPIDJSON_NAMESPACE::Document document(RAPIDJSON_NAMESPACE::kObjectType);
@@ -790,7 +790,7 @@ RAPIDJSON_NAMESPACE::StringBuffer toJson(const Type &reflectable)
 /*!
  * \brief Serializes the specified \a reflectable which is an integer, float or boolean.
  */
-template <typename Type, Traits::EnableIfAny<std::is_integral<Type>, std::is_floating_point<Type>>...>
+template <typename Type, Traits::EnableIfAny<std::is_integral<Type>, std::is_floating_point<Type>>* = nullptr>
 RAPIDJSON_NAMESPACE::StringBuffer toJson(Type reflectable)
 {
     RAPIDJSON_NAMESPACE::Document document(RAPIDJSON_NAMESPACE::kNumberType);
@@ -801,7 +801,7 @@ RAPIDJSON_NAMESPACE::StringBuffer toJson(Type reflectable)
 /*!
  * \brief Serializes the specified \a reflectable which is an std::string.
  */
-template <typename Type, Traits::EnableIf<std::is_same<Type, std::string>>...>
+template <typename Type, Traits::EnableIf<std::is_same<Type, std::string>>* = nullptr>
 RAPIDJSON_NAMESPACE::StringBuffer toJson(const std::string &reflectable)
 {
     RAPIDJSON_NAMESPACE::Document document(RAPIDJSON_NAMESPACE::kStringType);
@@ -812,7 +812,7 @@ RAPIDJSON_NAMESPACE::StringBuffer toJson(const std::string &reflectable)
 /*!
  * \brief Serializes the specified \a reflectable which is a C-string.
  */
-template <typename Type, Traits::EnableIf<std::is_same<Type, const char *>>...> RAPIDJSON_NAMESPACE::StringBuffer toJson(const char *reflectable)
+template <typename Type, Traits::EnableIf<std::is_same<Type, const char *>>* = nullptr> RAPIDJSON_NAMESPACE::StringBuffer toJson(const char *reflectable)
 {
     RAPIDJSON_NAMESPACE::Document document(RAPIDJSON_NAMESPACE::kStringType);
     document.SetString(RAPIDJSON_NAMESPACE::StringRef(reflectable), document.GetAllocator());
@@ -822,7 +822,7 @@ template <typename Type, Traits::EnableIf<std::is_same<Type, const char *>>...> 
 /*!
  * \brief Serializes the specified \a reflectable which can be mapped to an array.
  */
-template <typename Type, Traits::EnableIf<IsArray<Type>>...> RAPIDJSON_NAMESPACE::StringBuffer toJson(const Type &reflectable)
+template <typename Type, Traits::EnableIf<IsArray<Type>>* = nullptr> RAPIDJSON_NAMESPACE::StringBuffer toJson(const Type &reflectable)
 {
     RAPIDJSON_NAMESPACE::Document document(RAPIDJSON_NAMESPACE::kArrayType);
     push(reflectable, document, document.GetAllocator());
@@ -834,7 +834,7 @@ template <typename Type, Traits::EnableIf<IsArray<Type>>...> RAPIDJSON_NAMESPACE
 /*!
  * \brief Deserializes the specified JSON to \tparam Type which is a custom type or can be mapped to an object.
  */
-template <typename Type, Traits::EnableIfAny<IsJsonSerializable<Type>, IsMapOrHash<Type>>...>
+template <typename Type, Traits::EnableIfAny<IsJsonSerializable<Type>, IsMapOrHash<Type>>* = nullptr>
 Type fromJson(const char *json, std::size_t jsonSize, JsonDeserializationErrors *errors = nullptr)
 {
     RAPIDJSON_NAMESPACE::Document doc(parseJsonDocFromString(json, jsonSize));
@@ -853,7 +853,7 @@ Type fromJson(const char *json, std::size_t jsonSize, JsonDeserializationErrors 
 /*!
  * \brief Deserializes the specified JSON to \tparam Type which is an integer, float or boolean.
  */
-template <typename Type, Traits::EnableIfAny<std::is_integral<Type>, std::is_floating_point<Type>>...>
+template <typename Type, Traits::EnableIfAny<std::is_integral<Type>, std::is_floating_point<Type>>* = nullptr>
 Type fromJson(const char *json, std::size_t jsonSize, JsonDeserializationErrors *errors = nullptr)
 {
     RAPIDJSON_NAMESPACE::Document doc(parseJsonDocFromString(json, jsonSize));
@@ -870,7 +870,7 @@ Type fromJson(const char *json, std::size_t jsonSize, JsonDeserializationErrors 
 /*!
  * \brief Deserializes the specified JSON to \tparam Type which is a std::string.
  */
-template <typename Type, Traits::EnableIf<std::is_same<Type, std::string>>...>
+template <typename Type, Traits::EnableIf<std::is_same<Type, std::string>>* = nullptr>
 Type fromJson(const char *json, std::size_t jsonSize, JsonDeserializationErrors *errors = nullptr)
 {
     RAPIDJSON_NAMESPACE::Document doc(parseJsonDocFromString(json, jsonSize));
@@ -887,7 +887,7 @@ Type fromJson(const char *json, std::size_t jsonSize, JsonDeserializationErrors 
 /*!
  * \brief Deserializes the specified JSON to \tparam Type which can be mapped to an array.
  */
-template <typename Type, Traits::EnableIf<IsArray<Type>>...>
+template <typename Type, Traits::EnableIf<IsArray<Type>>* = nullptr>
 Type fromJson(const char *json, std::size_t jsonSize, JsonDeserializationErrors *errors = nullptr)
 {
     RAPIDJSON_NAMESPACE::Document doc(parseJsonDocFromString(json, jsonSize));

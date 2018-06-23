@@ -45,7 +45,7 @@ else()
 endif()
 
 # find c++utilities
-find_package(c++utilities 4.12.0 REQUIRED)
+find_package(c++utilities 4.15.0 REQUIRED)
 
 # use the source directory of c++utilities for includes rather than the location where headers are going to be installed
 # note: this enables the tests to find the header files for c++utilities in case it is built within the same project

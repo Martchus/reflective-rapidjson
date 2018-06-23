@@ -30,23 +30,22 @@ using namespace TestUtilities;
 using namespace TestUtilities::Literals;
 using namespace ReflectiveRapidJSON;
 
-// test traits
-static_assert(JsonReflector::IsArray<vector<int>>::value, "vector mapped to array");
-static_assert(JsonReflector::IsArray<list<int>>::value, "list mapped to array");
-static_assert(!JsonReflector::IsArray<set<int>>::value, "set not considered an array");
-static_assert(!JsonReflector::IsArray<multiset<int>>::value, "multiset not considered an array");
-static_assert(JsonReflector::IsArrayOrSet<set<int>>::value, "set is array or set");
-static_assert(JsonReflector::IsArrayOrSet<multiset<int>>::value, "multiset is array or set");
-static_assert(JsonReflector::IsSet<unordered_set<int>>::value, "set");
-static_assert(JsonReflector::IsMultiSet<unordered_multiset<int>>::value, "multiset");
-static_assert(!JsonReflector::IsArray<string>::value, "string not mapped to array though it is iteratable");
-static_assert(JsonReflector::IsMapOrHash<map<string, int>>::value, "map mapped to object");
-static_assert(JsonReflector::IsMapOrHash<unordered_map<string, int>>::value, "hash mapped to object");
-static_assert(!JsonReflector::IsMapOrHash<vector<int>>::value, "vector not mapped to object");
-
 /// \cond
 
-// define some structs for testing serialization
+// define some enums and structs for testing serialization
+
+enum SomeEnum {
+    SomeEnumItem1,
+    SomeEnumItem2,
+    SomeEnumItem3,
+};
+
+enum class SomeEnumClass {
+    Item1,
+    Item2,
+    Item3,
+};
+
 struct TestObject : public JsonSerializable<TestObject> {
     int number;
     double number2;
@@ -69,18 +68,6 @@ struct NestingObject : public JsonSerializable<NestingObject> {
 struct NestingArray : public JsonSerializable<NestingArray> {
     string name;
     vector<TestObject> testObjects;
-};
-
-enum SomeEnum {
-    SomeEnumItem1,
-    SomeEnumItem2,
-    SomeEnumItem3,
-};
-
-enum class SomeEnumClass {
-    Item1,
-    Item2,
-    Item3,
 };
 
 // pretend serialization code for structs has been generated

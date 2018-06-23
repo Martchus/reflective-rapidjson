@@ -1,5 +1,5 @@
-#ifndef REFLECTIVE_RAPIDJSON_CODE_JSON_SERIALIZATION_GENERATOR_H
-#define REFLECTIVE_RAPIDJSON_CODE_JSON_SERIALIZATION_GENERATOR_H
+#ifndef REFLECTIVE_RAPIDJSON_CODE_BINARY_SERIALIZATION_GENERATOR_H
+#define REFLECTIVE_RAPIDJSON_CODE_BINARY_SERIALIZATION_GENERATOR_H
 
 #include "./codegenerator.h"
 
@@ -8,10 +8,10 @@
 namespace ReflectiveRapidJSON {
 
 /*!
- * \brief The JsonSerializationCodeGenerator class generates code for JSON (de)serialization
+ * \brief The BinarySerializationCodeGenerator class generates code for JSON (de)serialization
  *        of objects inheriting from an instantiation of JsonSerializable.
  */
-class JsonSerializationCodeGenerator : public CodeGenerator {
+class BinarySerializationCodeGenerator : public CodeGenerator {
 public:
     struct Options {
         Options();
@@ -31,7 +31,7 @@ private:
     };
 
 public:
-    JsonSerializationCodeGenerator(CodeFactory &factory, const Options &options);
+    BinarySerializationCodeGenerator(CodeFactory &factory, const Options &options);
 
     void addDeclaration(clang::Decl *decl) override;
     void generate(std::ostream &os) const override;
@@ -47,19 +47,19 @@ private:
     const Options &m_options;
 };
 
-inline JsonSerializationCodeGenerator::JsonSerializationCodeGenerator(CodeFactory &factory, const Options &options)
+inline BinarySerializationCodeGenerator::BinarySerializationCodeGenerator(CodeFactory &factory, const Options &options)
     : CodeGenerator(factory)
     , m_options(options)
 {
 }
 
-inline void JsonSerializationCodeGenerator::Options::appendTo(ApplicationUtilities::Argument *arg)
+inline void BinarySerializationCodeGenerator::Options::appendTo(ApplicationUtilities::Argument *arg)
 {
     arg->addSubArgument(&additionalClassesArg);
     arg->addSubArgument(&visibilityArg);
 }
 
-inline JsonSerializationCodeGenerator::RelevantClass::RelevantClass(std::string &&qualifiedName, clang::CXXRecordDecl *record)
+inline BinarySerializationCodeGenerator::RelevantClass::RelevantClass(std::string &&qualifiedName, clang::CXXRecordDecl *record)
     : qualifiedName(qualifiedName)
     , record(record)
 {
@@ -67,4 +67,4 @@ inline JsonSerializationCodeGenerator::RelevantClass::RelevantClass(std::string 
 
 } // namespace ReflectiveRapidJSON
 
-#endif // REFLECTIVE_RAPIDJSON_CODE_JSON_SERIALIZATION_GENERATOR_H
+#endif // REFLECTIVE_RAPIDJSON_CODE_BINARY_SERIALIZATION_GENERATOR_H

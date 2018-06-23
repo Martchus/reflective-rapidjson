@@ -22,7 +22,7 @@ using namespace TestUtilities::Literals;
 using namespace ConversionUtilities;
 
 /*!
- * \brief The OverallTests class tests the overall functionality of the code generator (CLI and generator itself).
+ * \brief The JsonGeneratorTests class tests the overall functionality of the code generator (CLI and generator itself) and JSON specific parts.
  */
 class JsonGeneratorTests : public TestFixture {
     CPPUNIT_TEST_SUITE(JsonGeneratorTests);

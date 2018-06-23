@@ -10,6 +10,14 @@ using namespace std;
 
 namespace ReflectiveRapidJSON {
 
+/*!
+ * \brief Prints an LLVM string reference without instantiating a std::string first.
+ */
+ostream &operator<<(ostream &os, llvm::StringRef str)
+{
+    return os.write(str.data(), static_cast<streamsize>(str.size()));
+}
+
 CodeGenerator::~CodeGenerator()
 {
 }

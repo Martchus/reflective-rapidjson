@@ -1,5 +1,6 @@
 #include "./codefactory.h"
 #include "./jsonserializationcodegenerator.h"
+#include "./binaryserializationcodegenerator.h"
 
 #include "resources/config.h"
 
@@ -48,6 +49,8 @@ int main(int argc, char *argv[])
     generateArg.setSubArguments({ &inputFileArg, &outputFileArg, &generatorsArg, &clangOptionsArg, &errorResilientArg });
     JsonSerializationCodeGenerator::Options jsonOptions;
     jsonOptions.appendTo(&generateArg);
+    BinarySerializationCodeGenerator::Options binaryOptions;
+    binaryOptions.appendTo(&generateArg);
     parser.setMainArguments({ &generateArg, &noColorArg, &helpArg });
 
     // parse arguments
@@ -90,7 +93,8 @@ int main(int argc, char *argv[])
             // define mapping of generator names to generator constructors (add new generators here!)
             // clang-format off
             const std::unordered_map<std::string, std::function<void()>> generatorsByName{
-                { "json", factory.bindGenerator<JsonSerializationCodeGenerator, const JsonSerializationCodeGenerator::Options &>(jsonOptions) }
+                { "json", factory.bindGenerator<JsonSerializationCodeGenerator, const JsonSerializationCodeGenerator::Options &>(jsonOptions) },
+                { "binary", factory.bindGenerator<BinarySerializationCodeGenerator, const BinarySerializationCodeGenerator::Options &>(binaryOptions) },
             };
             // clang-format on
 

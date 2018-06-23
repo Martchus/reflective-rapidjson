@@ -10,6 +10,8 @@
 
 #include "../../lib/json/reflector-chronoutilities.h"
 #include "../../lib/json/serializable.h"
+#include "../../lib/binary/reflector-chronoutilities.h"
+#include "../../lib/binary/serializable.h"
 
 #include <deque>
 #include <list>
@@ -23,7 +25,7 @@ using namespace ReflectiveRapidJSON;
  * \brief The TestStruct struct inherits from JsonSerializable and should hence have functional fromJson()
  *        and toJson() methods. This is asserted in JsonGeneratorTests::testIncludingGeneratedHeader();
  */
-struct TestStruct : public JsonSerializable<TestStruct> {
+struct TestStruct : public JsonSerializable<TestStruct>, public BinarySerializable<TestStruct> {
     int someInt = 0;
     size_t someSize = 1;
     string someString = "foo";
@@ -57,7 +59,7 @@ private:
  * \brief The AnotherTestStruct struct inherits from JsonSerializable and should hence have functional fromJson()
  *        and toJson() methods. This is asserted in JsonGeneratorTests::testSingleInheritence();
  */
-struct AnotherTestStruct : public JsonSerializable<AnotherTestStruct> {
+struct AnotherTestStruct : public JsonSerializable<AnotherTestStruct>, public BinarySerializable<AnotherTestStruct> {
     vector<string> arrayOfStrings{ "a", "b", "cd" };
 };
 
@@ -65,7 +67,7 @@ struct AnotherTestStruct : public JsonSerializable<AnotherTestStruct> {
  * \brief The DerivedTestStruct struct inherits from JsonSerializable and should hence have functional fromJson()
  *        and toJson() methods. This is asserted in JsonGeneratorTests::testInheritence();
  */
-struct DerivedTestStruct : public TestStruct, public JsonSerializable<DerivedTestStruct> {
+struct DerivedTestStruct : public TestStruct, public JsonSerializable<DerivedTestStruct>, public BinarySerializable<DerivedTestStruct> {
     bool someBool = true;
 };
 

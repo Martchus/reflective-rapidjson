@@ -9,6 +9,7 @@ set(LINK_TESTS_AGAINST_APP_TARGET ON)
 set(HEADER_FILES
     codegenerator.h
     jsonserializationcodegenerator.h
+    binaryserializationcodegenerator.h
     codefactory.h
     frontendaction.h
     consumer.h
@@ -18,6 +19,7 @@ set(HEADER_FILES
 set(SRC_FILES
     codegenerator.cpp
     jsonserializationcodegenerator.cpp
+    binaryserializationcodegenerator.cpp
     codefactory.cpp
     frontendaction.cpp
     consumer.cpp
@@ -30,6 +32,7 @@ set(TEST_HEADER_FILES
 )
 set(TEST_SRC_FILES
     tests/cppunit.cpp
+    tests/binarygenerator.cpp
 )
 
 # add JSON-specific test cases
@@ -71,6 +74,7 @@ if(TARGET reflective_rapidjson_generator_tests)
             tests/cppunit.cpp              # just for testing multiple input files and the "empty file" case
         GENERATORS
             json
+            binary
         OUTPUT_LISTS
             TEST_GENERATED_HEADER_FILES
         CLANG_OPTIONS_FROM_TARGETS

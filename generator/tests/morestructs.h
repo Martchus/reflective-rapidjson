@@ -2,6 +2,7 @@
 #define REFLECTIVE_RAPIDJSON_TESTS_MORE_STRUCTS_H
 
 #include "../../lib/json/serializable.h"
+#include "../../lib/binary/serializable.h"
 
 using namespace std;
 using namespace ReflectiveRapidJSON;
@@ -15,7 +16,7 @@ using namespace ReflectiveRapidJSON;
  *
  * \remarks This is important to prevent violating the one definition rule.
  */
-struct IncludedStruct : public JsonSerializable<IncludedStruct> {
+struct IncludedStruct : public JsonSerializable<IncludedStruct>, public BinarySerializable<IncludedStruct> {
     int someInt = 0;
 };
 
@@ -23,7 +24,7 @@ struct IncludedStruct : public JsonSerializable<IncludedStruct> {
  * \brief The ConstStruct struct is used to test handling of const members.
  * \remarks Those members should be ignored when deserializing.
  */
-struct ConstStruct : public JsonSerializable<ConstStruct> {
+struct ConstStruct : public JsonSerializable<ConstStruct>, public BinarySerializable<IncludedStruct> {
     int modifiableInt = 23;
     const int constInt = 42;
 };

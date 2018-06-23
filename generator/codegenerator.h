@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include <llvm/ADT/StringRef.h>
+
 namespace clang {
 class Decl;
 class CXXRecordDecl;
@@ -14,6 +16,8 @@ class SourceManager;
 namespace ReflectiveRapidJSON {
 
 class CodeFactory;
+
+std::ostream &operator<<(std::ostream &os, llvm::StringRef str);
 
 /*!
  * \brief The CodeGenerator class is the base for generators used by the CodeFactory class.

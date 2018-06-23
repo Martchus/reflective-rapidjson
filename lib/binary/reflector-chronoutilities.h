@@ -16,22 +16,22 @@
 namespace ReflectiveRapidJSON {
 namespace BinaryReflector {
 
-template <> void readCustomType<ChronoUtilities::DateTime>(BinaryDeserializer &deserializer, ChronoUtilities::DateTime &dateTime)
+template <> inline void readCustomType<ChronoUtilities::DateTime>(BinaryDeserializer &deserializer, ChronoUtilities::DateTime &dateTime)
 {
     deserializer.read(dateTime.ticks());
 }
 
-template <> void writeCustomType<ChronoUtilities::DateTime>(BinarySerializer &serializer, const ChronoUtilities::DateTime &dateTime)
+template <> inline void writeCustomType<ChronoUtilities::DateTime>(BinarySerializer &serializer, const ChronoUtilities::DateTime &dateTime)
 {
     serializer.write(dateTime.totalTicks());
 }
 
-template <> void readCustomType<ChronoUtilities::TimeSpan>(BinaryDeserializer &deserializer, ChronoUtilities::TimeSpan &timeSpan)
+template <> inline void readCustomType<ChronoUtilities::TimeSpan>(BinaryDeserializer &deserializer, ChronoUtilities::TimeSpan &timeSpan)
 {
     deserializer.read(timeSpan.ticks());
 }
 
-template <> void writeCustomType<ChronoUtilities::TimeSpan>(BinarySerializer &serializer, const ChronoUtilities::TimeSpan &timeSpan)
+template <> inline void writeCustomType<ChronoUtilities::TimeSpan>(BinarySerializer &serializer, const ChronoUtilities::TimeSpan &timeSpan)
 {
     serializer.write(timeSpan.totalTicks());
 }

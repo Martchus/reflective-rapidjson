@@ -13,7 +13,7 @@ using TestUtilities::operator<<;
 /*!
  * \brief Asserts equality of two iteratables printing the differing indices.
  */
-template <typename Iteratable, Traits::EnableIf<Traits::IsIteratable<Iteratable>, Traits::Not<Traits::IsString<Iteratable>>>* = nullptr>
+template <typename Iteratable, Traits::EnableIf<Traits::IsIteratable<Iteratable>, Traits::Not<Traits::IsString<Iteratable>>> * = nullptr>
 inline void assertEqualityLinewise(const Iteratable &iteratable1, const Iteratable &iteratable2)
 {
     std::vector<std::string> differentLines;

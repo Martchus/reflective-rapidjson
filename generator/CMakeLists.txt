@@ -8,6 +8,7 @@ set(LINK_TESTS_AGAINST_APP_TARGET ON)
 # add project files
 set(HEADER_FILES
     codegenerator.h
+    serializationcodegenerator.h
     jsonserializationcodegenerator.h
     binaryserializationcodegenerator.h
     codefactory.h
@@ -18,6 +19,7 @@ set(HEADER_FILES
 )
 set(SRC_FILES
     codegenerator.cpp
+    serializationcodegenerator.cpp
     jsonserializationcodegenerator.cpp
     binaryserializationcodegenerator.cpp
     codefactory.cpp

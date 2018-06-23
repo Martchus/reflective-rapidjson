@@ -18,20 +18,29 @@ namespace ReflectiveRapidJSON {
  * \brief The BinarySerializable class provides the CRTP-base for (de)serializable objects.
  */
 template <typename Type> struct BinarySerializable {
-    void serialize(std::ostream &outputStream) const;
-    void deserialize(std::istream &inputStream);
+    void toBinary(std::ostream &outputStream) const;
+    void restoreFromBinary(std::istream &inputStream);
+    static Type fromBinary(std::istream &inputStream);
 
     static constexpr const char *qualifiedName = "ReflectiveRapidJSON::BinarySerializable";
 };
 
-template <typename Type> inline void BinarySerializable<Type>::serialize(std::ostream &outputStream) const
+template <typename Type> inline void BinarySerializable<Type>::toBinary(std::ostream &outputStream) const
 {
     BinaryReflector::BinarySerializer(&outputStream).write(static_cast<const Type &>(*this));
 }
 
-template <typename Type> inline void BinarySerializable<Type>::deserialize(std::istream &inputStream)
+template <typename Type> inline void BinarySerializable<Type>::restoreFromBinary(std::istream &inputStream)
 {
     BinaryReflector::BinaryDeserializer(&inputStream).read(static_cast<Type &>(*this));
+}
+
+template<typename Type>
+Type BinarySerializable<Type>::fromBinary(std::istream &inputStream)
+{
+    Type object;
+    static_cast<BinarySerializable<Type> &>(object).restoreFromBinary(inputStream);
+    return object;
 }
 
 /*!

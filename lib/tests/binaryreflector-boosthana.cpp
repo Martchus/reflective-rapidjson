@@ -83,12 +83,10 @@ void BinaryReflectorBoostHanaTests::testSerializingAndDeserializing()
 
     stringstream stream(ios_base::in | ios_base::out | ios_base::binary);
     stream.exceptions(ios_base::failbit | ios_base::badbit);
-    nestingObject.serialize(stream);
+    nestingObject.toBinary(stream);
 
-    NestingArrayBinaryHana deserializedObject;
-    deserializedObject.deserialize(stream);
-    const TestObjectBinaryHana &deserializedTestObj(deserializedObject.testObjects.at(0));
-
+    const auto deserializedObject(NestingArrayBinaryHana::fromBinary(stream));
+    const auto &deserializedTestObj(deserializedObject.testObjects.at(0));
     CPPUNIT_ASSERT_EQUAL(nestingObject.name, deserializedObject.name);
     CPPUNIT_ASSERT_EQUAL(testObject.number, deserializedTestObj.number);
     CPPUNIT_ASSERT_EQUAL(testObject.number2, deserializedTestObj.number2);

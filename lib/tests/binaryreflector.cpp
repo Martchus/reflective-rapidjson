@@ -240,7 +240,7 @@ void BinaryReflectorTests::testSerializeSimpleStruct()
     stream.exceptions(ios_base::failbit | ios_base::badbit);
     m_buffer.resize(m_expectedTestObj.size());
     stream.rdbuf()->pubsetbuf(reinterpret_cast<char *>(m_buffer.data()), static_cast<streamsize>(m_buffer.size()));
-    m_testObj.serialize(stream);
+    m_testObj.toBinary(stream);
 
     CPPUNIT_ASSERT_EQUAL(m_expectedTestObj, m_buffer);
 }
@@ -250,8 +250,7 @@ void BinaryReflectorTests::testDeserializeSimpleStruct()
     stringstream stream(ios_base::in | ios_base::binary);
     stream.exceptions(ios_base::failbit | ios_base::badbit);
     stream.rdbuf()->pubsetbuf(reinterpret_cast<char *>(m_expectedTestObj.data()), static_cast<streamsize>(m_expectedTestObj.size()));
-    TestObjectBinary deserialized;
-    deserialized.deserialize(stream);
+    const auto deserialized(TestObjectBinary::fromBinary(stream));
     assertTestObject(deserialized);
 }
 
@@ -261,7 +260,7 @@ void BinaryReflectorTests::testSerializeNestedStruct()
     stream.exceptions(ios_base::failbit | ios_base::badbit);
     m_buffer.resize(m_expectedNestedTestObj.size());
     stream.rdbuf()->pubsetbuf(reinterpret_cast<char *>(m_buffer.data()), static_cast<streamsize>(m_buffer.size()));
-    m_nestedTestObj.serialize(stream);
+    m_nestedTestObj.toBinary(stream);
 
     CPPUNIT_ASSERT_EQUAL(m_expectedNestedTestObj, m_buffer);
 }
@@ -271,9 +270,8 @@ void BinaryReflectorTests::testDeserializeNestedStruct()
     stringstream stream(ios_base::in | ios_base::binary);
     stream.exceptions(ios_base::failbit | ios_base::badbit);
     stream.rdbuf()->pubsetbuf(reinterpret_cast<char *>(m_expectedNestedTestObj.data()), static_cast<streamsize>(m_expectedNestedTestObj.size()));
-    NestingArrayBinary deserialized;
-    deserialized.deserialize(stream);
 
+    const auto deserialized(NestingArrayBinary::fromBinary(stream));
     CPPUNIT_ASSERT_EQUAL(m_nestedTestObj.name, deserialized.name);
     for (const auto &testObj : deserialized.testObjects) {
         assertTestObject(testObj);

@@ -30,16 +30,12 @@ using namespace ReflectiveRapidJSON;
 /// \cond
 
 // define some structs for testing serialization
-struct TestObjectHana : public BinarySerializable<TestObjectHana> {
-    BOOST_HANA_DEFINE_STRUCT(TestObjectHana, (int, number), (double, number2), (vector<int>, numbers), (string, text), (bool, boolean));
+struct TestObjectBinaryHana : public BinarySerializable<TestObjectBinaryHana> {
+    BOOST_HANA_DEFINE_STRUCT(TestObjectBinaryHana, (int, number), (double, number2), (vector<int>, numbers), (string, text), (bool, boolean));
 };
 
-struct NestingObjectHana : public BinarySerializable<NestingObjectHana> {
-    BOOST_HANA_DEFINE_STRUCT(NestingObjectHana, (string, name), (TestObjectHana, testObj));
-};
-
-struct NestingArrayHana : public BinarySerializable<NestingArrayHana> {
-    BOOST_HANA_DEFINE_STRUCT(NestingArrayHana, (string, name), (vector<TestObjectHana>, testObjects));
+struct NestingArrayBinaryHana : public BinarySerializable<NestingArrayBinaryHana> {
+    BOOST_HANA_DEFINE_STRUCT(NestingArrayBinaryHana, (string, name), (vector<TestObjectBinaryHana>, testObjects));
 };
 
 /// \endcond
@@ -50,11 +46,14 @@ struct NestingArrayHana : public BinarySerializable<NestingArrayHana> {
  */
 class BinaryReflectorBoostHanaTests : public TestFixture {
     CPPUNIT_TEST_SUITE(BinaryReflectorBoostHanaTests);
+    CPPUNIT_TEST(testSerializingAndDeserializing);
     CPPUNIT_TEST_SUITE_END();
 
 public:
     void setUp();
     void tearDown();
+
+    void testSerializingAndDeserializing();
 
 private:
 };
@@ -67,4 +66,33 @@ void BinaryReflectorBoostHanaTests::setUp()
 
 void BinaryReflectorBoostHanaTests::tearDown()
 {
+}
+
+void BinaryReflectorBoostHanaTests::testSerializingAndDeserializing()
+{
+    TestObjectBinaryHana testObject;
+    testObject.number = 42;
+    testObject.number2 = 1234.25;
+    testObject.numbers = { 1, 2, 3, 4, 5 };
+    testObject.text = "foo";
+    testObject.boolean = true;
+
+    NestingArrayBinaryHana nestingObject;
+    nestingObject.name = "bar";
+    nestingObject.testObjects.emplace_back(testObject);
+
+    stringstream stream(ios_base::in | ios_base::out | ios_base::binary);
+    stream.exceptions(ios_base::failbit | ios_base::badbit);
+    nestingObject.serialize(stream);
+
+    NestingArrayBinaryHana deserializedObject;
+    deserializedObject.deserialize(stream);
+    const TestObjectBinaryHana &deserializedTestObj(deserializedObject.testObjects.at(0));
+
+    CPPUNIT_ASSERT_EQUAL(nestingObject.name, deserializedObject.name);
+    CPPUNIT_ASSERT_EQUAL(testObject.number, deserializedTestObj.number);
+    CPPUNIT_ASSERT_EQUAL(testObject.number2, deserializedTestObj.number2);
+    CPPUNIT_ASSERT_EQUAL(testObject.numbers, deserializedTestObj.numbers);
+    CPPUNIT_ASSERT_EQUAL(testObject.text, deserializedTestObj.text);
+    CPPUNIT_ASSERT_EQUAL(testObject.boolean, deserializedTestObj.boolean);
 }

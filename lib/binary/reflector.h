@@ -9,10 +9,12 @@
 
 #include "../traits.h"
 
+#include <c++utilities/conversion/conversionexception.h>
 #include <c++utilities/conversion/types.h>
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
 
+#include <any>
 #include <limits>
 #include <memory>
 #include <string>
@@ -38,12 +40,8 @@ namespace BinaryReflector {
 // define traits to distinguish between "built-in" types like int, std::string, std::vector, ... and custom structs/classes
 template <typename Type>
 using IsBuiltInType = Traits::Any<Traits::IsAnyOf<Type, char, byte, bool, std::string, int16, uint16, int32, uint32, int64, uint64, float32, float64>,
-    Traits::IsIteratable<Type>, Traits::IsSpecializationOf<Type, std::pair>, std::is_enum<Type>>;
+    Traits::IsIteratable<Type>, Traits::IsSpecializingAnyOf<Type, std::pair, std::unique_ptr, std::shared_ptr>, std::is_enum<Type>>;
 template <typename Type> using IsCustomType = Traits::Not<IsBuiltInType<Type>>;
-template <typename Type>
-using IsSerializable = Traits::All<
-    Traits::Any<Traits::Not<Traits::IsComplete<Type>>, std::is_base_of<BinarySerializable<Type>, Type>, AdaptedBinarySerializable<Type>>,
-    Traits::Not<IsBuiltInType<Type>>>;
 
 class BinaryDeserializer;
 class BinarySerializer;
@@ -57,6 +55,8 @@ public:
 
     using IoUtilities::BinaryReader::read;
     template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::pair>> * = nullptr> void read(Type &pair);
+    template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::unique_ptr>> * = nullptr> void read(Type &pair);
+    template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::shared_ptr>> * = nullptr> void read(Type &pair);
     template <typename Type, Traits::EnableIf<IsArray<Type>, Traits::IsResizable<Type>> * = nullptr> void read(Type &iteratable);
     template <typename Type, Traits::EnableIf<IsMapOrHash<Type>> * = nullptr> void read(Type &iteratable);
     template <typename Type,
@@ -65,6 +65,8 @@ public:
     void read(Type &iteratable);
     template <typename Type, Traits::EnableIf<std::is_enum<Type>> * = nullptr> void read(Type &customType);
     template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void read(Type &customType);
+
+    std::unordered_map<uint64, std::any> m_pointer;
 };
 
 class BinarySerializer : public IoUtilities::BinaryWriter {
@@ -73,9 +75,13 @@ public:
 
     using IoUtilities::BinaryWriter::write;
     template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::pair>> * = nullptr> void write(const Type &pair);
+    template <typename Type, Traits::EnableIf<Traits::IsSpecializingAnyOf<Type, std::unique_ptr>> * = nullptr> void write(const Type &pointer);
+    template <typename Type, Traits::EnableIf<Traits::IsSpecializingAnyOf<Type, std::shared_ptr>> * = nullptr> void write(const Type &pointer);
     template <typename Type, Traits::EnableIf<IsIteratableExceptString<Type>, Traits::HasSize<Type>> * = nullptr> void write(const Type &iteratable);
     template <typename Type, Traits::EnableIf<std::is_enum<Type>> * = nullptr> void write(const Type &customType);
     template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void write(const Type &customType);
+
+    std::unordered_map<uint64, bool> m_pointer;
 };
 
 inline BinaryDeserializer::BinaryDeserializer(std::istream *stream)
@@ -87,6 +93,40 @@ template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::
 {
     read(pair.first);
     read(pair.second);
+}
+
+template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::unique_ptr>> *> void BinaryDeserializer::read(Type &pointer)
+{
+    if (!readBool()) {
+        pointer.reset();
+        return;
+    }
+    pointer = std::make_unique<typename Type::element_type>();
+    read(*pointer);
+}
+
+template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::shared_ptr>> *> void BinaryDeserializer::read(Type &pointer)
+{
+    const auto occurence = readByte();
+    if (!occurence) {
+        // pointer not set
+        pointer.reset();
+        return;
+    }
+
+    const auto id = readVariableLengthUIntBE();
+    if (occurence == 1) {
+        // first occurence: make a new pointer
+        m_pointer[id] = pointer = std::make_shared<typename Type::element_type>();
+        read(*pointer);
+        return;
+    }
+    // further occurences: copy previous pointer
+    try {
+        pointer = std::any_cast<Type>(m_pointer[id]);
+    } catch (const std::bad_any_cast) {
+        throw ConversionUtilities::ConversionException("Referenced pointer type does not match");
+    }
 }
 
 template <typename Type, Traits::EnableIf<IsArray<Type>, Traits::IsResizable<Type>> *> void BinaryDeserializer::read(Type &iteratable)
@@ -141,6 +181,31 @@ template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::
 {
     write(pair.first);
     write(pair.second);
+}
+
+template <typename Type, Traits::EnableIf<Traits::IsSpecializingAnyOf<Type, std::unique_ptr>> *> void BinarySerializer::write(const Type &pointer)
+{
+    const bool hasValue = pointer != nullptr;
+    writeBool(hasValue);
+    if (hasValue) {
+        write(*pointer);
+    }
+}
+
+template <typename Type, Traits::EnableIf<Traits::IsSpecializingAnyOf<Type, std::shared_ptr>> *> void BinarySerializer::write(const Type &pointer)
+{
+    if (pointer == nullptr) {
+        writeByte(0);
+        return;
+    }
+    const auto id = reinterpret_cast<uint64>(pointer.get());
+    auto &alreadyWritten = m_pointer[id];
+    writeByte(alreadyWritten ? 2 : 1);
+    writeVariableLengthUIntBE(id);
+    if (!alreadyWritten) {
+        alreadyWritten = true;
+        write(*pointer);
+    }
 }
 
 template <typename Type, Traits::EnableIf<IsIteratableExceptString<Type>, Traits::HasSize<Type>> *>

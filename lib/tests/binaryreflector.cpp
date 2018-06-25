@@ -152,11 +152,11 @@ public:
     void assertTestObject(const TestObjectBinary &deserialized);
 
 private:
-    vector<byte> m_buffer;
+    vector<unsigned char> m_buffer;
     TestObjectBinary m_testObj;
     NestingArrayBinary m_nestedTestObj;
-    vector<byte> m_expectedTestObj;
-    vector<byte> m_expectedNestedTestObj;
+    vector<unsigned char> m_expectedTestObj;
+    vector<unsigned char> m_expectedNestedTestObj;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(BinaryReflectorTests);

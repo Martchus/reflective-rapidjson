@@ -79,6 +79,8 @@ if(TARGET reflective_rapidjson_generator_tests)
             binary
         OUTPUT_LISTS
             TEST_GENERATED_HEADER_FILES
+        CLANG_OPTIONS
+            -std=c++17
         CLANG_OPTIONS_FROM_TARGETS
             reflective_rapidjson_generator_tests
         JSON_CLASSES

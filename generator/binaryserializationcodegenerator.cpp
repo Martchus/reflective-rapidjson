@@ -45,8 +45,7 @@ string BinarySerializationCodeGenerator::qualifiedNameIfRelevant(clang::CXXRecor
         return qualifiedName;
     case IsRelevant::No:
         return string();
-    default:
-        ;
+    default:;
     }
 
     // consider all classes specified via "--additional-classes" argument relevant
@@ -119,7 +118,8 @@ void BinarySerializationCodeGenerator::generate(ostream &os) const
 
         // print writeCustomType method
         os << "template <> " << visibility << " void writeCustomType<::" << relevantClass.qualifiedName
-           << ">(BinarySerializer &serializer, const ::" << relevantClass.qualifiedName << " &customObject)\n{\n"
+           << ">(BinarySerializer &serializer, const ::" << relevantClass.qualifiedName
+           << " &customObject)\n{\n"
               "    // write base classes\n";
         for (const RelevantClass *baseClass : relevantBases) {
             os << "    serializer.write(static_cast<const ::" << baseClass->qualifiedName << " &>(customObject));\n";
@@ -139,7 +139,8 @@ void BinarySerializationCodeGenerator::generate(ostream &os) const
 
         // print readCustomType method
         os << "template <> " << visibility << " void readCustomType<::" << relevantClass.qualifiedName
-           << ">(BinaryDeserializer &deserializer, ::" << relevantClass.qualifiedName << " &customObject)\n{\n"
+           << ">(BinaryDeserializer &deserializer, ::" << relevantClass.qualifiedName
+           << " &customObject)\n{\n"
               "    // read base classes\n";
         for (const RelevantClass *baseClass : relevantBases) {
             os << "    deserializer.read(static_cast<::" << baseClass->qualifiedName << " &>(customObject));\n";

@@ -45,8 +45,7 @@ string JsonSerializationCodeGenerator::qualifiedNameIfRelevant(clang::CXXRecordD
         return qualifiedName;
     case IsRelevant::No:
         return string();
-    default:
-        ;
+    default:;
     }
 
     // consider all classes specified via "--additional-classes" argument relevant

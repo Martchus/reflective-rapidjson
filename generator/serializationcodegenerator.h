@@ -27,9 +27,7 @@ public:
     void addDeclaration(clang::Decl *decl) override;
 
 protected:
-    enum class IsRelevant {
-        Yes, No, Maybe
-    };
+    enum class IsRelevant { Yes, No, Maybe };
     IsRelevant isQualifiedNameIfRelevant(clang::CXXRecordDecl *record, const std::string &qualifiedName) const;
     virtual std::string qualifiedNameIfRelevant(clang::CXXRecordDecl *record) const = 0;
     std::vector<RelevantClass> findRelevantClasses() const;

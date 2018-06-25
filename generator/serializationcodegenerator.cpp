@@ -64,7 +64,8 @@ void SerializationCodeGenerator::addDeclaration(clang::Decl *decl)
     }
 }
 
-SerializationCodeGenerator::IsRelevant SerializationCodeGenerator::isQualifiedNameIfRelevant(clang::CXXRecordDecl *record, const std::string &qualifiedName) const
+SerializationCodeGenerator::IsRelevant SerializationCodeGenerator::isQualifiedNameIfRelevant(
+    clang::CXXRecordDecl *record, const std::string &qualifiedName) const
 {
     // consider all classes for which a specialization of the "AdaptedJsonSerializable" struct is available
     for (const auto &adaptionRecord : m_adaptionRecords) {
@@ -102,7 +103,8 @@ std::vector<SerializationCodeGenerator::RelevantClass> SerializationCodeGenerato
     return relevantClasses;
 }
 
-std::vector<const SerializationCodeGenerator::RelevantClass *> SerializationCodeGenerator::findRelevantBaseClasses(const SerializationCodeGenerator::RelevantClass &relevantClass, const std::vector<SerializationCodeGenerator::RelevantClass> &relevantBases)
+std::vector<const SerializationCodeGenerator::RelevantClass *> SerializationCodeGenerator::findRelevantBaseClasses(
+    const SerializationCodeGenerator::RelevantClass &relevantClass, const std::vector<SerializationCodeGenerator::RelevantClass> &relevantBases)
 {
     vector<const RelevantClass *> relevantBaseClasses;
     for (const RelevantClass &otherClass : relevantBases) {

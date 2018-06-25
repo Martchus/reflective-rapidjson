@@ -24,23 +24,19 @@
 namespace ReflectiveRapidJSON {
 namespace BinaryReflector {
 
-template <typename Type, Traits::EnableIf<IsCustomType<Type>> *>
-void readCustomType(BinaryDeserializer &deserializer, Type &customType)
+template <typename Type, Traits::EnableIf<IsCustomType<Type>> *> void readCustomType(BinaryDeserializer &deserializer, Type &customType)
 {
-    boost::hana::for_each(boost::hana::keys(customType), [&deserializer, &customType](auto key) {
-        deserializer.read(boost::hana::at_key(customType, key));
-    });
+    boost::hana::for_each(
+        boost::hana::keys(customType), [&deserializer, &customType](auto key) { deserializer.read(boost::hana::at_key(customType, key)); });
 }
 
-template <typename Type, Traits::EnableIf<IsCustomType<Type>> *>
-void writeCustomType(BinarySerializer &serializer, const Type &customType)
+template <typename Type, Traits::EnableIf<IsCustomType<Type>> *> void writeCustomType(BinarySerializer &serializer, const Type &customType)
 {
-    boost::hana::for_each(boost::hana::keys(customType), [&serializer, &customType](auto key) {
-        serializer.write(boost::hana::at_key(customType, key));
-    });
+    boost::hana::for_each(
+        boost::hana::keys(customType), [&serializer, &customType](auto key) { serializer.write(boost::hana::at_key(customType, key)); });
 }
 
-} // namespace JsonReflector
+} // namespace BinaryReflector
 } // namespace ReflectiveRapidJSON
 
 #endif // REFLECTIVE_RAPIDJSON_BINARY_REFLECTOR_BOOST_HANA_H

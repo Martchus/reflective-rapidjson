@@ -35,8 +35,7 @@ template <typename Type> inline void BinarySerializable<Type>::restoreFromBinary
     BinaryReflector::BinaryDeserializer(&inputStream).read(static_cast<Type &>(*this));
 }
 
-template<typename Type>
-Type BinarySerializable<Type>::fromBinary(std::istream &inputStream)
+template <typename Type> Type BinarySerializable<Type>::fromBinary(std::istream &inputStream)
 {
     Type object;
     static_cast<BinarySerializable<Type> &>(object).restoreFromBinary(inputStream);

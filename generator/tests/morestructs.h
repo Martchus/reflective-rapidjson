@@ -1,8 +1,8 @@
 #ifndef REFLECTIVE_RAPIDJSON_TESTS_MORE_STRUCTS_H
 #define REFLECTIVE_RAPIDJSON_TESTS_MORE_STRUCTS_H
 
-#include "../../lib/json/serializable.h"
 #include "../../lib/binary/serializable.h"
+#include "../../lib/json/serializable.h"
 
 using namespace std;
 using namespace ReflectiveRapidJSON;

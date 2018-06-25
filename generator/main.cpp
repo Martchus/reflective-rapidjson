@@ -1,6 +1,6 @@
+#include "./binaryserializationcodegenerator.h"
 #include "./codefactory.h"
 #include "./jsonserializationcodegenerator.h"
-#include "./binaryserializationcodegenerator.h"
 
 #include "resources/config.h"
 

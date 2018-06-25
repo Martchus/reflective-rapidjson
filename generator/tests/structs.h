@@ -8,10 +8,10 @@
 // contained structs as well (to prevent violating the one definition rule)
 #include "./morestructs.h"
 
-#include "../../lib/json/reflector-chronoutilities.h"
-#include "../../lib/json/serializable.h"
 #include "../../lib/binary/reflector-chronoutilities.h"
 #include "../../lib/binary/serializable.h"
+#include "../../lib/json/reflector-chronoutilities.h"
+#include "../../lib/json/serializable.h"
 
 #include <deque>
 #include <list>

@@ -79,28 +79,28 @@ The following table shows the mapping of supported C++ types to supported JSON t
 ## Usage
 This example shows how the library can be used to make a `struct` serializable:
 <pre>
-#include <reflective_rapidjson/json/serializable.h>
+#include &lt;reflective_rapidjson/json/serializable.h&gt;
 
 // define structures, eg.
-struct TestObject : public ReflectiveRapidJSON::JsonSerializable<TestObject> {
+struct TestObject : public ReflectiveRapidJSON::JsonSerializable&lt;TestObject&gt; {
     int number;
     double number2;
-    vector<int> numbers;
+    vector&lt;int&gt; numbers;
     string text;
     bool boolean;
 };
-struct NestingObject : public ReflectiveRapidJSON::JsonSerializable<NestingObject> {
+struct NestingObject : public ReflectiveRapidJSON::JsonSerializable&lt;NestingObject&gt; {
     string name;
     TestObject testObj;
 };
-struct NestingArray : public ReflectiveRapidJSON::JsonSerializable<NestingArray> {
+struct NestingArray : public ReflectiveRapidJSON::JsonSerializable&lt;NestingArray&gt; {
     string name;
-    vector<TestObject> testObjects;
+    vector&lt;TestObject&gt; testObjects;
 };
 
 // serialize to JSON
 NestingArray obj{ ... };
-cout << "JSON: " << obj.toJson().GetString();
+cout &lt;&lt; "JSON: " &lt;&lt; obj.toJson().GetString();
 
 // deserialize from JSON
 const auto obj = NestingArray::fromJson(...);
@@ -120,8 +120,8 @@ reflective_rapidjson_generator \
 It works very similar to the example above. Just use the `BinarySerializable` class instead (or in addition):
 
 <pre>
-#include <reflective_rapidjson/binary/serializable.h>
-struct TestObject : public ReflectiveRapidJSON::BinarySerializable<TestObject>
+#include &lt;reflective_rapidjson/binary/serializable.h&gt;
+struct TestObject : public ReflectiveRapidJSON::BinarySerializable&lt;TestObject&gt;
 </pre>
 
 #### Invoking code generator with CMake macro
@@ -206,34 +206,34 @@ Macro's `CLANG_OPTIONS_FROM_TARGETS` argument.
 The same example as above. However, this time Boost.Hana is used - so it doesn't require invoking the generator.
 
 <pre>
-#include "<reflective_rapidjson/json/serializable-boosthana.h>
+#include "&lt;reflective_rapidjson/json/serializable-boosthana.h&gt;
 
 // define structures using BOOST_HANA_DEFINE_STRUCT, eg.
-struct TestObject : public JsonSerializable<TestObject> {
+struct TestObject : public JsonSerializable&lt;TestObject&gt; {
     BOOST_HANA_DEFINE_STRUCT(TestObject,
         (int, number),
         (double, number2),
-        (vector<int>, numbers),
+        (vector&lt;int&gt;, numbers),
         (string, text),
         (bool, boolean)
     );
 };
-struct NestingObject : public JsonSerializable<NestingObject> {
+struct NestingObject : public JsonSerializable&lt;NestingObject&gt; {
     BOOST_HANA_DEFINE_STRUCT(NestingObject,
         (string, name),
         (TestObject, testObj)
     );
 };
-struct NestingArray : public JsonSerializable<NestingArray> {
+struct NestingArray : public JsonSerializable&lt;NestingArray&gt; {
     BOOST_HANA_DEFINE_STRUCT(NestingArray,
         (string, name),
-        (vector<TestObject>, testObjects)
+        (vector&lt;TestObject&gt;, testObjects)
     );
 };
 
 // serialize to JSON
 NestingArray obj{ ... };
-cout << "JSON: " << obj.toJson().GetString();
+cout &lt;&lt; "JSON: " &lt;&lt; obj.toJson().GetString();
 
 // deserialize from JSON
 const auto obj = NestingArray::fromJson(...);
@@ -266,7 +266,7 @@ REFLECTIVE_RAPIDJSON_MAKE_JSON_SERIALIZABLE(ThridPartyStruct)
 
 // (de)serialization
 ReflectiveRapidJSON::JsonReflector::toJson(...).GetString();
-ReflectiveRapidJSON::JsonReflector::fromJson<ThridPartyStruct>("...");
+ReflectiveRapidJSON::JsonReflector::fromJson&lt;ThridPartyStruct&gt;("...");
 </pre>
 
 The code generator will emit the code in the same way as if `JsonSerializable` was
@@ -281,7 +281,7 @@ to enable this by adding `friend` methods for the helper functions of Reflective
 
 To make things easier, there's a macro provided:
 <pre>
-struct SomeStruct : public JsonSerializable<SomeStruct> {
+struct SomeStruct : public JsonSerializable&lt;SomeStruct&gt; {
     REFLECTIVE_RAPIDJSON_ENABLE_PRIVATE_MEMBERS(SomeStruct);
 
 public:

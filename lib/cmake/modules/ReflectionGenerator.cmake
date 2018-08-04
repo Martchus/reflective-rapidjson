@@ -91,6 +91,9 @@ function(add_reflection_generator_invocation)
 
     # apply specified REFLECTION_GENERATOR_INCLUDE_DIRECTORIES
     foreach(INCLUDE_DIR ${REFLECTION_GENERATOR_INCLUDE_DIRECTORIES})
+        if(NOT IS_DIRECTORY "${INCLUDE_DIR}")
+            message(FATAL_ERROR "Specified include directory \"${INCLUDE_DIR})\" for reflection generator doesn't exists.")
+        endif()
         list(APPEND ARGS_CLANG_OPTIONS -I "${INCLUDE_DIR}")
     endforeach()
 

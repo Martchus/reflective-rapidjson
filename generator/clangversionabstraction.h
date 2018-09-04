@@ -8,13 +8,7 @@
 
 #include <memory>
 
-namespace clang {
-class Preprocessor;
-}
-
 namespace ReflectiveRapidJSON {
-
-clang::FileID createFileIDForMemBuffer(clang::Preprocessor &pp, llvm::MemoryBuffer *buffer, clang::SourceLocation location);
 
 /*!
  * \brief The MaybeUnique class represents either a std::unique_ptr or a raw pointer.

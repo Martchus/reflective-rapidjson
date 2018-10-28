@@ -29,4 +29,42 @@ struct ConstStruct : public JsonSerializable<ConstStruct>, public BinarySerializ
     const int constInt = 42;
 };
 
+/*!
+ * \brief The PointerTarget struct is used to test the behavior of the binary (de)serialization with smart pointer.
+ */
+struct PointerTarget : public BinarySerializable<PointerTarget> {
+    PointerTarget()
+        : n(0xAAAAAAAA)
+        , dummy1(0x1111111111111111)
+        , dummy2(0x1111111111111111)
+        , dummy3(0x1111111111111111)
+    {
+    }
+
+    PointerTarget(uint32_t n)
+        : n(n)
+        , dummy1(0x1111111111111111)
+        , dummy2(0x1111111111111111)
+        , dummy3(0x1111111111111111)
+    {
+    }
+
+    uint32_t n;
+    uint64_t dummy1;
+    uint64_t dummy2;
+    uint64_t dummy3;
+};
+
+/*!
+ * \brief The PointerStruct struct is used to test the behavior of the binary (de)serialization with smart pointer.
+ */
+struct PointerStruct : public BinarySerializable<PointerStruct> {
+    std::shared_ptr<PointerTarget> s1;
+    std::unique_ptr<PointerTarget> u2;
+    std::unique_ptr<PointerTarget> u3;
+    std::shared_ptr<PointerTarget> s2;
+    std::unique_ptr<PointerTarget> u1;
+    std::shared_ptr<PointerTarget> s3;
+};
+
 #endif // REFLECTIVE_RAPIDJSON_TESTS_MORE_STRUCTS_H

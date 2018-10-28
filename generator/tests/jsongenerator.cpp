@@ -6,6 +6,7 @@
 
 #include "resources/config.h"
 
+#include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/io/misc.h>
 #include <c++utilities/tests/testutils.h>

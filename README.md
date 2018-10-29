@@ -81,6 +81,8 @@ The following table shows the mapping of supported C++ types to supported JSON t
       is currently not supported.
     * custom types must provide a default constructor.
     * constant member variables are skipped.
+* It is possible to treat custom types as set/map using the macro `REFLECTIVE_RAPIDJSON_TREAT_AS_MAP_OR_HASH`,
+  `REFLECTIVE_RAPIDJSON_TREAT_AS_SET` or `REFLECTIVE_RAPIDJSON_TREAT_AS_MULTI_SET`.
 * For custom (de)serialization, see the section below.
 * The binary (de)serializer supports approximately the same C++ types but obviously maps them to a platform
   independent binary representation rather than a JSON type.

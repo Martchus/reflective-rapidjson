@@ -15,6 +15,9 @@ namespace ReflectiveRapidJSON {
 /// \brief \brief The TreatAsMapOrHash class allows treating custom classes as std::map or std::unordered_map.
 template <typename T> struct TreatAsMapOrHash : public Traits::Bool<false> {
 };
+/// \brief \brief The TreatAsMultiMapOrHash class allows treating custom classes as std::multimap or std::unordered_multimap.
+template <typename T> struct TreatAsMultiMapOrHash : public Traits::Bool<false> {
+};
 /// \brief \brief The TreatAsSet class allows treating custom classes as std::set or std::unordered_set.
 template <typename T> struct TreatAsSet : public Traits::Bool<false> {
 };
@@ -24,6 +27,9 @@ template <typename T> struct TreatAsMultiSet : public Traits::Bool<false> {
 
 #define REFLECTIVE_RAPIDJSON_TREAT_AS_MAP_OR_HASH(T)                                                                                                 \
     template <> struct TreatAsMapOrHash<T> : public Traits::Bool<true> {                                                                             \
+    }
+#define REFLECTIVE_RAPIDJSON_TREAT_AS_MULTI_MAP_OR_HASH(T)                                                                                           \
+    template <> struct TreatAsMultiMapOrHash<T> : public Traits::Bool<true> {                                                                        \
     }
 #define REFLECTIVE_RAPIDJSON_TREAT_AS_SET(T)                                                                                                         \
     template <> struct TreatAsSet<T> : public Traits::Bool<true> {                                                                                   \
@@ -36,6 +42,9 @@ template <typename T> struct TreatAsMultiSet : public Traits::Bool<false> {
 template <typename Type>
 using IsMapOrHash
     = Traits::Any<Traits::IsSpecializationOf<Type, std::map>, Traits::IsSpecializationOf<Type, std::unordered_map>, TreatAsMapOrHash<Type>>;
+template <typename Type>
+using IsMultiMapOrHash = Traits::Any<Traits::IsSpecializationOf<Type, std::multimap>, Traits::IsSpecializationOf<Type, std::unordered_multimap>,
+    TreatAsMultiMapOrHash<Type>>;
 template <typename Type>
 using IsSet = Traits::Any<Traits::IsSpecializationOf<Type, std::set>, Traits::IsSpecializationOf<Type, std::unordered_set>, TreatAsSet<Type>>;
 template <typename Type>

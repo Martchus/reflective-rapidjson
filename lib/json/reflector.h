@@ -211,9 +211,10 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
 }
 
 /*!
- * \brief Pushes the specified map (std::map, std::unordered_map) to the specified value.
+ * \brief Pushes the specified map (std::map, std::unordered_map) or multimap (std::multimap, std::unordered_multimap) to the
+ *        specified value.
  */
-template <typename Type, Traits::EnableIf<IsMapOrHash<Type>> * = nullptr>
+template <typename Type, Traits::EnableIfAny<IsMapOrHash<Type>, IsMultiMapOrHash<Type>> * = nullptr>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     value.SetObject();
@@ -369,6 +370,12 @@ void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<c
  * \brief Pulls the specified \a reflectable which is a map from the specified value which is checked to contain an object.
  */
 template <typename Type, Traits::EnableIf<IsMapOrHash<Type>> * = nullptr>
+void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors);
+
+/*!
+ * \brief Pulls the specified \a reflectable which is a multimap from the specified value which is checked to contain an object.
+ */
+template <typename Type, Traits::EnableIf<IsMultiMapOrHash<Type>> * = nullptr>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors);
 
 /*!
@@ -628,6 +635,25 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
     }
 }
 
+/*!
+ * \brief Pulls the specified \a reflectable which is a multimap from the specified value which is checked to contain an object.
+ */
+template <typename Type, Traits::EnableIf<IsMultiMapOrHash<Type>> *>
+void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
+{
+    if (!value.IsObject()) {
+        if (errors) {
+            errors->reportTypeMismatch<Type>(value.GetType());
+        }
+        return;
+    }
+    auto obj = value.GetObject();
+    for (auto i = obj.MemberBegin(), end = obj.MemberEnd(); i != end; ++i) {
+        auto insertedIterator = reflectable.insert(typename Type::value_type(i->name.GetString(), typename Type::mapped_type()));
+        pull(insertedIterator->second, i->value, errors);
+    }
+}
+
 namespace Detail {
 
 /*!
@@ -762,7 +788,7 @@ void pull(Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_N
 /*!
  * \brief Serializes the specified \a reflectable which has a custom type or can be mapped to and object.
  */
-template <typename Type, Traits::EnableIfAny<IsJsonSerializable<Type>, IsMapOrHash<Type>> * = nullptr>
+template <typename Type, Traits::EnableIfAny<IsJsonSerializable<Type>, IsMapOrHash<Type>, IsMultiMapOrHash<Type>> * = nullptr>
 RAPIDJSON_NAMESPACE::StringBuffer toJson(const Type &reflectable)
 {
     RAPIDJSON_NAMESPACE::Document document(RAPIDJSON_NAMESPACE::kObjectType);
@@ -819,7 +845,7 @@ template <typename Type, Traits::EnableIf<IsArray<Type>> * = nullptr> RAPIDJSON_
 /*!
  * \brief Deserializes the specified JSON to \tparam Type which is a custom type or can be mapped to an object.
  */
-template <typename Type, Traits::EnableIfAny<IsJsonSerializable<Type>, IsMapOrHash<Type>> * = nullptr>
+template <typename Type, Traits::EnableIfAny<IsJsonSerializable<Type>, IsMapOrHash<Type>, IsMultiMapOrHash<Type>> * = nullptr>
 Type fromJson(const char *json, std::size_t jsonSize, JsonDeserializationErrors *errors = nullptr)
 {
     RAPIDJSON_NAMESPACE::Document doc(parseJsonDocFromString(json, jsonSize));

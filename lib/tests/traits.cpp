@@ -12,6 +12,7 @@ struct Foo {
 struct Bar {
 };
 REFLECTIVE_RAPIDJSON_TREAT_AS_MAP_OR_HASH(Foo);
+REFLECTIVE_RAPIDJSON_TREAT_AS_MULTI_MAP_OR_HASH(Foo);
 REFLECTIVE_RAPIDJSON_TREAT_AS_SET(Bar);
 REFLECTIVE_RAPIDJSON_TREAT_AS_MULTI_SET(Foo);
 
@@ -37,6 +38,10 @@ static_assert(IsMapOrHash<map<string, int>>::value, "map mapped to object");
 static_assert(IsMapOrHash<unordered_map<string, int>>::value, "hash mapped to object");
 static_assert(!IsMapOrHash<vector<int>>::value, "vector not mapped to object");
 static_assert(IsMapOrHash<Foo>::value, "Foo mapped to object via TreatAsMapOrHash");
+static_assert(IsMultiMapOrHash<multimap<string, int>>::value, "multimap mapped to object");
+static_assert(IsMultiMapOrHash<unordered_multimap<string, int>>::value, "unordered multimap mapped to object");
+static_assert(!IsMultiMapOrHash<vector<int>>::value, "vector not mapped to object");
+static_assert(IsMultiMapOrHash<Foo>::value, "Foo mapped to object via TreatAsMultiMapOrHash");
 static_assert(IsIteratableExceptString<std::vector<int>>::value, "vector is iteratable");
 static_assert(!IsIteratableExceptString<std::string>::value, "string not iteratable");
 static_assert(!IsIteratableExceptString<std::wstring>::value, "wstring not iteratable");

@@ -58,10 +58,10 @@ public:
     template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::unique_ptr>> * = nullptr> void read(Type &pair);
     template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::shared_ptr>> * = nullptr> void read(Type &pair);
     template <typename Type, Traits::EnableIf<IsArray<Type>, Traits::IsResizable<Type>> * = nullptr> void read(Type &iteratable);
-    template <typename Type, Traits::EnableIf<IsMapOrHash<Type>> * = nullptr> void read(Type &iteratable);
+    template <typename Type, Traits::EnableIfAny<IsMapOrHash<Type>, IsMultiMapOrHash<Type>> * = nullptr> void read(Type &iteratable);
     template <typename Type,
-        Traits::EnableIf<IsIteratableExceptString<Type>, Traits::None<IsMapOrHash<Type>, Traits::All<IsArray<Type>, Traits::IsResizable<Type>>>>
-            * = nullptr>
+        Traits::EnableIf<IsIteratableExceptString<Type>,
+            Traits::None<IsMapOrHash<Type>, IsMultiMapOrHash<Type>, Traits::All<IsArray<Type>, Traits::IsResizable<Type>>>> * = nullptr>
     void read(Type &iteratable);
     template <typename Type, Traits::EnableIf<std::is_enum<Type>> * = nullptr> void read(Type &customType);
     template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void read(Type &customType);
@@ -138,7 +138,7 @@ template <typename Type, Traits::EnableIf<IsArray<Type>, Traits::IsResizable<Typ
     }
 }
 
-template <typename Type, Traits::EnableIf<IsMapOrHash<Type>> *> void BinaryDeserializer::read(Type &iteratable)
+template <typename Type, Traits::EnableIfAny<IsMapOrHash<Type>, IsMultiMapOrHash<Type>> *> void BinaryDeserializer::read(Type &iteratable)
 {
     const auto size = readVariableLengthUIntBE();
     for (size_t i = 0; i != size; ++i) {
@@ -149,7 +149,8 @@ template <typename Type, Traits::EnableIf<IsMapOrHash<Type>> *> void BinaryDeser
 }
 
 template <typename Type,
-    Traits::EnableIf<IsIteratableExceptString<Type>, Traits::None<IsMapOrHash<Type>, Traits::All<IsArray<Type>, Traits::IsResizable<Type>>>> *>
+    Traits::EnableIf<IsIteratableExceptString<Type>,
+        Traits::None<IsMapOrHash<Type>, IsMultiMapOrHash<Type>, Traits::All<IsArray<Type>, Traits::IsResizable<Type>>>> *>
 void BinaryDeserializer::read(Type &iteratable)
 {
     const auto size = readVariableLengthUIntBE();

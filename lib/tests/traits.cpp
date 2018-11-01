@@ -3,18 +3,20 @@
 #include <list>
 #include <vector>
 
-using namespace std;
-using namespace ReflectiveRapidJSON;
-
 // treat some types differently to test Treat... traits
 struct Foo {
 };
 struct Bar {
 };
+namespace ReflectiveRapidJSON {
 REFLECTIVE_RAPIDJSON_TREAT_AS_MAP_OR_HASH(Foo);
 REFLECTIVE_RAPIDJSON_TREAT_AS_MULTI_MAP_OR_HASH(Foo);
 REFLECTIVE_RAPIDJSON_TREAT_AS_SET(Bar);
 REFLECTIVE_RAPIDJSON_TREAT_AS_MULTI_SET(Foo);
+} // namespace ReflectiveRapidJSON
+
+using namespace std;
+using namespace ReflectiveRapidJSON;
 
 // test traits
 static_assert(IsArray<vector<int>>::value, "vector mapped to array");

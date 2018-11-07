@@ -67,6 +67,11 @@ void SerializationCodeGenerator::addDeclaration(clang::Decl *decl)
 SerializationCodeGenerator::IsRelevant SerializationCodeGenerator::isQualifiedNameIfRelevant(
     clang::CXXRecordDecl *record, const std::string &qualifiedName) const
 {
+    // skip all classes which are only forward-declared
+    if (!record->isCompleteDefinition()) {
+        return IsRelevant::No;
+    }
+
     // consider all classes for which a specialization of the "AdaptedJsonSerializable" struct is available
     for (const auto &adaptionRecord : m_adaptionRecords) {
         // skip all adaption records which are only included

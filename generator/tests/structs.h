@@ -37,6 +37,11 @@ private:
     string privateString = "not going to be serialized";
 };
 
+// forward declarations shouldn't cause the generator to emit the code multiple times
+struct TestStruct;
+struct TestStruct;
+struct TestStruct;
+
 class JsonGeneratorTests;
 
 /*!

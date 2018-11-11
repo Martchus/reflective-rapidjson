@@ -25,6 +25,7 @@ template <typename Type> struct JsonSerializable {
 
     // high-level API
     RAPIDJSON_NAMESPACE::StringBuffer toJson() const;
+    RAPIDJSON_NAMESPACE::Document toJsonDocument() const;
     static Type fromJson(const char *json, std::size_t jsonSize, JsonDeserializationErrors *errors = nullptr);
     static Type fromJson(const char *json, JsonDeserializationErrors *errors = nullptr);
     static Type fromJson(const std::string &json, JsonDeserializationErrors *errors = nullptr);
@@ -49,12 +50,21 @@ template <typename Type> void JsonSerializable<Type>::push(RAPIDJSON_NAMESPACE::
 }
 
 /*!
- * \brief Converts the object to its JSON representation.
+ * \brief Converts the object to its JSON representation (rapidjson::StringBuffer).
  * \remarks To obtain a string from the returned buffer, just use its GetString() method.
  */
 template <typename Type> RAPIDJSON_NAMESPACE::StringBuffer JsonSerializable<Type>::toJson() const
 {
     return JsonReflector::toJson<Type>(static_cast<const Type &>(*this));
+}
+
+/*!
+ * \brief Converts the object to its JSON representation (rapidjson::Document).
+ * \remarks To obtain a string from the returned buffer, just use its GetString() method.
+ */
+template <typename Type> RAPIDJSON_NAMESPACE::Document JsonSerializable<Type>::toJsonDocument() const
+{
+    return JsonReflector::toJsonDocument<Type>(static_cast<const Type &>(*this));
 }
 
 /*!

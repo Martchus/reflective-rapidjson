@@ -789,54 +789,66 @@ void pull(Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_N
  * \brief Serializes the specified \a reflectable which has a custom type or can be mapped to and object.
  */
 template <typename Type, Traits::EnableIfAny<IsJsonSerializable<Type>, IsMapOrHash<Type>, IsMultiMapOrHash<Type>> * = nullptr>
-RAPIDJSON_NAMESPACE::StringBuffer toJson(const Type &reflectable)
+RAPIDJSON_NAMESPACE::Document toJsonDocument(const Type &reflectable)
 {
     RAPIDJSON_NAMESPACE::Document document(RAPIDJSON_NAMESPACE::kObjectType);
     RAPIDJSON_NAMESPACE::Document::Object object(document.GetObject());
     push(reflectable, object, document.GetAllocator());
-    return serializeJsonDocToString(document);
+    return document;
 }
 
 /*!
  * \brief Serializes the specified \a reflectable which is an integer, float or boolean.
  */
 template <typename Type, Traits::EnableIfAny<std::is_integral<Type>, std::is_floating_point<Type>> * = nullptr>
-RAPIDJSON_NAMESPACE::StringBuffer toJson(Type reflectable)
+RAPIDJSON_NAMESPACE::Document toJsonDocument(Type reflectable)
 {
     RAPIDJSON_NAMESPACE::Document document(RAPIDJSON_NAMESPACE::kNumberType);
     document.Set(reflectable, document.GetAllocator());
-    return serializeJsonDocToString(document);
+    return document;
 }
 
 /*!
  * \brief Serializes the specified \a reflectable which is an std::string.
  */
 template <typename Type, Traits::EnableIf<std::is_same<Type, std::string>> * = nullptr>
-RAPIDJSON_NAMESPACE::StringBuffer toJson(const std::string &reflectable)
+RAPIDJSON_NAMESPACE::Document toJsonDocument(const std::string &reflectable)
 {
     RAPIDJSON_NAMESPACE::Document document(RAPIDJSON_NAMESPACE::kStringType);
     document.SetString(RAPIDJSON_NAMESPACE::StringRef(reflectable.data(), reflectable.size()), document.GetAllocator());
-    return serializeJsonDocToString(document);
+    return document;
 }
 
 /*!
  * \brief Serializes the specified \a reflectable which is a C-string.
  */
 template <typename Type, Traits::EnableIf<std::is_same<Type, const char *>> * = nullptr>
-RAPIDJSON_NAMESPACE::StringBuffer toJson(const char *reflectable)
+RAPIDJSON_NAMESPACE::Document toJsonDocument(const char *reflectable)
 {
     RAPIDJSON_NAMESPACE::Document document(RAPIDJSON_NAMESPACE::kStringType);
     document.SetString(RAPIDJSON_NAMESPACE::StringRef(reflectable), document.GetAllocator());
-    return serializeJsonDocToString(document);
+    return document;
 }
 
 /*!
  * \brief Serializes the specified \a reflectable which can be mapped to an array.
  */
-template <typename Type, Traits::EnableIf<IsArray<Type>> * = nullptr> RAPIDJSON_NAMESPACE::StringBuffer toJson(const Type &reflectable)
+template <typename Type, Traits::EnableIf<IsArray<Type>> * = nullptr> RAPIDJSON_NAMESPACE::Document toJsonDocument(const Type &reflectable)
 {
     RAPIDJSON_NAMESPACE::Document document(RAPIDJSON_NAMESPACE::kArrayType);
     push(reflectable, document, document.GetAllocator());
+    return document;
+}
+
+/*!
+ * \brief Serializes the specified \a reflectable.
+ */
+template <typename Type,
+    Traits::EnableIfAny<IsJsonSerializable<Type>, IsMapOrHash<Type>, IsMultiMapOrHash<Type>, std::is_integral<Type>, std::is_floating_point<Type>,
+        Traits::IsString<Type>, IsArray<Type>> * = nullptr>
+RAPIDJSON_NAMESPACE::StringBuffer toJson(const Type &reflectable)
+{
+    auto document(toJsonDocument(reflectable));
     return serializeJsonDocToString(document);
 }
 

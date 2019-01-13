@@ -33,7 +33,6 @@ set(TEST_HEADER_FILES
     tests/helper.h
 )
 set(TEST_SRC_FILES
-    tests/cppunit.cpp
     tests/binarygenerator.cpp
 )
 
@@ -73,7 +72,7 @@ if(TARGET reflective_rapidjson_generator_tests)
         INPUT_FILES
             tests/structs.h                # used by test cases
             tests/morestructs.h            # used by test cases
-            tests/cppunit.cpp              # just for testing multiple input files and the "empty file" case
+            visitor.cpp                    # arbitrarily chosen source file (just for testing the "no relevant structs/classes" case)
         GENERATORS
             json
             binary

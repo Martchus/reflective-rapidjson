@@ -13,6 +13,7 @@ set(META_VERSION_MINOR 0)
 set(META_VERSION_PATCH 7)
 set(META_APP_VERSION ${META_VERSION_MAJOR}.${META_VERSION_MINOR}.${META_VERSION_PATCH})
 set(META_CXX_STANDARD 17)
+set(META_ADD_DEFAULT_CPP_UNIT_TEST_APPLICATION ON)
 
 # set project name for IDEs like Qt Creator
 project(${META_PROJECT_NAME})
@@ -46,7 +47,7 @@ else()
 endif()
 
 # find c++utilities
-find_package(c++utilities 4.16.0 REQUIRED)
+find_package(c++utilities 4.17.0 REQUIRED)
 
 # use the source directory of c++utilities for includes rather than the location where headers are going to be installed
 # note: this enables the tests to find the header files for c++utilities in case it is built within the same project

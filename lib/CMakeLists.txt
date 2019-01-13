@@ -13,7 +13,6 @@ set(SRC_FILES
 set(TEST_HEADER_FILES
 )
 set(TEST_SRC_FILES
-    tests/cppunit.cpp
 )
 set(CMAKE_MODULE_FILES
     cmake/modules/ReflectionGenerator.cmake

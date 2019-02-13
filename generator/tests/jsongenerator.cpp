@@ -304,4 +304,4 @@ void JsonGeneratorTests::testHandlingConstMembers()
 
 // this file should also be generated via add_reflection_generator_invocation() and hence includeable
 // it is included to test the "empty" case when a unit doesn't contain relevant classes
-#include "reflection/cppunit.h"
+#include "reflection/visitor.h"

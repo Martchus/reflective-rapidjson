@@ -107,15 +107,15 @@ template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::
 
 template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::shared_ptr>> *> void BinaryDeserializer::read(Type &pointer)
 {
-    const auto occurence = readByte();
-    if (!occurence) {
+    auto mode = readByte();
+    if (!mode) {
         // pointer not set
         pointer.reset();
         return;
     }
 
-    const auto id = readVariableLengthUIntBE();
-    if (occurence == 1) {
+    const auto id = (mode & 0x4) ? readUInt64BE() : readVariableLengthUIntBE(); // the 3rd bit being flagged indicates a big ID
+    if ((mode & 0x3) == 1) {
         // first occurence: make a new pointer
         m_pointer[id] = pointer = std::make_shared<typename Type::element_type>();
         read(*pointer);
@@ -200,9 +200,18 @@ template <typename Type, Traits::EnableIf<Traits::IsSpecializingAnyOf<Type, std:
         return;
     }
     const auto id = reinterpret_cast<uint64>(pointer.get());
+    const auto bigId = id >= 0x80000000000000;
     auto &alreadyWritten = m_pointer[id];
-    writeByte(alreadyWritten ? 2 : 1);
-    writeVariableLengthUIntBE(id);
+    byte mode = alreadyWritten ? 2 : 1;
+    if (bigId) {
+        mode = mode | 0x4; // "flag" 3rd bit to indicate big ID
+    }
+    writeByte(mode);
+    if (bigId) {
+        writeUInt64BE(id);
+    } else {
+        writeVariableLengthUIntBE(id);
+    }
     if (!alreadyWritten) {
         alreadyWritten = true;
         write(*pointer);

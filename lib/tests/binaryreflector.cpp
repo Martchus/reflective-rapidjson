@@ -12,6 +12,7 @@ using TestUtilities::operator<<; // must be visible prior to the call site
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <iostream>
+#include <limits>
 #include <map>
 #include <sstream>
 #include <string>
@@ -137,6 +138,8 @@ class BinaryReflectorTests : public TestFixture {
     CPPUNIT_TEST(testDeserializeSimpleStruct);
     CPPUNIT_TEST(testSerializeNestedStruct);
     CPPUNIT_TEST(testDeserializeNestedStruct);
+    CPPUNIT_TEST(testSmallSharedPointer);
+    CPPUNIT_TEST(testBigSharedPointer);
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -150,6 +153,9 @@ public:
     void testSerializeNestedStruct();
     void testDeserializeNestedStruct();
     void assertTestObject(const TestObjectBinary &deserialized);
+    void testSharedPointer(std::uintptr_t fakePointer);
+    void testSmallSharedPointer();
+    void testBigSharedPointer();
 
 private:
     vector<unsigned char> m_buffer;
@@ -291,4 +297,35 @@ void BinaryReflectorTests::assertTestObject(const TestObjectBinary &deserialized
     CPPUNIT_ASSERT_EQUAL(m_testObj.someMultiset, deserialized.someMultiset);
     CPPUNIT_ASSERT_EQUAL(m_testObj.someUnorderedSet, deserialized.someUnorderedSet);
     CPPUNIT_ASSERT_EQUAL(m_testObj.someUnorderedMultiset, deserialized.someUnorderedMultiset);
+}
+
+void BinaryReflectorTests::testSharedPointer(uintptr_t fakePointer)
+{
+    // create a shared pointer for the fake pointer ensuring that it is not actually deleted
+    shared_ptr<int> sharedPointer(reinterpret_cast<int *>(fakePointer), [](int *) {});
+
+    // setup stream
+    stringstream stream(ios_base::in | ios_base::out | ios_base::binary);
+    stream.exceptions(ios_base::failbit | ios_base::badbit);
+
+    // serialize the shared pointer assuming its contents have been written before (to prevent actually dereferencing it)
+    BinaryReflector::BinarySerializer serializer(&stream);
+    serializer.m_pointer[fakePointer] = true;
+    serializer.write(sharedPointer);
+
+    // deserialize the shared pointer assuming it has already been read and the type matches
+    deserializer.m_pointer[fakePointer] = make_shared<int>(42);
+    deserializer.read(readPtr);
+    CPPUNIT_ASSERT(readPtr != nullptr);
+    CPPUNIT_ASSERT_EQUAL(42, *readPtr);
+}
+
+void BinaryReflectorTests::testSmallSharedPointer()
+{
+    testSharedPointer(std::numeric_limits<std::uintptr_t>::min() + 1);
+}
+
+void BinaryReflectorTests::testBigSharedPointer()
+{
+    testSharedPointer(std::numeric_limits<std::uintptr_t>::max());
 }

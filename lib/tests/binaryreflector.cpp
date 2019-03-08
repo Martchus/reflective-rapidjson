@@ -313,7 +313,15 @@ void BinaryReflectorTests::testSharedPointer(uintptr_t fakePointer)
     serializer.m_pointer[fakePointer] = true;
     serializer.write(sharedPointer);
 
+    // deserialize the shared pointer assuming it has already been read and the type does not match
+    BinaryReflector::BinaryDeserializer deserializer(&stream);
+    shared_ptr<int> readPtr;
+    deserializer.m_pointer[fakePointer] = "foo";
+    CPPUNIT_ASSERT_THROW(deserializer.read(readPtr), ConversionUtilities::ConversionException);
+    CPPUNIT_ASSERT(readPtr == nullptr);
+
     // deserialize the shared pointer assuming it has already been read and the type matches
+    stream.seekg(0);
     deserializer.m_pointer[fakePointer] = make_shared<int>(42);
     deserializer.read(readPtr);
     CPPUNIT_ASSERT(readPtr != nullptr);

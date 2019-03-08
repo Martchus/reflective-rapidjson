@@ -199,7 +199,7 @@ template <typename Type, Traits::EnableIf<Traits::IsSpecializingAnyOf<Type, std:
         writeByte(0);
         return;
     }
-    const auto id = reinterpret_cast<uint64>(pointer.get());
+    const auto id = reinterpret_cast<std::uintptr_t>(pointer.get());
     const auto bigId = id >= 0x80000000000000;
     auto &alreadyWritten = m_pointer[id];
     byte mode = alreadyWritten ? 2 : 1;

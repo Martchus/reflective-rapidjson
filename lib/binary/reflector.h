@@ -10,7 +10,6 @@
 #include "../traits.h"
 
 #include <c++utilities/conversion/conversionexception.h>
-#include <c++utilities/conversion/types.h>
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
 
@@ -39,7 +38,8 @@ namespace BinaryReflector {
 
 // define traits to distinguish between "built-in" types like int, std::string, std::vector, ... and custom structs/classes
 template <typename Type>
-using IsBuiltInType = Traits::Any<Traits::IsAnyOf<Type, char, byte, bool, std::string, int16, uint16, int32, uint32, int64, uint64, float32, float64>,
+using IsBuiltInType = Traits::Any<Traits::IsAnyOf<Type, char, std::uint8_t, bool, std::string, std::int16_t, std::uint16_t, std::int32_t,
+                                      std::uint32_t, std::int64_t, std::uint64_t, float, double>,
     Traits::IsIteratable<Type>, Traits::IsSpecializingAnyOf<Type, std::pair, std::unique_ptr, std::shared_ptr>, std::is_enum<Type>>;
 template <typename Type> using IsCustomType = Traits::Not<IsBuiltInType<Type>>;
 
@@ -66,7 +66,7 @@ public:
     template <typename Type, Traits::EnableIf<std::is_enum<Type>> * = nullptr> void read(Type &customType);
     template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void read(Type &customType);
 
-    std::unordered_map<uint64, std::any> m_pointer;
+    std::unordered_map<std::uint64_t, std::any> m_pointer;
 };
 
 class BinarySerializer : public IoUtilities::BinaryWriter {
@@ -81,7 +81,7 @@ public:
     template <typename Type, Traits::EnableIf<std::is_enum<Type>> * = nullptr> void write(const Type &customType);
     template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void write(const Type &customType);
 
-    std::unordered_map<uint64, bool> m_pointer;
+    std::unordered_map<std::uint64_t, bool> m_pointer;
 };
 
 inline BinaryDeserializer::BinaryDeserializer(std::istream *stream)
@@ -202,7 +202,7 @@ template <typename Type, Traits::EnableIf<Traits::IsSpecializingAnyOf<Type, std:
     const auto id = reinterpret_cast<std::uintptr_t>(pointer.get());
     const auto bigId = id >= 0x80000000000000;
     auto &alreadyWritten = m_pointer[id];
-    byte mode = alreadyWritten ? 2 : 1;
+    std::uint8_t mode = alreadyWritten ? 2 : 1;
     if (bigId) {
         mode = mode | 0x4; // "flag" 3rd bit to indicate big ID
     }

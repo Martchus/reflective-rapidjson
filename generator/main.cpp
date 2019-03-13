@@ -9,7 +9,6 @@
 #include <c++utilities/application/failure.h>
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/io/ansiescapecodes.h>
-#include <c++utilities/io/catchiofailure.h>
 #include <c++utilities/io/misc.h>
 
 #include <cstring>
@@ -123,9 +122,8 @@ int main(int argc, char *argv[])
             return -2;
         }
 
-    } catch (...) {
-        catchIoFailure();
-        const char *errorMessage;
+    } catch (const std::ios_base::failure &failure) {
+        const char *errorMessage = failure.what();
         if (os) {
             errorMessage = os->fail() || os->bad() ? "An IO error occured when writing to the output stream." : "An IO error occured.";
         } else {

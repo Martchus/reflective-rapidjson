@@ -11,6 +11,7 @@ using TestUtilities::operator<<; // must be visible prior to the call site
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+#include <cstdint>
 #include <iostream>
 #include <limits>
 #include <map>
@@ -38,7 +39,7 @@ enum SomeEnum {
     SomeEnumItem3,
 };
 
-enum class SomeEnumClass : uint16 {
+enum class SomeEnumClass : std::uint16_t {
     Item1,
     Item2,
     Item3,

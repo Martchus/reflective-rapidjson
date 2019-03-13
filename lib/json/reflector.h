@@ -9,8 +9,6 @@
 
 #include "../traits.h"
 
-#include <c++utilities/conversion/types.h>
-
 #include <rapidjson/document.h>
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/stringbuffer.h>
@@ -153,7 +151,8 @@ inline void push(Type reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
 template <typename Type, Traits::EnableIfAny<std::is_enum<Type>> * = nullptr>
 inline void push(Type reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
-    value.Set(static_cast<Traits::Conditional<std::is_unsigned<typename std::underlying_type<Type>::type>, uint64, int64>>(reflectable), allocator);
+    value.Set(static_cast<Traits::Conditional<std::is_unsigned<typename std::underlying_type<Type>::type>, std::uint64_t, std::int64_t>>(reflectable),
+        allocator);
 }
 
 /*!
@@ -459,7 +458,7 @@ template <typename Type, Traits::EnableIfAny<std::is_enum<Type>> * = nullptr>
 inline void pull(
     Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
-    using ExpectedType = Traits::Conditional<std::is_unsigned<typename std::underlying_type<Type>::type>, uint64, int64>;
+    using ExpectedType = Traits::Conditional<std::is_unsigned<typename std::underlying_type<Type>::type>, std::uint64_t, std::int64_t>;
     if (!value.Is<ExpectedType>()) {
         if (errors) {
             errors->reportTypeMismatch<ExpectedType>(value.GetType());

@@ -44,9 +44,10 @@ find_package(Clang REQUIRED)
 list(APPEND PRIVATE_LIBRARIES
             clangTooling
             clangFrontend
+            clangSerialization
+            clangSema
             clangAST
             clangLex
-            clangSema
             clangBasic
             LLVM)
 

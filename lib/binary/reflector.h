@@ -124,7 +124,7 @@ template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::
     // further occurences: copy previous pointer
     try {
         pointer = std::any_cast<Type>(m_pointer[id]);
-    } catch (const std::bad_any_cast) {
+    } catch (const std::bad_any_cast &) {
         throw ConversionUtilities::ConversionException("Referenced pointer type does not match");
     }
 }

@@ -29,7 +29,8 @@ if (NOT REFLECTION_GENERATOR_EXECUTABLE)
 endif ()
 
 # determine Clang's resource directory
-set(REFLECTION_GENERATOR_CLANG_RESOURCE_DIR ""
+set(REFLECTION_GENERATOR_CLANG_RESOURCE_DIR
+    ""
     CACHE PATH "directory containing Clang's builtin headers, usually /usr/lib/clang/version")
 if (NOT REFLECTION_GENERATOR_CLANG_RESOURCE_DIR)
     if (NOT REFLECTION_GENERATOR_CLANG_BIN)
@@ -64,8 +65,18 @@ function (add_reflection_generator_invocation)
     # parse arguments
     set(OPTIONAL_ARGS)
     set(ONE_VALUE_ARGS OUTPUT_DIRECTORY JSON_VISIBILITY)
-    set(MULTI_VALUE_ARGS INPUT_FILES GENERATORS OUTPUT_LISTS CLANG_OPTIONS CLANG_OPTIONS_FROM_TARGETS JSON_CLASSES)
-    cmake_parse_arguments(ARGS "${OPTIONAL_ARGS}" "${ONE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN})
+    set(MULTI_VALUE_ARGS
+        INPUT_FILES
+        GENERATORS
+        OUTPUT_LISTS
+        CLANG_OPTIONS
+        CLANG_OPTIONS_FROM_TARGETS
+        JSON_CLASSES)
+    cmake_parse_arguments(ARGS
+                          "${OPTIONAL_ARGS}"
+                          "${ONE_VALUE_ARGS}"
+                          "${MULTI_VALUE_ARGS}"
+                          ${ARGN})
 
     # determine file name or file path if none specified
     if (NOT ARGS_OUTPUT_DIRECTORY)

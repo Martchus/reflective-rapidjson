@@ -6,7 +6,7 @@
 #include <c++utilities/io/misc.h>
 #include <c++utilities/tests/testutils.h>
 
-using TestUtilities::operator<<; // must be visible prior to the call site
+using CppUtilities::operator<<; // must be visible prior to the call site
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
 
@@ -24,10 +24,8 @@ using TestUtilities::operator<<; // must be visible prior to the call site
 using namespace std;
 using namespace CPPUNIT_NS;
 using namespace RAPIDJSON_NAMESPACE;
-using namespace IoUtilities;
-using namespace ConversionUtilities;
-using namespace TestUtilities;
-using namespace TestUtilities::Literals;
+using namespace CppUtilities;
+using namespace CppUtilities::Literals;
 using namespace ReflectiveRapidJSON;
 
 /// \cond

@@ -6,9 +6,11 @@
 #include <c++utilities/tests/testutils.h>
 
 // ensure "operator<<" from TestUtilities is visible prior to the call site
-using TestUtilities::operator<<;
+using CppUtilities::operator<<;
 
 #include <cppunit/extensions/HelperMacros.h>
+
+namespace Traits = CppUtilities::Traits;
 
 /*!
  * \brief Asserts equality of two iteratables printing the differing indices.
@@ -22,20 +24,20 @@ inline void assertEqualityLinewise(const Iteratable &iteratable1, const Iteratab
     for (auto i1 = iteratable1.cbegin(), i2 = iteratable2.cbegin(); i1 != iteratable1.cend() || i2 != iteratable2.cend(); ++currentLine) {
         if (i1 != iteratable1.cend() && i2 != iteratable2.cend()) {
             if (*i1 != *i2) {
-                differentLines.push_back(ConversionUtilities::numberToString(currentLine));
+                differentLines.push_back(CppUtilities::numberToString(currentLine));
             }
             ++i1, ++i2;
         } else if (i1 != iteratable1.cend()) {
-            differentLines.push_back(ConversionUtilities::numberToString(currentLine));
+            differentLines.push_back(CppUtilities::numberToString(currentLine));
             ++i1;
         } else if (i2 != iteratable1.cend()) {
-            differentLines.push_back(ConversionUtilities::numberToString(currentLine));
+            differentLines.push_back(CppUtilities::numberToString(currentLine));
             ++i2;
         }
     }
     if (!differentLines.empty()) {
         CPPUNIT_ASSERT_EQUAL_MESSAGE(
-            "the following lines differ: " + ConversionUtilities::joinStrings(differentLines, ", "), iteratable1, iteratable2);
+            "the following lines differ: " + CppUtilities::joinStrings(differentLines, ", "), iteratable1, iteratable2);
     }
 }
 

@@ -11,6 +11,8 @@
 
 namespace ReflectiveRapidJSON {
 
+namespace Traits = ::CppUtilities::Traits;
+
 // define structs and macros to allow treating custom data types as std::map, std::set, ...
 /// \brief \brief The TreatAsMapOrHash class allows treating custom classes as std::map or std::unordered_map.
 template <typename T> struct TreatAsMapOrHash : public Traits::Bool<false> {

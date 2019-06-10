@@ -16,22 +16,22 @@
 namespace ReflectiveRapidJSON {
 namespace BinaryReflector {
 
-template <> inline void readCustomType<ChronoUtilities::DateTime>(BinaryDeserializer &deserializer, ChronoUtilities::DateTime &dateTime)
+template <> inline void readCustomType<CppUtilities::DateTime>(BinaryDeserializer &deserializer, CppUtilities::DateTime &dateTime)
 {
     deserializer.read(dateTime.ticks());
 }
 
-template <> inline void writeCustomType<ChronoUtilities::DateTime>(BinarySerializer &serializer, const ChronoUtilities::DateTime &dateTime)
+template <> inline void writeCustomType<CppUtilities::DateTime>(BinarySerializer &serializer, const CppUtilities::DateTime &dateTime)
 {
     serializer.write(dateTime.totalTicks());
 }
 
-template <> inline void readCustomType<ChronoUtilities::TimeSpan>(BinaryDeserializer &deserializer, ChronoUtilities::TimeSpan &timeSpan)
+template <> inline void readCustomType<CppUtilities::TimeSpan>(BinaryDeserializer &deserializer, CppUtilities::TimeSpan &timeSpan)
 {
     deserializer.read(timeSpan.ticks());
 }
 
-template <> inline void writeCustomType<ChronoUtilities::TimeSpan>(BinarySerializer &serializer, const ChronoUtilities::TimeSpan &timeSpan)
+template <> inline void writeCustomType<CppUtilities::TimeSpan>(BinarySerializer &serializer, const CppUtilities::TimeSpan &timeSpan)
 {
     serializer.write(timeSpan.totalTicks());
 }

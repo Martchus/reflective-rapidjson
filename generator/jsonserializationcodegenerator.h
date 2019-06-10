@@ -16,10 +16,10 @@ public:
     struct Options {
         Options();
         Options(const Options &other) = delete;
-        void appendTo(ApplicationUtilities::Argument *arg);
+        void appendTo(CppUtilities::Argument *arg);
 
-        ApplicationUtilities::ConfigValueArgument additionalClassesArg;
-        ApplicationUtilities::ConfigValueArgument visibilityArg;
+        CppUtilities::ConfigValueArgument additionalClassesArg;
+        CppUtilities::ConfigValueArgument visibilityArg;
     };
 
     JsonSerializationCodeGenerator(CodeFactory &factory, const Options &options);
@@ -32,7 +32,7 @@ protected:
     const Options &m_options;
 };
 
-inline void JsonSerializationCodeGenerator::Options::appendTo(ApplicationUtilities::Argument *arg)
+inline void JsonSerializationCodeGenerator::Options::appendTo(CppUtilities::Argument *arg)
 {
     arg->addSubArgument(&additionalClassesArg);
     arg->addSubArgument(&visibilityArg);

@@ -7,7 +7,7 @@
 #include <c++utilities/io/misc.h>
 #include <c++utilities/tests/testutils.h>
 
-using TestUtilities::operator<<; // must be visible prior to the call site
+using CppUtilities::operator<<; // must be visible prior to the call site
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
 
@@ -23,11 +23,8 @@ using TestUtilities::operator<<; // must be visible prior to the call site
 
 using namespace std;
 using namespace CPPUNIT_NS;
-using namespace IoUtilities;
-using namespace ChronoUtilities;
-using namespace ConversionUtilities;
-using namespace TestUtilities;
-using namespace TestUtilities::Literals;
+using namespace CppUtilities;
+using namespace CppUtilities::Literals;
 using namespace ReflectiveRapidJSON;
 
 /// \cond
@@ -318,7 +315,7 @@ void BinaryReflectorTests::testSharedPointer(uintptr_t fakePointer)
     BinaryReflector::BinaryDeserializer deserializer(&stream);
     shared_ptr<int> readPtr;
     deserializer.m_pointer[fakePointer] = "foo";
-    CPPUNIT_ASSERT_THROW(deserializer.read(readPtr), ConversionUtilities::ConversionException);
+    CPPUNIT_ASSERT_THROW(deserializer.read(readPtr), CppUtilities::ConversionException);
     CPPUNIT_ASSERT(readPtr == nullptr);
 
     // deserialize the shared pointer assuming it has already been read and the type matches

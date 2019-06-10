@@ -6,7 +6,6 @@
 
 #include <c++utilities/application/argumentparser.h>
 #include <c++utilities/application/commandlineutils.h>
-#include <c++utilities/application/failure.h>
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/io/ansiescapecodes.h>
 #include <c++utilities/io/misc.h>
@@ -17,10 +16,8 @@
 #include <unordered_map>
 
 using namespace std;
-using namespace ApplicationUtilities;
-using namespace ConversionUtilities;
-using namespace EscapeCodes;
-using namespace IoUtilities;
+using namespace CppUtilities;
+using namespace CppUtilities::EscapeCodes;
 using namespace ReflectiveRapidJSON;
 
 int main(int argc, char *argv[])
@@ -53,7 +50,7 @@ int main(int argc, char *argv[])
     parser.setMainArguments({ &generateArg, &noColorArg, &helpArg });
 
     // parse arguments
-    parser.parseArgsOrExit(argc, argv);
+    parser.parseArgs(argc, argv, ParseArgumentBehavior::CheckConstraints | ParseArgumentBehavior::InvokeCallbacks);
     if (helpArg.isPresent() || !generateArg.isPresent()) {
         return 0;
     }

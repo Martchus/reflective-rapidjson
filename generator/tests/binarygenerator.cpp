@@ -19,10 +19,8 @@
 #include <sstream>
 
 using namespace CPPUNIT_NS;
-using namespace IoUtilities;
-using namespace TestUtilities;
-using namespace TestUtilities::Literals;
-using namespace ConversionUtilities;
+using namespace CppUtilities;
+using namespace CppUtilities::Literals;
 
 /*!
  * \brief The BinaryGeneratorTests class tests the binary generator.

@@ -49,11 +49,11 @@ class BinarySerializer;
 template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void readCustomType(BinaryDeserializer &deserializer, Type &customType);
 template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void writeCustomType(BinarySerializer &serializer, const Type &customType);
 
-class BinaryDeserializer : public IoUtilities::BinaryReader {
+class BinaryDeserializer : public CppUtilities::BinaryReader {
 public:
     BinaryDeserializer(std::istream *stream);
 
-    using IoUtilities::BinaryReader::read;
+    using CppUtilities::BinaryReader::read;
     template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::pair>> * = nullptr> void read(Type &pair);
     template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::unique_ptr>> * = nullptr> void read(Type &pair);
     template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::shared_ptr>> * = nullptr> void read(Type &pair);
@@ -69,11 +69,11 @@ public:
     std::unordered_map<std::uint64_t, std::any> m_pointer;
 };
 
-class BinarySerializer : public IoUtilities::BinaryWriter {
+class BinarySerializer : public CppUtilities::BinaryWriter {
 public:
     BinarySerializer(std::ostream *stream);
 
-    using IoUtilities::BinaryWriter::write;
+    using CppUtilities::BinaryWriter::write;
     template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::pair>> * = nullptr> void write(const Type &pair);
     template <typename Type, Traits::EnableIf<Traits::IsSpecializingAnyOf<Type, std::unique_ptr>> * = nullptr> void write(const Type &pointer);
     template <typename Type, Traits::EnableIf<Traits::IsSpecializingAnyOf<Type, std::shared_ptr>> * = nullptr> void write(const Type &pointer);
@@ -85,7 +85,7 @@ public:
 };
 
 inline BinaryDeserializer::BinaryDeserializer(std::istream *stream)
-    : IoUtilities::BinaryReader(stream)
+    : CppUtilities::BinaryReader(stream)
 {
 }
 
@@ -125,7 +125,7 @@ template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::
     try {
         pointer = std::any_cast<Type>(m_pointer[id]);
     } catch (const std::bad_any_cast &) {
-        throw ConversionUtilities::ConversionException("Referenced pointer type does not match");
+        throw CppUtilities::ConversionException("Referenced pointer type does not match");
     }
 }
 
@@ -174,7 +174,7 @@ template <typename Type, Traits::EnableIf<IsCustomType<Type>> *> void BinaryDese
 }
 
 inline BinarySerializer::BinarySerializer(std::ostream *stream)
-    : IoUtilities::BinaryWriter(stream)
+    : CppUtilities::BinaryWriter(stream)
 {
 }
 

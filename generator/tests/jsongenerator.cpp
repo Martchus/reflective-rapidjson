@@ -17,10 +17,8 @@
 #include <iostream>
 
 using namespace CPPUNIT_NS;
-using namespace IoUtilities;
-using namespace TestUtilities;
-using namespace TestUtilities::Literals;
-using namespace ConversionUtilities;
+using namespace CppUtilities;
+using namespace CppUtilities::Literals;
 
 /*!
  * \brief The JsonGeneratorTests class tests the overall functionality of the code generator (CLI and generator itself) and JSON specific parts.

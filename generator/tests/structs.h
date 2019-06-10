@@ -99,8 +99,8 @@ struct MultipleDerivedTestStruct : public TestStruct,
  *        and toJson() methods. This is asserted in JsonGeneratorTests::testCustomSerialization();
  */
 struct StructWithCustomTypes : public JsonSerializable<StructWithCustomTypes> {
-    ChronoUtilities::DateTime dt = ChronoUtilities::DateTime::fromDateAndTime(2017, 4, 2, 15, 31, 21, 165.125);
-    ChronoUtilities::TimeSpan ts = ChronoUtilities::TimeSpan::fromHours(3.25) + ChronoUtilities::TimeSpan::fromSeconds(19.125);
+    CppUtilities::DateTime dt = CppUtilities::DateTime::fromDateAndTime(2017, 4, 2, 15, 31, 21, 165.125);
+    CppUtilities::TimeSpan ts = CppUtilities::TimeSpan::fromHours(3.25) + CppUtilities::TimeSpan::fromSeconds(19.125);
 };
 
 /*!

@@ -20,16 +20,16 @@ namespace JsonReflector {
 // define functions to "push" values to a RapidJSON array or object
 
 template <>
-inline void push<ChronoUtilities::DateTime>(
-    const ChronoUtilities::DateTime &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
+inline void push<CppUtilities::DateTime>(
+    const CppUtilities::DateTime &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     const std::string str(reflectable.toIsoString());
     value.SetString(str.data(), rapidJsonSize(str.size()), allocator);
 }
 
 template <>
-inline void push<ChronoUtilities::TimeSpan>(
-    const ChronoUtilities::TimeSpan &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
+inline void push<CppUtilities::TimeSpan>(
+    const CppUtilities::TimeSpan &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     const std::string str(reflectable.toString());
     value.SetString(str.data(), rapidJsonSize(str.size()), allocator);
@@ -38,14 +38,14 @@ inline void push<ChronoUtilities::TimeSpan>(
 // define functions to "pull" values from a RapidJSON array or object
 
 template <>
-inline void pull<ChronoUtilities::DateTime>(ChronoUtilities::DateTime &reflectable,
+inline void pull<CppUtilities::DateTime>(CppUtilities::DateTime &reflectable,
     const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
     std::string str;
     pull(str, value, errors);
     try {
-        reflectable = ChronoUtilities::DateTime::fromIsoStringGmt(str.data());
-    } catch (const ConversionUtilities::ConversionException &) {
+        reflectable = CppUtilities::DateTime::fromIsoStringGmt(str.data());
+    } catch (const CppUtilities::ConversionException &) {
         if (errors) {
             errors->reportConversionError(JsonType::String);
         }
@@ -53,14 +53,14 @@ inline void pull<ChronoUtilities::DateTime>(ChronoUtilities::DateTime &reflectab
 }
 
 template <>
-inline void pull<ChronoUtilities::TimeSpan>(ChronoUtilities::TimeSpan &reflectable,
+inline void pull<CppUtilities::TimeSpan>(CppUtilities::TimeSpan &reflectable,
     const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
     std::string str;
     pull(str, value, errors);
     try {
-        reflectable = ChronoUtilities::TimeSpan::fromString(str.data());
-    } catch (const ConversionUtilities::ConversionException &) {
+        reflectable = CppUtilities::TimeSpan::fromString(str.data());
+    } catch (const CppUtilities::ConversionException &) {
         if (errors) {
             errors->reportConversionError(JsonType::String);
         }

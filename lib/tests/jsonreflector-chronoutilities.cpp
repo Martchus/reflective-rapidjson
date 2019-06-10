@@ -17,8 +17,8 @@
 using namespace std;
 using namespace CPPUNIT_NS;
 using namespace RAPIDJSON_NAMESPACE;
-using namespace ChronoUtilities;
-using namespace TestUtilities::Literals;
+using namespace CppUtilities;
+using namespace CppUtilities::Literals;
 using namespace ReflectiveRapidJSON;
 
 /*!

@@ -16,7 +16,7 @@ bool FrontendAction::hasCodeCompletionSupport() const
 REFLECTIVE_RAPIDJSON_MAYBE_UNIQUE(clang::ASTConsumer)
 FrontendAction::CreateASTConsumer(clang::CompilerInstance &compilerInstance, llvm::StringRef inputFile)
 {
-    VAR_UNUSED(inputFile)
+    CPP_UTILITIES_UNUSED(inputFile)
 
     // propagate compiler instance to factory
     m_factory.setCompilerInstance(&compilerInstance);

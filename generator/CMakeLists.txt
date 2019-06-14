@@ -81,10 +81,10 @@ if (TARGET reflective_rapidjson_generator_tests)
         CLANG_OPTIONS_FROM_TARGETS
             reflective_rapidjson_generator_tests
         JSON_CLASSES
-            OtherNotJsonSerializable       # test specifying classes for JSON (de)serialization manually
-            SomeOtherClassName             # specifying a class that does not exist should not cause any problems
+            OtherNotJsonSerializable         # test specifying classes for JSON (de)serialization manually
+            SomeOtherClassName               # specifying a class that does not exist should not cause any problems
         JSON_VISIBILITY
-            LIB_EXPORT                     # not required, just to test setting visibility
+            CPP_UTILITIES_GENERIC_LIB_EXPORT # not required, just to test setting visibility
     )
     # cmake-format: on
     list(APPEND TEST_HEADER_FILES ${TEST_GENERATED_HEADER_FILES})

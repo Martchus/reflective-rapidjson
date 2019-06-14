@@ -34,7 +34,7 @@ bool Visitor::VisitDecl(clang::Decl *decl)
  */
 bool ReflectiveRapidJSON::Visitor::VisitFunctionDecl(clang::FunctionDecl *func)
 {
-    VAR_UNUSED(func)
+    CPP_UTILITIES_UNUSED(func)
     return true;
 }
 
@@ -43,7 +43,7 @@ bool ReflectiveRapidJSON::Visitor::VisitFunctionDecl(clang::FunctionDecl *func)
  */
 bool ReflectiveRapidJSON::Visitor::VisitStmt(clang::Stmt *st)
 {
-    VAR_UNUSED(st)
+    CPP_UTILITIES_UNUSED(st)
     return true;
 }
 
@@ -52,7 +52,7 @@ bool ReflectiveRapidJSON::Visitor::VisitStmt(clang::Stmt *st)
  */
 bool Visitor::VisitNamespaceDecl(clang::NamespaceDecl *decl)
 {
-    VAR_UNUSED(decl)
+    CPP_UTILITIES_UNUSED(decl)
     return true;
 }
 
@@ -61,7 +61,7 @@ bool Visitor::VisitNamespaceDecl(clang::NamespaceDecl *decl)
  */
 bool Visitor::VisitCXXRecordDecl(clang::CXXRecordDecl *decl)
 {
-    VAR_UNUSED(decl)
+    CPP_UTILITIES_UNUSED(decl)
     return true;
 }
 

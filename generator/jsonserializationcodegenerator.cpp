@@ -23,7 +23,7 @@ JsonSerializationCodeGenerator::Options::Options()
 {
     additionalClassesArg.setRequiredValueCount(Argument::varValueCount);
     additionalClassesArg.setValueCompletionBehavior(ValueCompletionBehavior::None);
-    visibilityArg.setPreDefinedCompletionValues("LIB_EXPORT");
+    visibilityArg.setPreDefinedCompletionValues("CPP_UTILITIES_GENERIC_LIB_EXPORT");
 }
 
 JsonSerializationCodeGenerator::JsonSerializationCodeGenerator(CodeFactory &factory, const Options &options)

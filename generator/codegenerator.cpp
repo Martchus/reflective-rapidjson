@@ -19,7 +19,7 @@ CodeGenerator::~CodeGenerator()
  */
 void CodeGenerator::addDeclaration(clang::Decl *decl)
 {
-    VAR_UNUSED(decl)
+    CPP_UTILITIES_UNUSED(decl)
 }
 
 /*!

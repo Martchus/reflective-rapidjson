@@ -74,7 +74,6 @@ int main(int argc, char *argv[])
             for (const auto *const value : clangOptionsArg.values(0)) {
                 // split options by ";" - not nice but this eases using CMake generator expressions
                 const auto splittedValues(splitString<vector<string>>(value, ";", EmptyPartsTreat::Omit));
-                clangOptions.reserve(clangOptions.size() + splittedValues.size());
                 for (const auto &splittedValue : splittedValues) {
                     clangOptions.emplace_back(move(splittedValue));
                 }

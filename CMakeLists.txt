@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 
-# metadata
-set(META_PROJECT_NAME reflective_rapidjson)
+# set metadata
+project(reflective_rapidjson)
+set(META_PROJECT_NAME ${PROJECT_NAME})
 set(META_APP_NAME "Reflection for RapidJSON")
 set(META_APP_AUTHOR "Martchus")
 set(META_APP_URL "https://github.com/${META_APP_AUTHOR}/${META_PROJECT_NAME}")

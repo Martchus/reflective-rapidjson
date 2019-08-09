@@ -94,7 +94,13 @@ endif ()
 # add paths for include dirs of c++utilities and RapidJSON to config header so test cases can use it
 set(META_CUSTOM_CONFIG "#define CPP_UTILITIES_INCLUDE_DIRS \"${CPP_UTILITIES_INCLUDE_DIRS}\"\n")
 if (RapidJSON_FOUND)
-    string(APPEND META_CUSTOM_CONFIG "#define RAPIDJSON_INCLUDE_DIRS \"${RAPIDJSON_INCLUDE_DIRS}\"\n")
+    # add include dirs either from RapidJSON_INCLUDE_DIRS or RAPIDJSON_INCLUDE_DIRS
+    if (RapidJSON_INCLUDE_DIRS)
+        set(RAPIDJSON_INCLUDE_DIRS ${RapidJSON_INCLUDE_DIRS})
+    endif ()
+    if (RAPIDJSON_INCLUDE_DIRS)
+        string(APPEND META_CUSTOM_CONFIG "#define RAPIDJSON_INCLUDE_DIRS \"${RAPIDJSON_INCLUDE_DIRS}\"\n")
+    endif ()
 endif ()
 
 # add path of Clang's resource dir to config header so test cases can use it

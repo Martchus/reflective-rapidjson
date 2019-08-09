@@ -30,13 +30,13 @@ using namespace ReflectiveRapidJSON;
 /// \cond
 
 // define some enums and structs for testing serialization
-enum SomeEnum {
+enum SomeEnumBinary {
     SomeEnumItem1,
     SomeEnumItem2,
     SomeEnumItem3,
 };
 
-enum class SomeEnumClass : std::uint16_t {
+enum class SomeEnumClassBinary : std::uint16_t {
     Item1,
     Item2,
     Item3,
@@ -54,8 +54,8 @@ struct TestObjectBinary : public BinarySerializable<TestObjectBinary> {
     multiset<string> someMultiset;
     unordered_set<string> someUnorderedSet;
     unordered_multiset<string> someUnorderedMultiset;
-    SomeEnum someEnum;
-    SomeEnumClass someEnumClass;
+    SomeEnumBinary someEnum;
+    SomeEnumClassBinary someEnumClass;
     TimeSpan timeSpan;
     DateTime dateTime;
 };
@@ -224,7 +224,7 @@ void BinaryReflectorTests::setUp()
     m_testObj.someSet = { "1", "2", "3", "2" };
     m_testObj.someMultiset = { "1", "2", "3", "2" };
     m_testObj.someEnum = SomeEnumItem2;
-    m_testObj.someEnumClass = SomeEnumClass::Item3;
+    m_testObj.someEnumClass = SomeEnumClassBinary::Item3;
     m_testObj.timeSpan = TimeSpan(0xABCD);
     m_testObj.dateTime = DateTime(0xEFAB);
     m_nestedTestObj.name = "struct with nesting";

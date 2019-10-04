@@ -791,8 +791,7 @@ template <typename Type, Traits::EnableIfAny<IsJsonSerializable<Type>, IsMapOrHa
 RAPIDJSON_NAMESPACE::Document toJsonDocument(const Type &reflectable)
 {
     RAPIDJSON_NAMESPACE::Document document(RAPIDJSON_NAMESPACE::kObjectType);
-    RAPIDJSON_NAMESPACE::Document::Object object(document.GetObject());
-    push(reflectable, object, document.GetAllocator());
+    push(reflectable, document, document.GetAllocator());
     return document;
 }
 

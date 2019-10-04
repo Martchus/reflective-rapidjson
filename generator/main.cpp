@@ -33,8 +33,8 @@ int main(int argc, char *argv[])
     inputFileArg.setRequired(true);
     ConfigValueArgument outputFileArg("output-file", '\0', "specifies the output file", { "path" });
     Argument generatorsArg("generators", '\0', "specifies the generators (by default all generators are enabled)");
-    generatorsArg.setValueNames({ "json" });
-    generatorsArg.setPreDefinedCompletionValues("json");
+    generatorsArg.setValueNames({ "json", "binary" });
+    generatorsArg.setPreDefinedCompletionValues("json binary");
     generatorsArg.setRequiredValueCount(Argument::varValueCount);
     generatorsArg.setCombinable(true);
     ConfigValueArgument clangOptionsArg("clang-opt", '\0', "specifies arguments/options to be passed to Clang", { "option" });

@@ -72,10 +72,10 @@ The following table shows the mapping of supported C++ types to supported JSON t
 * Enums are (de)serialized as their underlying integer value. When deserializing, it is currently *not* checked
   whether the present integer value is a valid enumeration item.
 * The JSON type for smart pointer depends on the type the pointer refers to. It can also be `null`.
-* If multiple `std::shared_ptr` instance might point to the same object this object is serialized multiple times.
+* If multiple `std::shared_ptr` instances point to the same object this object is serialized multiple times.
   When deserializing those identical objects, it is currently not possible to share the memory (again). So each
-  `std::shared_ptr` will point to its own copy. Note that this limitation is *not* true when using binary
-  serialization.
+  `std::shared_ptr` will point to its own copy. Note that this limitation is *not* present when using binary
+  (de)serialization instead of JSON.
 * For deserialization
     * iteratables must provide an `emplace_back` method. So deserialization of eg. `std::forward_list`
       is currently not supported.
@@ -84,7 +84,7 @@ The following table shows the mapping of supported C++ types to supported JSON t
 * It is possible to treat custom types as set/map using the macro `REFLECTIVE_RAPIDJSON_TREAT_AS_MAP_OR_HASH`,
   `REFLECTIVE_RAPIDJSON_TREAT_AS_MULTI_MAP_OR_HASH`, `REFLECTIVE_RAPIDJSON_TREAT_AS_SET` or
   `REFLECTIVE_RAPIDJSON_TREAT_AS_MULTI_SET`.
-* The key type of the `std::map`, `std::unordered_map` must be `std::string`.
+* The key type of `std::map` and `std::unordered_map` must be `std::string`.
 * For custom (de)serialization, see the section below.
 * The binary (de)serializer supports approximately the same C++ types but obviously maps them to a platform
   independent binary representation rather than a JSON type.
@@ -158,7 +158,7 @@ target_link_libraries(mytarget PRIVATE reflective_rapidjson)
 # invoke macro
 add_reflection_generator_invocation(
     INPUT_FILES code-defining-structs.cpp
-    GENERATORS json
+    GENERATORS json binary
     OUTPUT_LISTS LIST_OF_GENERATED_HEADERS
     CLANG_OPTIONS_FROM_TARGETS mytarget
 )
@@ -173,6 +173,9 @@ will always have the extension `.h`, independently of the extension of the input
 
 The full paths of the generated files are also appended to the variable `LIST_OF_GENERATED_HEADERS` which then can be added
 to the sources of your target. Of course this can be skipped if not required/wanted.
+
+The `GENERATORS` argument specifies the generators to run. Use `json` to generate code for JSON (de)serialization and `binary`
+to generate code for binary (de)serialization. As shown in the example, multiple generators can be specified at a time.
 
 The macro will also automatically pass Clang's resource directory which is detected by invoking `clang -print-resource-dir`.
 To adjust that, just set the cache variable `REFLECTION_GENERATOR_CLANG_RESOURCE_DIR` before including the module.
@@ -374,15 +377,15 @@ Reflective RapidJSON.
   provided (so far).
 * I usually develop using the latest version of those dependencies. So it is recommend to get the
   the latest versions as well. I tested the following versions so far:
-    * GCC 7.2.1/7.3.0/8.1.0 or Clang 5.0/6.0/7.0 as compiler
-    * libstdc++ from GCC 7.2.1/7.3.0/8.1.0
-    * CMake 3.10.1
-    * Clang 5.0.0/5.0.1 for LibTooling
+    * GCC 7.2.1/7.3.0/8.1.0/9.1.0 or Clang 5.0/6.0/7.0/8.0 as compiler
+    * libstdc++ from GCC 7.2.1/7.3.0/8.1.0/9.1.0
+    * CMake 3.10.x to 3.15.x
+    * Clang 5.x/6.x/7.x/8.x/9.x for LibTooling
     * RapidJSON 1.1.0
-    * C++ utilities 4.12
-    * Boost.Hana 1.65.1, 1.66.0, 1.67.0, 1.68.0
+    * C++ utilities 5.0.0
+    * Boost.Hana 1.65.1, 1.66.0, 1.67.0, 1.68.0, 1.69.0
     * CppUnit 1.14.0
-    * Doxygen 1.8.13
+    * Doxygen 1.8.13 to 1.8.16
     * Graphviz 2.40.1
 * The binary (de)serializer requires C++ utilities at runtime. So when using it, it is required to
   link against C++ utilities.

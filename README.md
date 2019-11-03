@@ -63,6 +63,7 @@ The following table shows the mapping of supported C++ types to supported JSON t
 | `std::tuple`                                                  | array        |
 | `std::unique_ptr`, `std::shared_ptr`                          | depends/null |
 | `std::map`, `std::unordered_map`                              | object       |
+| `std::variant`                                                | object       |
 | `JsonSerializable`                                            | object       |
 
 ### Remarks
@@ -85,6 +86,9 @@ The following table shows the mapping of supported C++ types to supported JSON t
   `REFLECTIVE_RAPIDJSON_TREAT_AS_MULTI_MAP_OR_HASH`, `REFLECTIVE_RAPIDJSON_TREAT_AS_SET` or
   `REFLECTIVE_RAPIDJSON_TREAT_AS_MULTI_SET`.
 * The key type of `std::map` and `std::unordered_map` must be `std::string`.
+* An `std::variant` is represented by an object like `{"index": ..., "data": ...}` where `index` is the
+  zero-based index of the alternative held by the variant and `data` the value held by the variant. The
+  type of `data` is `null` for `std::monostate` and otherwise deduced as usual.
 * For custom (de)serialization, see the section below.
 * The binary (de)serializer supports approximately the same C++ types but obviously maps them to a platform
   independent binary representation rather than a JSON type.

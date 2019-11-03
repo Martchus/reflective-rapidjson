@@ -14,6 +14,7 @@
 #include <limits>
 #include <list>
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace ReflectiveRapidJSON {
@@ -26,6 +27,8 @@ enum class JsonDeserializationErrorKind : std::uint8_t {
     ArraySizeMismatch, /**< The expected array size does not match the actual size of the JSON array. A fixed size is expected when deserializing an std::tuple. */
     ConversionError, /**< The expected type matches the type present in the JSON document, but further conversion of the value failed. */
     UnexpectedDuplicate, /**< The expected type matches the type present in the JSON document, but the value can not be added to the container because it is already present and duplicates are not allowed. */
+    InvalidVariantObject, /**< The present object is supposed to represent an std::variant but lacks the index or data member. */
+    InvalidVariantIndex, /**< The present variant index is not a number of outside of the expected range. */
 };
 
 /*!
@@ -48,6 +51,11 @@ template <typename Type,
 constexpr JsonType jsonType()
 {
     return JsonType::Number;
+}
+
+template <typename Type, Traits::EnableIf<std::is_same<Type, std::monostate>> * = nullptr> constexpr JsonType jsonType()
+{
+    return JsonType::Null;
 }
 
 template <typename Type, Traits::EnableIfAny<std::is_same<Type, bool>> * = nullptr> constexpr JsonType jsonType()

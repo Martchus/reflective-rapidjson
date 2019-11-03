@@ -65,6 +65,12 @@ struct NestingArrayBinary : public BinarySerializable<NestingArrayBinary> {
     vector<TestObjectBinary> testObjects;
 };
 
+struct ObjectWithVariantsBinary : public BinarySerializable<ObjectWithVariantsBinary> {
+    variant<int, string, monostate> someVariant;
+    variant<string, float> anotherVariant;
+    variant<string, int> yetAnotherVariant;
+};
+
 // pretend serialization code for structs has been generated
 namespace ReflectiveRapidJSON {
 namespace BinaryReflector {
@@ -119,6 +125,20 @@ template <> void writeCustomType<NestingArrayBinary>(BinarySerializer &serialize
     serializer.write(customType.testObjects);
 }
 
+template <> void readCustomType<ObjectWithVariantsBinary>(BinaryDeserializer &deserializer, ObjectWithVariantsBinary &customType)
+{
+    deserializer.read(customType.someVariant);
+    deserializer.read(customType.anotherVariant);
+    deserializer.read(customType.yetAnotherVariant);
+}
+
+template <> void writeCustomType<ObjectWithVariantsBinary>(BinarySerializer &serializer, const ObjectWithVariantsBinary &customType)
+{
+    serializer.write(customType.someVariant);
+    serializer.write(customType.anotherVariant);
+    serializer.write(customType.yetAnotherVariant);
+}
+
 } // namespace BinaryReflector
 
 // namespace BinaryReflector
@@ -138,6 +158,7 @@ class BinaryReflectorTests : public TestFixture {
     CPPUNIT_TEST(testDeserializeNestedStruct);
     CPPUNIT_TEST(testSmallSharedPointer);
     CPPUNIT_TEST(testBigSharedPointer);
+    CPPUNIT_TEST(testVariant);
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -154,6 +175,7 @@ public:
     void testSharedPointer(std::uintptr_t fakePointer);
     void testSmallSharedPointer();
     void testBigSharedPointer();
+    void testVariant();
 
 private:
     vector<unsigned char> m_buffer;
@@ -334,4 +356,27 @@ void BinaryReflectorTests::testSmallSharedPointer()
 void BinaryReflectorTests::testBigSharedPointer()
 {
     testSharedPointer(std::numeric_limits<std::uintptr_t>::max());
+}
+
+void BinaryReflectorTests::testVariant()
+{
+    // create test object
+    ObjectWithVariantsBinary variants;
+    variants.someVariant = std::monostate{};
+    variants.anotherVariant = "foo";
+    variants.yetAnotherVariant = 42;
+
+    // serialize test object
+    stringstream stream(ios_base::in | ios_base::out | ios_base::binary);
+    stream.exceptions(ios_base::failbit | ios_base::badbit);
+    variants.toBinary(stream);
+
+    // deserialize the object again
+    const auto deserializedVariants = ObjectWithVariantsBinary::fromBinary(stream);
+
+    CPPUNIT_ASSERT_EQUAL(2_st, deserializedVariants.someVariant.index());
+    CPPUNIT_ASSERT_EQUAL(0_st, deserializedVariants.anotherVariant.index());
+    CPPUNIT_ASSERT_EQUAL(1_st, deserializedVariants.yetAnotherVariant.index());
+    CPPUNIT_ASSERT_EQUAL("foo"s, get<0>(deserializedVariants.anotherVariant));
+    CPPUNIT_ASSERT_EQUAL(42, get<1>(deserializedVariants.yetAnotherVariant));
 }

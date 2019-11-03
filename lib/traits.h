@@ -8,6 +8,7 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <variant>
 
 namespace ReflectiveRapidJSON {
 
@@ -61,6 +62,7 @@ using IsArray = Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSp
     Traits::Not<IsMapOrHash<Type>>, Traits::Not<IsSet<Type>>, Traits::Not<IsMultiSet<Type>>>;
 template <typename Type>
 using IsIteratableExceptString = Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>;
+template <typename Type> using IsVariant = Traits::All<Traits::IsSpecializationOf<Type, std::variant>>;
 
 } // namespace ReflectiveRapidJSON
 

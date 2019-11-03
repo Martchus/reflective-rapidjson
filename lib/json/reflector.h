@@ -18,6 +18,7 @@
 #include <memory>
 #include <string>
 #include <tuple>
+#include <variant>
 
 #include "./errorhandling.h"
 
@@ -75,7 +76,7 @@ inline RAPIDJSON_NAMESPACE::Document parseJsonDocFromString(const char *json, st
 template <typename Type>
 using IsBuiltInType = Traits::Any<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>, std::is_enum<Type>,
     Traits::IsSpecializationOf<Type, std::tuple>, Traits::IsIteratable<Type>, Traits::IsSpecializationOf<Type, std::unique_ptr>,
-    Traits::IsSpecializationOf<Type, std::shared_ptr>, Traits::IsSpecializationOf<Type, std::weak_ptr>>;
+    Traits::IsSpecializationOf<Type, std::shared_ptr>, Traits::IsSpecializationOf<Type, std::weak_ptr>, IsVariant<Type>>;
 template <typename Type> using IsCustomType = Traits::Not<IsBuiltInType<Type>>;
 
 // define trait to check for custom structs/classes which are JSON serializable
@@ -272,6 +273,32 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
 }
 
 /*!
+ * \brief Pushes the specified variant to the specified value.
+ */
+template <typename Type, Traits::EnableIf<IsVariant<Type>> * = nullptr>
+void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
+{
+    if (reflectable.valueless_by_exception()) {
+        value.SetNull();
+        return;
+    }
+
+    RAPIDJSON_NAMESPACE::Value index, data;
+    index.SetInt(reflectable.index());
+    std::visit(
+        [&data, &allocator](const auto &reflectableOfActualType) {
+            if constexpr (!std::is_same_v<std::decay_t<decltype(reflectableOfActualType)>, std::monostate>) {
+                push(reflectableOfActualType, data, allocator);
+            }
+        },
+        reflectable);
+
+    value.SetObject();
+    value.AddMember("index", index, allocator);
+    value.AddMember("data", data, allocator);
+}
+
+/*!
  * \brief Pushes the specified \a reflectable which has a custom type to the specified array.
  */
 template <typename Type, Traits::EnableIf<IsJsonSerializable<Type>> *>
@@ -393,6 +420,12 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
  * \brief Pulls the specified \a reflectable which is a shared_ptr from the specified value which might be null.
  */
 template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::shared_ptr>> * = nullptr>
+void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors);
+
+/*!
+ * \brief Pulls the specified \a reflectable which is a variant from the specified value which might be null.
+ */
+template <typename Type, Traits::EnableIf<IsVariant<Type>> * = nullptr>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors);
 
 /*!
@@ -724,6 +757,72 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
     }
     reflectable = std::make_shared<typename Type::element_type>();
     pull(*reflectable, value, errors);
+}
+
+/// \cond
+namespace Detail {
+template <typename Variant, std::size_t compiletimeIndex = 0>
+void assignVariantValueByRuntimeIndex(std::size_t runtimeIndex, Variant &variant,
+    const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
+{
+    if constexpr (compiletimeIndex < std::variant_size_v<Variant>) {
+        if (compiletimeIndex == runtimeIndex) {
+            if constexpr (std::is_same_v<std::variant_alternative_t<compiletimeIndex, Variant>, std::monostate>) {
+                variant = std::monostate{};
+            } else {
+                pull(variant.template emplace<compiletimeIndex>(), value, errors);
+            }
+        } else {
+            assignVariantValueByRuntimeIndex<Variant, compiletimeIndex + 1>(runtimeIndex, variant, value, errors);
+        }
+    } else {
+        if (errors) {
+            errors->emplace_back(JsonDeserializationErrorKind::InvalidVariantIndex, JsonType::Number, JsonType::Number, errors->currentRecord,
+                errors->currentMember, errors->currentIndex);
+        }
+    }
+}
+} // namespace Detail
+/// \endcond
+
+/*!
+ * \brief Pulls the specified \a reflectable which is a variant from the specified value which might be null.
+ */
+template <typename Type, Traits::EnableIf<IsVariant<Type>> *>
+void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
+{
+    if (!value.IsObject()) {
+        if (errors) {
+            errors->reportTypeMismatch<Type>(value.GetType());
+        }
+        return;
+    }
+
+    auto obj = value.GetObject();
+    auto indexIterator = obj.FindMember("index");
+    auto dataIterator = obj.FindMember("data");
+    if (indexIterator == obj.MemberEnd() || dataIterator == obj.MemberEnd()) {
+        if (errors) {
+            errors->emplace_back(JsonDeserializationErrorKind::InvalidVariantObject, JsonType::Object, JsonType::Object, errors->currentRecord,
+                errors->currentMember, errors->currentIndex);
+        }
+        return;
+    }
+    const auto &indexValue = indexIterator->value;
+    if (!indexValue.IsInt()) {
+        if (errors) {
+            errors->emplace_back(JsonDeserializationErrorKind::InvalidVariantIndex, JsonType::Number, jsonType(indexValue.GetType()),
+                errors->currentRecord, errors->currentMember, errors->currentIndex);
+        }
+        return;
+    }
+    const auto index = indexValue.GetInt();
+    if (index < 0) {
+        errors->emplace_back(JsonDeserializationErrorKind::InvalidVariantIndex, JsonType::Number, JsonType::Number, errors->currentRecord,
+            errors->currentMember, errors->currentIndex);
+        return;
+    }
+    Detail::assignVariantValueByRuntimeIndex(static_cast<std::size_t>(index), reflectable, dataIterator->value, errors);
 }
 
 /*!

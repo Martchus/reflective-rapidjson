@@ -18,6 +18,7 @@
 #include <memory>
 #include <string>
 #include <tuple>
+#include <variant>
 
 namespace ReflectiveRapidJSON {
 
@@ -40,7 +41,7 @@ namespace BinaryReflector {
 template <typename Type>
 using IsBuiltInType = Traits::Any<Traits::IsAnyOf<Type, char, std::uint8_t, bool, std::string, std::int16_t, std::uint16_t, std::int32_t,
                                       std::uint32_t, std::int64_t, std::uint64_t, float, double>,
-    Traits::IsIteratable<Type>, Traits::IsSpecializingAnyOf<Type, std::pair, std::unique_ptr, std::shared_ptr>, std::is_enum<Type>>;
+    Traits::IsIteratable<Type>, Traits::IsSpecializingAnyOf<Type, std::pair, std::unique_ptr, std::shared_ptr>, std::is_enum<Type>, IsVariant<Type>>;
 template <typename Type> using IsCustomType = Traits::Not<IsBuiltInType<Type>>;
 
 class BinaryDeserializer;
@@ -63,7 +64,8 @@ public:
         Traits::EnableIf<IsIteratableExceptString<Type>,
             Traits::None<IsMapOrHash<Type>, IsMultiMapOrHash<Type>, Traits::All<IsArray<Type>, Traits::IsResizable<Type>>>> * = nullptr>
     void read(Type &iteratable);
-    template <typename Type, Traits::EnableIf<std::is_enum<Type>> * = nullptr> void read(Type &customType);
+    template <typename Type, Traits::EnableIf<std::is_enum<Type>> * = nullptr> void read(Type &enumValue);
+    template <typename Type, Traits::EnableIf<IsVariant<Type>> * = nullptr> void read(Type &variant);
     template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void read(Type &customType);
 
     std::unordered_map<std::uint64_t, std::any> m_pointer;
@@ -78,7 +80,8 @@ public:
     template <typename Type, Traits::EnableIf<Traits::IsSpecializingAnyOf<Type, std::unique_ptr>> * = nullptr> void write(const Type &pointer);
     template <typename Type, Traits::EnableIf<Traits::IsSpecializingAnyOf<Type, std::shared_ptr>> * = nullptr> void write(const Type &pointer);
     template <typename Type, Traits::EnableIf<IsIteratableExceptString<Type>, Traits::HasSize<Type>> * = nullptr> void write(const Type &iteratable);
-    template <typename Type, Traits::EnableIf<std::is_enum<Type>> * = nullptr> void write(const Type &customType);
+    template <typename Type, Traits::EnableIf<std::is_enum<Type>> * = nullptr> void write(const Type &enumValue);
+    template <typename Type, Traits::EnableIf<IsVariant<Type>> * = nullptr> void write(const Type &variant);
     template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void write(const Type &customType);
 
     std::unordered_map<std::uint64_t, bool> m_pointer;
@@ -168,6 +171,33 @@ template <typename Type, Traits::EnableIf<std::is_enum<Type>> *> void BinaryDese
     enumValue = static_cast<Type>(value);
 }
 
+/// \cond
+namespace Detail {
+template <typename Variant, std::size_t compiletimeIndex = 0>
+void readVariantValueByRuntimeIndex(std::size_t runtimeIndex, Variant &variant, BinaryDeserializer &deserializer)
+{
+    if constexpr (compiletimeIndex < std::variant_size_v<Variant>) {
+        if (compiletimeIndex == runtimeIndex) {
+            if constexpr (std::is_same_v<std::variant_alternative_t<compiletimeIndex, Variant>, std::monostate>) {
+                variant = std::monostate{};
+            } else {
+                deserializer.read(variant.template emplace<compiletimeIndex>());
+            }
+        } else {
+            readVariantValueByRuntimeIndex<Variant, compiletimeIndex + 1>(runtimeIndex, variant, deserializer);
+        }
+    } else {
+        throw CppUtilities::ConversionException("Variant index is out of expected range");
+    }
+}
+} // namespace Detail
+/// \endcond
+
+template <typename Type, Traits::EnableIf<IsVariant<Type>> *> void BinaryDeserializer::read(Type &variant)
+{
+    Detail::readVariantValueByRuntimeIndex(readByte(), variant, *this);
+}
+
 template <typename Type, Traits::EnableIf<IsCustomType<Type>> *> void BinaryDeserializer::read(Type &customType)
 {
     readCustomType(*this, customType);
@@ -230,6 +260,19 @@ void BinarySerializer::write(const Type &iteratable)
 template <typename Type, Traits::EnableIf<std::is_enum<Type>> *> void BinarySerializer::write(const Type &enumValue)
 {
     write(static_cast<typename std::underlying_type<Type>::type>(enumValue));
+}
+
+template <typename Type, Traits::EnableIf<IsVariant<Type>> *> void BinarySerializer::write(const Type &variant)
+{
+    static_assert(std::variant_size_v<Type> < std::numeric_limits<std::uint8_t>::max(), "index will not exceed limit");
+    writeByte(static_cast<std::uint8_t>(variant.index()));
+    std::visit(
+        [this](const auto &valueOfActualType) {
+            if constexpr (!std::is_same_v<std::decay_t<decltype(valueOfActualType)>, std::monostate>) {
+                write(valueOfActualType);
+            }
+        },
+        variant);
 }
 
 template <typename Type, Traits::EnableIf<IsCustomType<Type>> *> void BinarySerializer::write(const Type &customType)

@@ -127,7 +127,7 @@ function (add_reflection_generator_invocation)
     if (ARGS_CLANG_OPTIONS_FROM_TARGETS)
         foreach (TARGET_NAME ${ARGS_CLANG_OPTIONS_FROM_TARGETS})
             # set c++ standard
-            list(APPEND CLANG_TIDY_CXX_FLAGS "-std=c++$<TARGET_PROPERTY:${TARGET_NAME},CXX_STANDARD>")
+            list(APPEND ARGS_CLANG_OPTIONS "-std=c++$<TARGET_PROPERTY:${TARGET_NAME},CXX_STANDARD>")
             # add compile flags
             set(PROP "$<TARGET_PROPERTY:${TARGET_NAME},COMPILE_FLAGS>")
             list(APPEND ARGS_CLANG_OPTIONS "$<$<BOOL:${PROP}>:$<JOIN:${PROP},$<SEMICOLON>>>")

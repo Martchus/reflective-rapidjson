@@ -14,7 +14,6 @@
 #include <limits>
 #include <list>
 #include <string>
-#include <variant>
 #include <vector>
 
 namespace ReflectiveRapidJSON {
@@ -51,11 +50,6 @@ template <typename Type,
 constexpr JsonType jsonType()
 {
     return JsonType::Number;
-}
-
-template <typename Type, Traits::EnableIf<std::is_same<Type, std::monostate>> * = nullptr> constexpr JsonType jsonType()
-{
-    return JsonType::Null;
 }
 
 template <typename Type, Traits::EnableIfAny<std::is_same<Type, bool>> * = nullptr> constexpr JsonType jsonType()

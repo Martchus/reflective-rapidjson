@@ -164,8 +164,8 @@ class BinaryReflectorTests : public TestFixture {
 public:
     BinaryReflectorTests();
 
-    void setUp();
-    void tearDown();
+    void setUp() override;
+    void tearDown() override;
 
     void testSerializeSimpleStruct();
     void testDeserializeSimpleStruct();

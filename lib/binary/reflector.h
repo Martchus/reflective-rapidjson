@@ -270,6 +270,8 @@ template <typename Type, Traits::EnableIf<IsVariant<Type>> *> void BinarySeriali
         [this](const auto &valueOfActualType) {
             if constexpr (!std::is_same_v<std::decay_t<decltype(valueOfActualType)>, std::monostate>) {
                 write(valueOfActualType);
+            } else {
+                CPP_UTILITIES_UNUSED(this)
             }
         },
         variant);

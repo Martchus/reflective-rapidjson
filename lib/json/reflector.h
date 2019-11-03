@@ -9,6 +9,8 @@
 
 #include "../traits.h"
 
+#include <c++utilities/application/global.h>
+
 #include <rapidjson/document.h>
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/stringbuffer.h>
@@ -289,6 +291,9 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
         [&data, &allocator](const auto &reflectableOfActualType) {
             if constexpr (!std::is_same_v<std::decay_t<decltype(reflectableOfActualType)>, std::monostate>) {
                 push(reflectableOfActualType, data, allocator);
+            } else {
+                CPP_UTILITIES_UNUSED(data)
+                CPP_UTILITIES_UNUSED(allocator)
             }
         },
         reflectable);

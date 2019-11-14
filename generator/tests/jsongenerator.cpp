@@ -66,7 +66,7 @@ void JsonGeneratorTests::testGeneratorItself()
 {
     const string inputFilePath(testFilePath("some_structs.h"));
     const vector<const char *> inputFiles{ inputFilePath.data() };
-    const vector<string> clangOptions{ "-resource-dir", REFLECTION_GENERATOR_CLANG_RESOURCE_DIR, "-I", CPP_UTILITIES_INCLUDE_DIRS,
+    const vector<string> clangOptions{ "-resource-dir", REFLECTION_GENERATOR_CLANG_RESOURCE_DIR, "-std=c++17", "-I", CPP_UTILITIES_INCLUDE_DIRS,
 #ifdef RAPIDJSON_INCLUDE_DIRS
         "-I", RAPIDJSON_INCLUDE_DIRS
 #endif
@@ -94,7 +94,7 @@ void JsonGeneratorTests::testCLI()
 
     const string inputFilePath(testFilePath("some_structs.h"));
     const char *const args1[] = { PROJECT_NAME, "--input-file", inputFilePath.data(), "--json-classes", "TestNamespace2::ThirdPartyStruct",
-        "--clang-opt", "-resource-dir", REFLECTION_GENERATOR_CLANG_RESOURCE_DIR, "-I", CPP_UTILITIES_INCLUDE_DIRS,
+        "--clang-opt", "-resource-dir", REFLECTION_GENERATOR_CLANG_RESOURCE_DIR, "-std=c++17", "-I", CPP_UTILITIES_INCLUDE_DIRS,
 #ifdef RAPIDJSON_INCLUDE_DIRS
         "-I", RAPIDJSON_INCLUDE_DIRS,
 #endif

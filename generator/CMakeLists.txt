@@ -39,17 +39,22 @@ endif ()
 # link against c++utilities
 use_cpp_utilities()
 
-# find Clang for LibTooling; adding clangTooling should be sufficient as it pulls all transitive dependencies
+# find Clang for LibTooling
 find_package(Clang REQUIRED)
-list(APPEND PRIVATE_LIBRARIES
-            clangTooling
-            clangFrontend
-            clangSerialization
-            clangSema
-            clangAST
-            clangLex
-            clangBasic
-            LLVM)
+if (TARGET clang-cpp)
+    list(APPEND PRIVATE_LIBRARIES clang-cpp LLVM)
+else ()
+    list(
+        APPEND PRIVATE_LIBRARIES
+               clangTooling
+               clangFrontend
+               clangSerialization
+               clangSema
+               clangAST
+               clangLex
+               clangBasic
+               LLVM)
+endif ()
 
 # also add reflective_rapidjson which is header-only but might pull additional include dirs for RapidJSON
 list(APPEND PRIVATE_LIBRARIES reflective_rapidjson)

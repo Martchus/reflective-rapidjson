@@ -14,28 +14,16 @@ set(DOC_FILES README.md)
 
 # add JSON-specific sources
 if (RapidJSON_FOUND)
-    list(APPEND HEADER_FILES
-                json/reflector.h
-                json/reflector-boosthana.h
-                json/reflector-chronoutilities.h
-                json/serializable.h
-                json/errorhandling.h)
-    list(APPEND TEST_SRC_FILES
-                tests/jsonreflector.cpp
-                tests/jsonreflector-boosthana.cpp
+    list(APPEND HEADER_FILES json/reflector.h json/reflector-boosthana.h json/reflector-chronoutilities.h
+                json/serializable.h json/errorhandling.h)
+    list(APPEND TEST_SRC_FILES tests/jsonreflector.cpp tests/jsonreflector-boosthana.cpp
                 tests/jsonreflector-chronoutilities.cpp)
 endif ()
 
 # add binary (de)serialization specific sources
-list(APPEND HEADER_FILES
-            binary/reflector.h
-            binary/reflector-boosthana.h
-            binary/reflector-chronoutilities.h
+list(APPEND HEADER_FILES binary/reflector.h binary/reflector-boosthana.h binary/reflector-chronoutilities.h
             binary/serializable.h)
-list(APPEND TEST_SRC_FILES
-            tests/traits.cpp
-            tests/binaryreflector.cpp
-            tests/binaryreflector-boosthana.cpp)
+list(APPEND TEST_SRC_FILES tests/traits.cpp tests/binaryreflector.cpp tests/binaryreflector-boosthana.cpp)
 
 # add (only) the CMake module and include dirs for c++utilities because we're not depending on the actual library
 list(APPEND CMAKE_MODULE_PATH ${CPP_UTILITIES_MODULE_DIRS})

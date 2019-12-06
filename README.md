@@ -231,7 +231,7 @@ Macro's `CLANG_OPTIONS_FROM_TARGETS` argument.
 The same example as above. However, this time Boost.Hana is used - so it doesn't require invoking the generator.
 
 <pre>
-#include "&lt;reflective_rapidjson/json/serializable-boosthana.h&gt;
+#include &lt;reflective_rapidjson/json/serializable-boosthana.h&gt;
 
 // define structures using BOOST_HANA_DEFINE_STRUCT, eg.
 struct TestObject : public JsonSerializable&lt;TestObject&gt; {

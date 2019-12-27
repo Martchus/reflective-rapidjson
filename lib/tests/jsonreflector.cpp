@@ -52,6 +52,8 @@ struct TestObject : public JsonSerializable<TestObject> {
     bool boolean;
     map<string, int> someMap;
     unordered_map<string, bool> someHash;
+    multimap<string, int> someMultimap;
+    unordered_multimap<string, int> someMultiHash;
     set<string> someSet;
     multiset<string> someMultiset;
     unordered_set<string> someUnorderedSet;
@@ -84,6 +86,8 @@ template <> inline void push<TestObject>(const TestObject &reflectable, Value::O
     push(reflectable.boolean, "boolean", value, allocator);
     push(reflectable.someMap, "someMap", value, allocator);
     push(reflectable.someHash, "someHash", value, allocator);
+    push(reflectable.someMultimap, "someMultimap", value, allocator);
+    push(reflectable.someMultiHash, "someMultiHash", value, allocator);
     push(reflectable.someSet, "someSet", value, allocator);
     push(reflectable.someMultiset, "someMultiset", value, allocator);
     push(reflectable.someUnorderedSet, "someUnorderedSet", value, allocator);
@@ -120,6 +124,8 @@ inline void pull<TestObject>(TestObject &reflectable, const GenericValue<UTF8<ch
     pull(reflectable.boolean, "boolean", value, errors);
     pull(reflectable.someMap, "someMap", value, errors);
     pull(reflectable.someHash, "someHash", value, errors);
+    pull(reflectable.someMultimap, "someMultimap", value, errors);
+    pull(reflectable.someMultiHash, "someMultiHash", value, errors);
     pull(reflectable.someSet, "someSet", value, errors);
     pull(reflectable.someMultiset, "someMultiset", value, errors);
     pull(reflectable.someUnorderedSet, "someUnorderedSet", value, errors);
@@ -270,6 +276,8 @@ void JsonReflectorTests::testSerializeSimpleObjects()
     testObj.boolean = false;
     testObj.someMap = { { "a", 1 }, { "b", 2 } };
     testObj.someHash = { { "c", true }, { "d", false } };
+    testObj.someMultimap = { { "a", 1 }, { "a", 2 }, { "b", 3 } };
+    testObj.someMultiHash = { { "a", 1 } };
     testObj.someSet = { "a", "b", "c" };
     testObj.someMultiset = { "a", "b", "b" };
     testObj.someUnorderedSet = { "a" };
@@ -278,7 +286,7 @@ void JsonReflectorTests::testSerializeSimpleObjects()
     testObj.anotherVariant = "foo";
     testObj.yetAnotherVariant = 42;
     CPPUNIT_ASSERT_EQUAL(
-        "{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false,\"someMap\":{\"a\":1,\"b\":2},\"someHash\":{\"d\":false,\"c\":true},\"someSet\":[\"a\",\"b\",\"c\"],\"someMultiset\":[\"a\",\"b\",\"b\"],\"someUnorderedSet\":[\"a\"],\"someUnorderedMultiset\":[\"b\",\"b\",\"b\"],\"someVariant\":{\"index\":0,\"data\":null},\"anotherVariant\":{\"index\":0,\"data\":\"foo\"},\"yetAnotherVariant\":{\"index\":1,\"data\":42}}"s,
+        "{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false,\"someMap\":{\"a\":1,\"b\":2},\"someHash\":{\"d\":false,\"c\":true},\"someMultimap\":{\"a\":[1,2],\"b\":[3]},\"someMultiHash\":{\"a\":[1]},\"someSet\":[\"a\",\"b\",\"c\"],\"someMultiset\":[\"a\",\"b\",\"b\"],\"someUnorderedSet\":[\"a\"],\"someUnorderedMultiset\":[\"b\",\"b\",\"b\"],\"someVariant\":{\"index\":0,\"data\":null},\"anotherVariant\":{\"index\":0,\"data\":\"foo\"},\"yetAnotherVariant\":{\"index\":1,\"data\":42}}"s,
         string(testObj.toJson().GetString()));
 }
 
@@ -296,7 +304,7 @@ void JsonReflectorTests::testSerializeNestedObjects()
     testObj.text = "test";
     testObj.boolean = false;
     CPPUNIT_ASSERT_EQUAL(
-        "{\"name\":\"nesting\",\"testObj\":{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false,\"someMap\":{},\"someHash\":{},\"someSet\":[],\"someMultiset\":[],\"someUnorderedSet\":[],\"someUnorderedMultiset\":[],\"someVariant\":{\"index\":0,\"data\":null},\"anotherVariant\":{\"index\":0,\"data\":\"\"},\"yetAnotherVariant\":{\"index\":0,\"data\":\"\"}}}"s,
+        "{\"name\":\"nesting\",\"testObj\":{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false,\"someMap\":{},\"someHash\":{},\"someMultimap\":{},\"someMultiHash\":{},\"someSet\":[],\"someMultiset\":[],\"someUnorderedSet\":[],\"someUnorderedMultiset\":[],\"someVariant\":{\"index\":0,\"data\":null},\"anotherVariant\":{\"index\":0,\"data\":\"\"},\"yetAnotherVariant\":{\"index\":0,\"data\":\"\"}}}"s,
         string(nestingObj.toJson().GetString()));
 
     NestingArray nestingArray;
@@ -305,13 +313,13 @@ void JsonReflectorTests::testSerializeNestedObjects()
     nestingArray.testObjects.emplace_back(testObj);
     nestingArray.testObjects.back().number = 43;
     CPPUNIT_ASSERT_EQUAL(
-        "{\"name\":\"nesting2\",\"testObjects\":[{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false,\"someMap\":{},\"someHash\":{},\"someSet\":[],\"someMultiset\":[],\"someUnorderedSet\":[],\"someUnorderedMultiset\":[],\"someVariant\":{\"index\":0,\"data\":null},\"anotherVariant\":{\"index\":0,\"data\":\"\"},\"yetAnotherVariant\":{\"index\":0,\"data\":\"\"}},{\"number\":43,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false,\"someMap\":{},\"someHash\":{},\"someSet\":[],\"someMultiset\":[],\"someUnorderedSet\":[],\"someUnorderedMultiset\":[],\"someVariant\":{\"index\":0,\"data\":null},\"anotherVariant\":{\"index\":0,\"data\":\"\"},\"yetAnotherVariant\":{\"index\":0,\"data\":\"\"}}]}"s,
+        "{\"name\":\"nesting2\",\"testObjects\":[{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false,\"someMap\":{},\"someHash\":{},\"someMultimap\":{},\"someMultiHash\":{},\"someSet\":[],\"someMultiset\":[],\"someUnorderedSet\":[],\"someUnorderedMultiset\":[],\"someVariant\":{\"index\":0,\"data\":null},\"anotherVariant\":{\"index\":0,\"data\":\"\"},\"yetAnotherVariant\":{\"index\":0,\"data\":\"\"}},{\"number\":43,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false,\"someMap\":{},\"someHash\":{},\"someMultimap\":{},\"someMultiHash\":{},\"someSet\":[],\"someMultiset\":[],\"someUnorderedSet\":[],\"someUnorderedMultiset\":[],\"someVariant\":{\"index\":0,\"data\":null},\"anotherVariant\":{\"index\":0,\"data\":\"\"},\"yetAnotherVariant\":{\"index\":0,\"data\":\"\"}}]}"s,
         string(nestingArray.toJson().GetString()));
 
     vector<TestObject> nestedInVector;
     nestedInVector.emplace_back(testObj);
     CPPUNIT_ASSERT_EQUAL(
-        "[{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false,\"someMap\":{},\"someHash\":{},\"someSet\":[],\"someMultiset\":[],\"someUnorderedSet\":[],\"someUnorderedMultiset\":[],\"someVariant\":{\"index\":0,\"data\":null},\"anotherVariant\":{\"index\":0,\"data\":\"\"},\"yetAnotherVariant\":{\"index\":0,\"data\":\"\"}}]"s,
+        "[{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":false,\"someMap\":{},\"someHash\":{},\"someMultimap\":{},\"someMultiHash\":{},\"someSet\":[],\"someMultiset\":[],\"someUnorderedSet\":[],\"someUnorderedMultiset\":[],\"someVariant\":{\"index\":0,\"data\":null},\"anotherVariant\":{\"index\":0,\"data\":\"\"},\"yetAnotherVariant\":{\"index\":0,\"data\":\"\"}}]"s,
         string(JsonReflector::toJson(nestedInVector).GetString()));
 }
 
@@ -339,7 +347,7 @@ void JsonReflectorTests::testSerializeUniquePtr()
     Writer<StringBuffer> jsonWriter(strbuf);
     doc.Accept(jsonWriter);
     CPPUNIT_ASSERT_EQUAL(
-        "[\"foo\",null,{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"bar\",\"boolean\":false,\"someMap\":{},\"someHash\":{},\"someSet\":[],\"someMultiset\":[],\"someUnorderedSet\":[],\"someUnorderedMultiset\":[],\"someVariant\":{\"index\":0,\"data\":null},\"anotherVariant\":{\"index\":0,\"data\":\"\"},\"yetAnotherVariant\":{\"index\":0,\"data\":\"\"}}]"s,
+        "[\"foo\",null,{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"bar\",\"boolean\":false,\"someMap\":{},\"someHash\":{},\"someMultimap\":{},\"someMultiHash\":{},\"someSet\":[],\"someMultiset\":[],\"someUnorderedSet\":[],\"someUnorderedMultiset\":[],\"someVariant\":{\"index\":0,\"data\":null},\"anotherVariant\":{\"index\":0,\"data\":\"\"},\"yetAnotherVariant\":{\"index\":0,\"data\":\"\"}}]"s,
         string(strbuf.GetString()));
 }
 
@@ -367,7 +375,7 @@ void JsonReflectorTests::testSerializeSharedPtr()
     Writer<StringBuffer> jsonWriter(strbuf);
     doc.Accept(jsonWriter);
     CPPUNIT_ASSERT_EQUAL(
-        "[\"foo\",null,{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"bar\",\"boolean\":false,\"someMap\":{},\"someHash\":{},\"someSet\":[],\"someMultiset\":[],\"someUnorderedSet\":[],\"someUnorderedMultiset\":[],\"someVariant\":{\"index\":0,\"data\":null},\"anotherVariant\":{\"index\":0,\"data\":\"\"},\"yetAnotherVariant\":{\"index\":0,\"data\":\"\"}}]"s,
+        "[\"foo\",null,{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"bar\",\"boolean\":false,\"someMap\":{},\"someHash\":{},\"someMultimap\":{},\"someMultiHash\":{},\"someSet\":[],\"someMultiset\":[],\"someUnorderedSet\":[],\"someUnorderedMultiset\":[],\"someVariant\":{\"index\":0,\"data\":null},\"anotherVariant\":{\"index\":0,\"data\":\"\"},\"yetAnotherVariant\":{\"index\":0,\"data\":\"\"}}]"s,
         string(strbuf.GetString()));
 }
 
@@ -432,11 +440,13 @@ void JsonReflectorTests::testDeserializePrimitives()
  */
 void JsonReflectorTests::testDeserializeSimpleObjects()
 {
-    const TestObject testObj(
-        TestObject::fromJson("{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":"
-                             "false,\"someMap\":{\"a\":1,\"b\":2},\"someHash\":{\"c\":true,\"d\":false},\"someSet\":[\"a\",\"b\"],\"someMultiset\":["
-                             "\"a\",\"a\"],\"someUnorderedSet\":[\"a\",\"b\"],\"someUnorderedMultiset\":[\"a\",\"a\"],\"someVariant\":{\"index\":0,"
-                             "\"data\":null},\"anotherVariant\":{\"index\":0,\"data\":\"foo\"},\"yetAnotherVariant\":{\"index\":1,\"data\":42}}"));
+    const auto testObj
+        = TestObject::fromJson("{\"number\":42,\"number2\":3.141592653589793,\"numbers\":[1,2,3,4],\"text\":\"test\",\"boolean\":"
+                               "false,\"someMap\":{\"a\":1,\"b\":2},\"someHash\":{\"c\":true,\"d\":false},\"someMultimap\":{\"a\":[1,2],\"b\":[3]},"
+                               "\"someMultiHash\":{\"a\":[4,5],\"b\":[6]},"
+                               "\"someSet\":[\"a\",\"b\"],\"someMultiset\":["
+                               "\"a\",\"a\"],\"someUnorderedSet\":[\"a\",\"b\"],\"someUnorderedMultiset\":[\"a\",\"a\"],\"someVariant\":{\"index\":0,"
+                               "\"data\":null},\"anotherVariant\":{\"index\":0,\"data\":\"foo\"},\"yetAnotherVariant\":{\"index\":1,\"data\":42}}");
 
     CPPUNIT_ASSERT_EQUAL(42, testObj.number);
     CPPUNIT_ASSERT_EQUAL(3.141592653589793, testObj.number2);
@@ -447,6 +457,10 @@ void JsonReflectorTests::testDeserializeSimpleObjects()
     CPPUNIT_ASSERT_EQUAL(expectedMap, testObj.someMap);
     const unordered_map<string, bool> expectedHash{ { "c", true }, { "d", false } };
     CPPUNIT_ASSERT_EQUAL(expectedHash, testObj.someHash);
+    const multimap<string, int> expectedMultiMap{ { "a", 1 }, { "a", 2 }, { "b", 3 } };
+    CPPUNIT_ASSERT_EQUAL(expectedMultiMap, testObj.someMultimap);
+    const unordered_multimap<string, int> expectedUnorderedMultiMap{ { "a", 4 }, { "a", 5 }, { "b", 6 } };
+    CPPUNIT_ASSERT_EQUAL(expectedUnorderedMultiMap, testObj.someMultiHash);
     CPPUNIT_ASSERT_EQUAL(set<string>({ "a", "b" }), testObj.someSet);
     CPPUNIT_ASSERT_EQUAL(multiset<string>({ "a", "a" }), testObj.someMultiset);
     CPPUNIT_ASSERT_EQUAL(unordered_set<string>({ "a", "b" }), testObj.someUnorderedSet);

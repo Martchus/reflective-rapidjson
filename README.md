@@ -49,22 +49,22 @@ For a full list of further ideas, see [TODOs.md](./TODOs.md).
 ## Supported datatypes
 The following table shows the mapping of supported C++ types to supported JSON types:
 
-| C++ type                                                      | JSON type    |
-| ------------------------------------------------------------- |:------------:|
-| custom structures/classes                                     | object       |
-| `bool`                                                        | true/false   |
-| signed and unsigned integral types                            | number       |
-| `float` and `double`                                          | number       |
-| `enum` and `enum class`                                       | number       |
-| `std::string`                                                 | string       |
-| `const char *`                                                | string       |
-| iteratable lists (`std::vector`, `std::list`, ...)            | array        |
-| sets (`std::set`, `std::unordered_set`, `std::multiset`, ...) | array        |
-| `std::tuple`                                                  | array        |
-| `std::unique_ptr`, `std::shared_ptr`                          | depends/null |
-| `std::map`, `std::unordered_map`                              | object       |
-| `std::variant`                                                | object       |
-| `JsonSerializable`                                            | object       |
+| C++ type                                                                     | JSON type    |
+| ---------------------------------------------------------------------------- |:------------:|
+| custom structures/classes                                                    | object       |
+| `bool`                                                                       | true/false   |
+| signed and unsigned integral types                                           | number       |
+| `float` and `double`                                                         | number       |
+| `enum` and `enum class`                                                      | number       |
+| `std::string`                                                                | string       |
+| `const char *`                                                               | string       |
+| iteratable lists (`std::vector`, `std::list`, ...)                           | array        |
+| sets (`std::set`, `std::unordered_set`, `std::multiset`, ...)                | array        |
+| `std::tuple`                                                                 | array        |
+| `std::unique_ptr`, `std::shared_ptr`                                         | depends/null |
+| `std::map`, `std::unordered_map`, `std::multimap`, `std::unordered_multimap` | object       |
+| `std::variant`                                                               | object       |
+| `JsonSerializable`                                                           | object       |
 
 ### Remarks
 * Raw pointer are not supported. This prevents
@@ -85,7 +85,11 @@ The following table shows the mapping of supported C++ types to supported JSON t
 * It is possible to treat custom types as set/map using the macro `REFLECTIVE_RAPIDJSON_TREAT_AS_MAP_OR_HASH`,
   `REFLECTIVE_RAPIDJSON_TREAT_AS_MULTI_MAP_OR_HASH`, `REFLECTIVE_RAPIDJSON_TREAT_AS_SET` or
   `REFLECTIVE_RAPIDJSON_TREAT_AS_MULTI_SET`.
-* The key type of `std::map` and `std::unordered_map` must be `std::string`.
+* The key type of `std::map`, `std::unordered_map`, `std::multimap` and `std::unordered_multimap` must be
+  `std::string`.
+* An array is used to represent the multiple values of an `std::multimap` and `std::unordered_multimap` (for
+  consistency also when there is only one value present). This is because the JSON RFC says that
+  "The names within an object SHOULD be unique".
 * An `std::variant` is represented by an object like `{"index": ..., "data": ...}` where `index` is the
   zero-based index of the alternative held by the variant and `data` the value held by the variant. The
   type of `data` is `null` for `std::monostate` and otherwise deduced as usual.

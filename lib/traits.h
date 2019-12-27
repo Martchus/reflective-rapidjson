@@ -59,7 +59,7 @@ using IsArrayOrSet = Traits::Any<Traits::All<Traits::IsIteratable<Type>, Traits:
     TreatAsSet<Type>, TreatAsMultiSet<Type>>;
 template <typename Type>
 using IsArray = Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>,
-    Traits::Not<IsMapOrHash<Type>>, Traits::Not<IsSet<Type>>, Traits::Not<IsMultiSet<Type>>>;
+    Traits::Not<IsMapOrHash<Type>>, Traits::Not<IsMultiMapOrHash<Type>>, Traits::Not<IsSet<Type>>, Traits::Not<IsMultiSet<Type>>>;
 template <typename Type>
 using IsIteratableExceptString = Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>;
 template <typename Type> using IsVariant = Traits::All<Traits::IsSpecializationOf<Type, std::variant>>;

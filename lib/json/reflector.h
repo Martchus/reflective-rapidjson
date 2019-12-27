@@ -17,9 +17,13 @@
 #include <rapidjson/writer.h>
 
 #include <limits>
+#include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <tuple>
+#include <unordered_map>
+#include <unordered_set>
 #include <variant>
 
 #include "./errorhandling.h"
@@ -213,16 +217,36 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
 }
 
 /*!
- * \brief Pushes the specified map (std::map, std::unordered_map) or multimap (std::multimap, std::unordered_multimap) to the
- *        specified value.
+ * \brief Pushes the specified map (std::map, std::unordered_map) to the specified value.
  */
-template <typename Type, Traits::EnableIfAny<IsMapOrHash<Type>, IsMultiMapOrHash<Type>> * = nullptr>
+template <typename Type, Traits::EnableIfAny<IsMapOrHash<Type>> * = nullptr>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     value.SetObject();
     RAPIDJSON_NAMESPACE::Value::Object object(value.GetObject());
     for (const auto &item : reflectable) {
         push(item.second, item.first.data(), object, allocator);
+    }
+}
+
+/*!
+ * \brief Pushes the specified multimap (std::multimap, std::unordered_multimap) to the specified value.
+ */
+template <typename Type, Traits::EnableIfAny<IsMultiMapOrHash<Type>> * = nullptr>
+void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
+{
+    value.SetObject();
+    for (const auto &item : reflectable) {
+        auto arrayValue = RAPIDJSON_NAMESPACE::Value(RAPIDJSON_NAMESPACE::Type::kArrayType);
+        const auto memberName = RAPIDJSON_NAMESPACE::Value::StringRefType(item.first.data(), rapidJsonSize(item.first.size()));
+        const auto existingMember = value.FindMember(memberName);
+        if (existingMember != value.MemberEnd() && existingMember->value.GetType() == RAPIDJSON_NAMESPACE::Type::kArrayType) {
+            arrayValue = existingMember->value;
+        } else {
+            value.AddMember(memberName, arrayValue, allocator);
+        }
+        RAPIDJSON_NAMESPACE::Value::Array array = arrayValue.GetArray();
+        push(item.second, array, allocator);
     }
 }
 
@@ -686,8 +710,16 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
     }
     auto obj = value.GetObject();
     for (auto i = obj.MemberBegin(), end = obj.MemberEnd(); i != end; ++i) {
-        auto insertedIterator = reflectable.insert(typename Type::value_type(i->name.GetString(), typename Type::mapped_type()));
-        pull(insertedIterator->second, i->value, errors);
+        if (i->value.GetType() != RAPIDJSON_NAMESPACE::kArrayType) {
+            auto insertedIterator = reflectable.insert(typename Type::value_type(i->name.GetString(), typename Type::mapped_type()));
+            pull(insertedIterator->second, i->value, errors);
+            continue;
+        }
+        const auto array = i->value.GetArray();
+        for (const auto &value : array) {
+            auto insertedIterator = reflectable.insert(typename Type::value_type(i->name.GetString(), typename Type::mapped_type()));
+            pull(insertedIterator->second, value, errors);
+        }
     }
 }
 

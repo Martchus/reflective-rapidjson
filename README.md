@@ -60,7 +60,7 @@ The following table shows the mapping of supported C++ types to supported JSON t
 | `const char *`                                                               | string       |
 | iteratable lists (`std::vector`, `std::list`, ...)                           | array        |
 | sets (`std::set`, `std::unordered_set`, `std::multiset`, ...)                | array        |
-| `std::tuple`                                                                 | array        |
+| `std::pair`, `std::tuple`                                                    | array        |
 | `std::unique_ptr`, `std::shared_ptr`                                         | depends/null |
 | `std::map`, `std::unordered_map`, `std::multimap`, `std::unordered_multimap` | object       |
 | `std::variant`                                                               | object       |

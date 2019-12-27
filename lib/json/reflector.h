@@ -81,8 +81,9 @@ inline RAPIDJSON_NAMESPACE::Document parseJsonDocFromString(const char *json, st
 // define traits to distinguish between "built-in" types like int, std::string, std::vector, ... and custom structs/classes
 template <typename Type>
 using IsBuiltInType = Traits::Any<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>, std::is_enum<Type>,
-    Traits::IsSpecializationOf<Type, std::tuple>, Traits::IsIteratable<Type>, Traits::IsSpecializationOf<Type, std::unique_ptr>,
-    Traits::IsSpecializationOf<Type, std::shared_ptr>, Traits::IsSpecializationOf<Type, std::weak_ptr>, IsVariant<Type>>;
+    Traits::IsSpecializationOf<Type, std::tuple>, Traits::IsSpecializationOf<Type, std::pair>, Traits::IsIteratable<Type>,
+    Traits::IsSpecializationOf<Type, std::unique_ptr>, Traits::IsSpecializationOf<Type, std::shared_ptr>,
+    Traits::IsSpecializationOf<Type, std::weak_ptr>, IsVariant<Type>>;
 template <typename Type> using IsCustomType = Traits::Not<IsBuiltInType<Type>>;
 
 // define trait to check for custom structs/classes which are JSON serializable
@@ -237,16 +238,16 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
 {
     value.SetObject();
     for (const auto &item : reflectable) {
-        auto arrayValue = RAPIDJSON_NAMESPACE::Value(RAPIDJSON_NAMESPACE::Type::kArrayType);
         const auto memberName = RAPIDJSON_NAMESPACE::Value::StringRefType(item.first.data(), rapidJsonSize(item.first.size()));
         const auto existingMember = value.FindMember(memberName);
-        if (existingMember != value.MemberEnd() && existingMember->value.GetType() == RAPIDJSON_NAMESPACE::Type::kArrayType) {
-            arrayValue = existingMember->value;
-        } else {
-            value.AddMember(memberName, arrayValue, allocator);
-        }
-        RAPIDJSON_NAMESPACE::Value::Array array = arrayValue.GetArray();
+        const auto arrayAlreadyExists
+            = existingMember != value.MemberEnd() && existingMember->value.GetType() == RAPIDJSON_NAMESPACE::Type::kArrayType;
+        auto newArrayValue = RAPIDJSON_NAMESPACE::Value{ RAPIDJSON_NAMESPACE::kArrayType };
+        RAPIDJSON_NAMESPACE::Value::Array array = arrayAlreadyExists ? existingMember->value.GetArray() : newArrayValue.GetArray();
         push(item.second, array, allocator);
+        if (!arrayAlreadyExists) {
+            value.AddMember(memberName, newArrayValue, allocator);
+        }
     }
 }
 
@@ -281,6 +282,19 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
     RAPIDJSON_NAMESPACE::Value::Array array(value.GetArray());
     array.Reserve(std::tuple_size<Type>::value, allocator);
     Detail::TuplePushHelper<Type, std::tuple_size<Type>::value>::push(reflectable, array, allocator);
+}
+
+/*!
+ * \brief Pushes the specified pair to the specified value.
+ */
+template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::pair>> * = nullptr>
+void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
+{
+    value.SetArray();
+    RAPIDJSON_NAMESPACE::Value::Array array(value.GetArray());
+    array.Reserve(2, allocator);
+    push(reflectable.first, array, allocator);
+    push(reflectable.second, array, allocator);
 }
 
 /*!
@@ -437,6 +451,12 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
  * \brief Pulls the specified \a reflectable which is a tuple from the specified value which is checked to contain an array.
  */
 template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::tuple>> * = nullptr>
+void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors);
+
+/*!
+ * \brief Pulls the specified \a reflectable which is a pair from the specified value which is checked to contain an array.
+ */
+template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::pair>> * = nullptr>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors);
 
 /*!
@@ -757,7 +777,7 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
         }
         return;
     }
-    auto array = value.GetArray();
+    const auto array = value.GetArray();
     if (array.Size() != std::tuple_size<Type>::value) {
         if (errors) {
             // FIXME: report expected and actual size
@@ -766,6 +786,30 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
         return;
     }
     Detail::TuplePullHelper<Type, std::tuple_size<Type>::value>::pull(reflectable, array, errors);
+}
+
+/*!
+ * \brief Pulls the specified \a reflectable which is a pair from the specified value which is checked to contain an array.
+ */
+template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::pair>> *>
+void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
+{
+    if (!value.IsArray()) {
+        if (errors) {
+            errors->reportTypeMismatch<Type>(value.GetType());
+        }
+        return;
+    }
+    const auto array = value.GetArray();
+    if (array.Size() != 2) {
+        if (errors) {
+            // FIXME: report expected and actual size
+            errors->reportArraySizeMismatch();
+        }
+        return;
+    }
+    pull(reflectable.first, array[0], errors);
+    pull(reflectable.second, array[1], errors);
 }
 
 /*!

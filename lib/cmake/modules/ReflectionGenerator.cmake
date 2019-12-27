@@ -44,8 +44,10 @@ if (NOT REFLECTION_GENERATOR_CLANG_RESOURCE_DIR)
             message(FATAL_ERROR "Unable to find the clang executable to determine Clang's resource directory")
         endif ()
     endif ()
-    exec_program(${REFLECTION_GENERATOR_CLANG_BIN} ARGS -print-resource-dir OUTPUT_VARIABLE
-                 REFLECTION_GENERATOR_CLANG_RESOURCE_DIR)
+    exec_program(
+        ${REFLECTION_GENERATOR_CLANG_BIN} ARGS
+        -print-resource-dir OUTPUT_VARIABLE
+        REFLECTION_GENERATOR_CLANG_RESOURCE_DIR)
 endif ()
 if (NOT REFLECTION_GENERATOR_CLANG_RESOURCE_DIR OR NOT IS_DIRECTORY "${REFLECTION_GENERATOR_CLANG_RESOURCE_DIR}")
     message(

@@ -17,7 +17,6 @@
 #include <limits>
 #include <memory>
 #include <string>
-#include <tuple>
 #include <variant>
 
 namespace ReflectiveRapidJSON {
@@ -56,8 +55,8 @@ public:
 
     using CppUtilities::BinaryReader::read;
     template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::pair>> * = nullptr> void read(Type &pair);
-    template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::unique_ptr>> * = nullptr> void read(Type &pair);
-    template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::shared_ptr>> * = nullptr> void read(Type &pair);
+    template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::unique_ptr>> * = nullptr> void read(Type &pointer);
+    template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::shared_ptr>> * = nullptr> void read(Type &pointer);
     template <typename Type, Traits::EnableIf<IsArray<Type>, Traits::IsResizable<Type>> * = nullptr> void read(Type &iteratable);
     template <typename Type, Traits::EnableIfAny<IsMapOrHash<Type>, IsMultiMapOrHash<Type>> * = nullptr> void read(Type &iteratable);
     template <typename Type,

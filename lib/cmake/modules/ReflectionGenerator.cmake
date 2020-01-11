@@ -72,7 +72,7 @@ include(CMakeParseArguments)
 function (add_reflection_generator_invocation)
     # parse arguments
     set(OPTIONAL_ARGS)
-    set(ONE_VALUE_ARGS OUTPUT_DIRECTORY JSON_VISIBILITY)
+    set(ONE_VALUE_ARGS OUTPUT_DIRECTORY JSON_VISIBILITY BINARY_VISBILITY)
     set(MULTI_VALUE_ARGS INPUT_FILES GENERATORS OUTPUT_LISTS CLANG_OPTIONS CLANG_OPTIONS_FROM_TARGETS JSON_CLASSES)
     cmake_parse_arguments(ARGS "${OPTIONAL_ARGS}" "${ONE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN})
 
@@ -152,6 +152,9 @@ function (add_reflection_generator_invocation)
             ${ARGS_JSON_CLASSES})
         if (ARGS_JSON_VISIBILITY)
             list(APPEND CLI_ARGUMENTS --json-visibility "${ARGS_JSON_VISIBILITY}")
+        endif ()
+        if (ARGS_BINARY_VISBILITY)
+            list(APPEND CLI_ARGUMENTS --binary-visibility "${ARGS_BINARY_VISBILITY}")
         endif ()
         add_custom_command(
             OUTPUT "${OUTPUT_FILE}"

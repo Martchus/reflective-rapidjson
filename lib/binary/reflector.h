@@ -19,6 +19,10 @@
 #include <string>
 #include <variant>
 
+/// \cond
+class BinaryReflectorTests;
+/// \endcond
+
 namespace ReflectiveRapidJSON {
 
 /*!
@@ -50,8 +54,10 @@ template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void 
 template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void writeCustomType(BinarySerializer &serializer, const Type &customType);
 
 class BinaryDeserializer : public CppUtilities::BinaryReader {
+    friend class ::BinaryReflectorTests;
+
 public:
-    BinaryDeserializer(std::istream *stream);
+    explicit BinaryDeserializer(std::istream *stream);
 
     using CppUtilities::BinaryReader::read;
     template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::pair>> * = nullptr> void read(Type &pair);
@@ -67,12 +73,15 @@ public:
     template <typename Type, Traits::EnableIf<IsVariant<Type>> * = nullptr> void read(Type &variant);
     template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void read(Type &customType);
 
+private:
     std::unordered_map<std::uint64_t, std::any> m_pointer;
 };
 
 class BinarySerializer : public CppUtilities::BinaryWriter {
+    friend class ::BinaryReflectorTests;
+
 public:
-    BinarySerializer(std::ostream *stream);
+    explicit BinarySerializer(std::ostream *stream);
 
     using CppUtilities::BinaryWriter::write;
     template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::pair>> * = nullptr> void write(const Type &pair);
@@ -83,6 +92,7 @@ public:
     template <typename Type, Traits::EnableIf<IsVariant<Type>> * = nullptr> void write(const Type &variant);
     template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void write(const Type &customType);
 
+private:
     std::unordered_map<std::uint64_t, bool> m_pointer;
 };
 

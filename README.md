@@ -154,7 +154,7 @@ struct TestObject : public ReflectiveRapidJSON::BinarySerializable&lt;TestObject
 It is possible to use the provided CMake macro to automate the code generator invocation:
 <pre>
 # find the package and make macro available
-find_package(reflective-rapidjson REQUIRED)
+find_package(reflective_rapidjson REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${REFLECTIVE_RAPIDJSON_MODULE_DIRS})
 include(ReflectionGenerator)
 
@@ -209,8 +209,7 @@ To adjust the default location, just add eg. `--clang-opt -resource-dir /usr/lib
 It makes most sense to specify the same options for the code generator as during the actual compilation. This way the code
 generator uses the same flags, defines and include directories as the compiler and hence behaves like the compiler.  
 When using the CMake macro, it is possible to automatically pass all compile flags, compile definitions and include directories
-from certain targets to the code generator. Those targets can be specified using the
-Macro's `CLANG_OPTIONS_FROM_TARGETS` argument.
+from certain targets to the code generator. Those targets can be specified using the macro's `CLANG_OPTIONS_FROM_TARGETS` argument.
 
 #### Notes regarding cross-compilation
 * For cross compilation, it is required to build the code generator for the platform you're building on.

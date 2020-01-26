@@ -171,7 +171,8 @@ struct JsonDeserializationErrors : public std::vector<JsonDeserializationError> 
         TypeMismatch = 0x1,
         ArraySizeMismatch = 0x2,
         ConversionError = 0x4,
-        UnexpectedDuplicate = 0x8
+        UnexpectedDuplicate = 0x8,
+        All = 0xFF,
     } throwOn;
 
 private:

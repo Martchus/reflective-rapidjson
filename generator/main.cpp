@@ -39,10 +39,11 @@ int main(int argc, char *argv[])
     generatorsArg.setCombinable(true);
     ConfigValueArgument clangOptionsArg("clang-opt", '\0', "specifies arguments/options to be passed to Clang", { "option" });
     clangOptionsArg.setRequiredValueCount(Argument::varValueCount);
+    ConfigValueArgument logClangOptions("log-clang-opt", '\0', "logs the options passed to Clang");
     ConfigValueArgument errorResilientArg("error-resilient", '\0', "turns most errors into warnings");
     HelpArgument helpArg(parser);
     NoColorArgument noColorArg;
-    generateArg.setSubArguments({ &inputFileArg, &outputFileArg, &generatorsArg, &clangOptionsArg, &errorResilientArg });
+    generateArg.setSubArguments({ &inputFileArg, &outputFileArg, &generatorsArg, &clangOptionsArg, &logClangOptions, &errorResilientArg });
     JsonSerializationCodeGenerator::Options jsonOptions;
     jsonOptions.appendTo(&generateArg);
     BinarySerializationCodeGenerator::Options binaryOptions;
@@ -77,6 +78,12 @@ int main(int argc, char *argv[])
                 for (const auto &splittedValue : splittedValues) {
                     clangOptions.emplace_back(move(splittedValue));
                 }
+            }
+        }
+        if (logClangOptions.isPresent()) {
+            cerr << Phrases::Info << "Options passed to clang:" << Phrases::End;
+            for (const auto &opt : clangOptions) {
+                cerr << opt << '\n';
             }
         }
 

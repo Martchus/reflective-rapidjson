@@ -45,15 +45,16 @@ if (TARGET clang-cpp)
     list(APPEND PRIVATE_LIBRARIES clang-cpp LLVM)
 else ()
     list(
-        APPEND PRIVATE_LIBRARIES
-               clangTooling
-               clangFrontend
-               clangSerialization
-               clangSema
-               clangAST
-               clangLex
-               clangBasic
-               LLVM)
+        APPEND
+        PRIVATE_LIBRARIES
+        clangTooling
+        clangFrontend
+        clangSerialization
+        clangSema
+        clangAST
+        clangLex
+        clangBasic
+        LLVM)
 endif ()
 
 # also add reflective_rapidjson which is header-only but might pull additional include dirs for RapidJSON

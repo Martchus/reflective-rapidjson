@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 
 # set metadata
 project(reflective_rapidjson)
-set(META_PROJECT_NAME ${PROJECT_NAME})
+set(META_PROJECT_NAME reflective_rapidjson)
 set(META_APP_NAME "Reflection for RapidJSON")
 set(META_APP_AUTHOR "Martchus")
 set(META_APP_URL "https://github.com/${META_APP_AUTHOR}/reflective-rapidjson")
@@ -15,9 +15,6 @@ set(META_VERSION_PATCH 12)
 set(META_APP_VERSION ${META_VERSION_MAJOR}.${META_VERSION_MINOR}.${META_VERSION_PATCH})
 set(META_CXX_STANDARD 17)
 set(META_ADD_DEFAULT_CPP_UNIT_TEST_APPLICATION ON)
-
-# set project name for IDEs like Qt Creator
-project(${META_PROJECT_NAME})
 
 # ensure testing is enabled at this level (and not only for particular sub directories)
 enable_testing()

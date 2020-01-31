@@ -51,3 +51,6 @@ include(LibraryTarget)
 include(TestTarget)
 include(Doxygen)
 include(ConfigHeader)
+
+# export target name so the generator can link against it
+set(${META_PROJECT_VARNAME_UPPER}_TARGET_NAME "${META_TARGET_NAME}" PARENT_SCOPE)

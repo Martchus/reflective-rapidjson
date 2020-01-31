@@ -7,7 +7,7 @@ endif ()
 set(REFLECTION_GENERATOR_MODULE_LOADED YES)
 
 # find code generator
-set(DEFAULT_REFLECTION_GENERATOR_EXECUTABLE "reflective_rapidjson_generator")
+set(DEFAULT_REFLECTION_GENERATOR_EXECUTABLE "${TARGET_PREFIX}reflective_rapidjson_generator${TARGET_SUFFIX}")
 set(REFLECTION_GENERATOR_EXECUTABLE
     ""
     CACHE FILEPATH "path to executable of reflection generator")

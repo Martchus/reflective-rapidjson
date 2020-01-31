@@ -58,7 +58,7 @@ else ()
 endif ()
 
 # also add reflective_rapidjson which is header-only but might pull additional include dirs for RapidJSON
-list(APPEND PRIVATE_LIBRARIES reflective_rapidjson)
+list(APPEND PRIVATE_LIBRARIES "${REFLECTIVE_RAPIDJSON_TARGET_NAME}")
 
 # include modules to apply configuration
 include(BasicConfig)
@@ -69,7 +69,7 @@ include(ShellCompletion)
 include(Doxygen)
 
 # trigger code generator for tests because the tests already contain structs to be (de)serialized
-if (TARGET reflective_rapidjson_generator_tests)
+if (TARGET "${META_TARGET_NAME}_tests")
     include(ReflectionGenerator)
     # cmake-format: off
     add_reflection_generator_invocation(
@@ -85,7 +85,7 @@ if (TARGET reflective_rapidjson_generator_tests)
         CLANG_OPTIONS
             -std=c++17
         CLANG_OPTIONS_FROM_TARGETS
-            reflective_rapidjson_generator_tests
+            "${META_TARGET_NAME}_tests"
         JSON_CLASSES
             OtherNotJsonSerializable         # test specifying classes for JSON (de)serialization manually
             SomeOtherClassName               # specifying a class that does not exist should not cause any problems
@@ -94,7 +94,7 @@ if (TARGET reflective_rapidjson_generator_tests)
     )
     # cmake-format: on
     list(APPEND TEST_HEADER_FILES ${TEST_GENERATED_HEADER_FILES})
-    target_sources(reflective_rapidjson_generator_tests PRIVATE ${TEST_GENERATED_HEADER_FILES})
+    target_sources("${META_TARGET_NAME}_tests" PRIVATE ${TEST_GENERATED_HEADER_FILES})
 endif ()
 
 # add paths for include dirs of c++utilities and RapidJSON to config header so test cases can use it

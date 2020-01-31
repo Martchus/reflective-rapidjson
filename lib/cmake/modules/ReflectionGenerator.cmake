@@ -73,7 +73,7 @@ function (add_reflection_generator_invocation)
     # parse arguments
     set(OPTIONAL_ARGS)
     set(ONE_VALUE_ARGS OUTPUT_DIRECTORY JSON_VISIBILITY BINARY_VISBILITY)
-    set(MULTI_VALUE_ARGS INPUT_FILES GENERATORS OUTPUT_LISTS CLANG_OPTIONS CLANG_OPTIONS_FROM_TARGETS JSON_CLASSES)
+    set(MULTI_VALUE_ARGS INPUT_FILES GENERATORS OUTPUT_LISTS CLANG_OPTIONS CLANG_OPTIONS_FROM_TARGETS CLANG_OPTIONS_FROM_DEPENDENCIES JSON_CLASSES)
     cmake_parse_arguments(ARGS "${OPTIONAL_ARGS}" "${ONE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN})
 
     # determine file name or file path if none specified
@@ -127,6 +127,22 @@ function (add_reflection_generator_invocation)
             list(APPEND ARGS_CLANG_OPTIONS "$<$<BOOL:${PROP}>:-D$<JOIN:${PROP},$<SEMICOLON>-D>>")
             # add include directories
             set(PROP "$<TARGET_PROPERTY:${TARGET_NAME},INCLUDE_DIRECTORIES>")
+            list(APPEND ARGS_CLANG_OPTIONS "$<$<BOOL:${PROP}>:-I$<JOIN:${PROP},$<SEMICOLON>-I>>")
+        endforeach ()
+    endif ()
+    if (ARGS_CLANG_OPTIONS_FROM_DEPENDENCIES)
+        foreach (TARGET_NAME ${ARGS_CLANG_OPTIONS_FROM_DEPENDENCIES})
+            if (NOT TARGET "${TARGET_NAME}")
+                continue()
+            endif ()
+            # add interface compile options
+            set(PROP "$<TARGET_PROPERTY:${TARGET_NAME},INTERFACE_COMPILE_OPTIONS>")
+            list(APPEND ARGS_CLANG_OPTIONS "$<$<BOOL:${PROP}>:$<JOIN:${PROP},$<SEMICOLON>>>")
+            # add interface compile definitions
+            set(PROP "$<TARGET_PROPERTY:${TARGET_NAME},INTERFACE_COMPILE_DEFINITIONS>")
+            list(APPEND ARGS_CLANG_OPTIONS "$<$<BOOL:${PROP}>:-D$<JOIN:${PROP},$<SEMICOLON>-D>>")
+            # add interface include directories
+            set(PROP "$<TARGET_PROPERTY:${TARGET_NAME},INTERFACE_INCLUDE_DIRECTORIES>")
             list(APPEND ARGS_CLANG_OPTIONS "$<$<BOOL:${PROP}>:-I$<JOIN:${PROP},$<SEMICOLON>-I>>")
         endforeach ()
     endif ()

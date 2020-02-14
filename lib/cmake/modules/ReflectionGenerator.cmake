@@ -67,6 +67,10 @@ set(REFLECTION_GENERATOR_TRIPLE
     ""
     CACHE STRING "platform triple for code generator")
 
+function (_reflective_rapidjson_set_prop TARGET_NAME PROPERTY_NAME)
+    set(PROP "$<FILTER:$<TARGET_PROPERTY:${TARGET_NAME},${PROPERTY_NAME}>,EXCLUDE,^$>" PARENT_SCOPE)
+endfunction ()
+
 # define helper function to add a reflection generator invocation for a specified list of source files
 include(CMakeParseArguments)
 function (add_reflection_generator_invocation)
@@ -120,13 +124,13 @@ function (add_reflection_generator_invocation)
             # set c++ standard
             list(APPEND ARGS_CLANG_OPTIONS "-std=c++$<TARGET_PROPERTY:${TARGET_NAME},CXX_STANDARD>")
             # add compile flags
-            set(PROP "$<TARGET_PROPERTY:${TARGET_NAME},COMPILE_FLAGS>")
+            _reflective_rapidjson_set_prop("${TARGET_NAME}" COMPILE_FLAGS)
             list(APPEND ARGS_CLANG_OPTIONS "$<$<BOOL:${PROP}>:$<JOIN:${PROP},$<SEMICOLON>>>")
             # add compile definitions
-            set(PROP "$<TARGET_PROPERTY:${TARGET_NAME},COMPILE_DEFINITIONS>")
+            _reflective_rapidjson_set_prop("${TARGET_NAME}" COMPILE_DEFINITIONS)
             list(APPEND ARGS_CLANG_OPTIONS "$<$<BOOL:${PROP}>:-D$<JOIN:${PROP},$<SEMICOLON>-D>>")
             # add include directories
-            set(PROP "$<TARGET_PROPERTY:${TARGET_NAME},INCLUDE_DIRECTORIES>")
+            _reflective_rapidjson_set_prop("${TARGET_NAME}" INCLUDE_DIRECTORIES)
             list(APPEND ARGS_CLANG_OPTIONS "$<$<BOOL:${PROP}>:-I$<JOIN:${PROP},$<SEMICOLON>-I>>")
         endforeach ()
     endif ()
@@ -136,13 +140,13 @@ function (add_reflection_generator_invocation)
                 continue()
             endif ()
             # add interface compile options
-            set(PROP "$<TARGET_PROPERTY:${TARGET_NAME},INTERFACE_COMPILE_OPTIONS>")
+            _reflective_rapidjson_set_prop("${TARGET_NAME}" INTERFACE_COMPILE_OPTIONS)
             list(APPEND ARGS_CLANG_OPTIONS "$<$<BOOL:${PROP}>:$<JOIN:${PROP},$<SEMICOLON>>>")
             # add interface compile definitions
-            set(PROP "$<TARGET_PROPERTY:${TARGET_NAME},INTERFACE_COMPILE_DEFINITIONS>")
+            _reflective_rapidjson_set_prop("${TARGET_NAME}" INTERFACE_COMPILE_DEFINITIONS)
             list(APPEND ARGS_CLANG_OPTIONS "$<$<BOOL:${PROP}>:-D$<JOIN:${PROP},$<SEMICOLON>-D>>")
             # add interface include directories
-            set(PROP "$<TARGET_PROPERTY:${TARGET_NAME},INTERFACE_INCLUDE_DIRECTORIES>")
+            _reflective_rapidjson_set_prop("${TARGET_NAME}" INTERFACE_INCLUDE_DIRECTORIES)
             list(APPEND ARGS_CLANG_OPTIONS "$<$<BOOL:${PROP}>:-I$<JOIN:${PROP},$<SEMICOLON>-I>>")
         endforeach ()
     endif ()

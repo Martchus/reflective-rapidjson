@@ -68,7 +68,12 @@ set(REFLECTION_GENERATOR_TRIPLE
     CACHE STRING "platform triple for code generator")
 
 function (_reflective_rapidjson_set_prop TARGET_NAME PROPERTY_NAME)
-    set(PROP "$<FILTER:$<TARGET_PROPERTY:${TARGET_NAME},${PROPERTY_NAME}>,EXCLUDE,^$>" PARENT_SCOPE)
+    if ("${CMAKE_VERSION}" VERSION_LESS "3.15.0")
+        set(PROP "$<TARGET_PROPERTY:${TARGET_NAME},${PROPERTY_NAME}>" PARENT_SCOPE)
+        message(WARNING "Passing empty flags to the code generator for property ${PROPERTY_NAME} of target ${TARGET_NAME} might not be prevented. Consider updating to CMake 3.15.0 or newer.")
+    else ()
+        set(PROP "$<FILTER:$<TARGET_PROPERTY:${TARGET_NAME},${PROPERTY_NAME}>,EXCLUDE,^$>" PARENT_SCOPE)
+    endif ()
 endfunction ()
 
 # define helper function to add a reflection generator invocation for a specified list of source files

@@ -21,7 +21,8 @@ if (RapidJSON_FOUND)
         json/reflector-boosthana.h
         json/reflector-chronoutilities.h
         json/serializable.h
-        json/errorhandling.h)
+        json/errorhandling.h
+        json/errorformatting.h)
     list(APPEND TEST_SRC_FILES tests/jsonreflector.cpp tests/jsonreflector-boosthana.cpp
          tests/jsonreflector-chronoutilities.cpp)
 endif ()
@@ -53,4 +54,6 @@ include(Doxygen)
 include(ConfigHeader)
 
 # export target name so the generator can link against it
-set(${META_PROJECT_VARNAME_UPPER}_TARGET_NAME "${META_TARGET_NAME}" PARENT_SCOPE)
+set(${META_PROJECT_VARNAME_UPPER}_TARGET_NAME
+    "${META_TARGET_NAME}"
+    PARENT_SCOPE)

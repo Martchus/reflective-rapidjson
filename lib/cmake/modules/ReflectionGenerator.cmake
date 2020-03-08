@@ -69,10 +69,17 @@ set(REFLECTION_GENERATOR_TRIPLE
 
 function (_reflective_rapidjson_set_prop TARGET_NAME PROPERTY_NAME)
     if ("${CMAKE_VERSION}" VERSION_LESS "3.15.0")
-        set(PROP "$<TARGET_PROPERTY:${TARGET_NAME},${PROPERTY_NAME}>" PARENT_SCOPE)
-        message(WARNING "Passing empty flags to the code generator for property ${PROPERTY_NAME} of target ${TARGET_NAME} might not be prevented. Consider updating to CMake 3.15.0 or newer.")
+        set(PROP
+            "$<TARGET_PROPERTY:${TARGET_NAME},${PROPERTY_NAME}>"
+            PARENT_SCOPE)
+        message(
+            WARNING
+                "Passing empty flags to the code generator for property ${PROPERTY_NAME} of target ${TARGET_NAME} might not be prevented. Consider updating to CMake 3.15.0 or newer."
+        )
     else ()
-        set(PROP "$<FILTER:$<TARGET_PROPERTY:${TARGET_NAME},${PROPERTY_NAME}>,EXCLUDE,^$>" PARENT_SCOPE)
+        set(PROP
+            "$<FILTER:$<TARGET_PROPERTY:${TARGET_NAME},${PROPERTY_NAME}>,EXCLUDE,^$>"
+            PARENT_SCOPE)
     endif ()
 endfunction ()
 
@@ -82,7 +89,14 @@ function (add_reflection_generator_invocation)
     # parse arguments
     set(OPTIONAL_ARGS)
     set(ONE_VALUE_ARGS OUTPUT_DIRECTORY JSON_VISIBILITY BINARY_VISBILITY)
-    set(MULTI_VALUE_ARGS INPUT_FILES GENERATORS OUTPUT_LISTS CLANG_OPTIONS CLANG_OPTIONS_FROM_TARGETS CLANG_OPTIONS_FROM_DEPENDENCIES JSON_CLASSES)
+    set(MULTI_VALUE_ARGS
+        INPUT_FILES
+        GENERATORS
+        OUTPUT_LISTS
+        CLANG_OPTIONS
+        CLANG_OPTIONS_FROM_TARGETS
+        CLANG_OPTIONS_FROM_DEPENDENCIES
+        JSON_CLASSES)
     cmake_parse_arguments(ARGS "${OPTIONAL_ARGS}" "${ONE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN})
 
     # determine file name or file path if none specified

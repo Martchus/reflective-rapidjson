@@ -1,3 +1,4 @@
+#include "./clangversionabstraction.h"
 #include "./codefactory.h"
 #include "./frontendaction.h"
 
@@ -20,7 +21,7 @@ struct CodeFactory::ToolInvocation {
 
 CodeFactory::ToolInvocation::ToolInvocation(CodeFactory &factory)
     : fileManager({ "." })
-    , invocation(factory.makeClangArgs(), new FrontendAction(factory), &fileManager)
+    , invocation(factory.makeClangArgs(), maybe_unique(new FrontendAction(factory)), &fileManager)
 {
     fileManager.Retain();
 }

@@ -6,6 +6,8 @@
 #include <clang/AST/DeclFriend.h>
 #include <clang/AST/DeclTemplate.h>
 
+#include <iostream>
+
 using namespace std;
 
 namespace ReflectiveRapidJSON {

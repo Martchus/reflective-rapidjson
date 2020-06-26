@@ -169,7 +169,24 @@ inline void push(Type reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
 template <typename Type, Traits::EnableIf<std::is_same<Type, const char *>> * = nullptr>
 inline void push(Type reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
-    value.SetString(RAPIDJSON_NAMESPACE::StringRef(reflectable), allocator);
+    if (reflectable) {
+        value.SetString(RAPIDJSON_NAMESPACE::StringRef(reflectable), allocator);
+    } else {
+        value.SetNull();
+    }
+}
+
+/*!
+ * \brief Pushes the specified C-string to the specified value.
+ */
+template <typename Type, Traits::EnableIf<std::is_same<Type, std::string_view>> * = nullptr>
+inline void push(Type reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
+{
+    if (reflectable.data()) {
+        value.SetString(RAPIDJSON_NAMESPACE::StringRef(reflectable.data(), reflectable.size()), allocator);
+    } else {
+        value.SetNull();
+    }
 }
 
 /*!
@@ -570,7 +587,8 @@ inline void pull(
  * \brief Checks whether the specified value contains a string.
  * \remarks Does not actually store the value since the ownership would not be clear (see README.md).
  */
-template <typename Type, Traits::EnableIfAny<std::is_same<Type, const char *>, std::is_same<Type, const char *const &>> * = nullptr>
+template <typename Type,
+    Traits::EnableIfAny<std::is_same<Type, const char *>, std::is_same<Type, const char *const &>, std::is_same<Type, std::string_view>> * = nullptr>
 inline void pull(Type &, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
     if (!value.IsString()) {
@@ -1005,6 +1023,17 @@ RAPIDJSON_NAMESPACE::Document toJsonDocument(const char *reflectable)
 {
     RAPIDJSON_NAMESPACE::Document document(RAPIDJSON_NAMESPACE::kStringType);
     document.SetString(RAPIDJSON_NAMESPACE::StringRef(reflectable), document.GetAllocator());
+    return document;
+}
+
+/*!
+ * \brief Serializes the specified \a reflectable which is a C-string.
+ */
+template <typename Type, Traits::EnableIf<std::is_same<Type, std::string_view>> * = nullptr>
+RAPIDJSON_NAMESPACE::Document toJsonDocument(std::string_view reflectable)
+{
+    RAPIDJSON_NAMESPACE::Document document(RAPIDJSON_NAMESPACE::kStringType);
+    document.SetString(RAPIDJSON_NAMESPACE::StringRef(reflectable.data(), reflectable.size()), document.GetAllocator());
     return document;
 }
 

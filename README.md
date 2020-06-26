@@ -57,7 +57,8 @@ The following table shows the mapping of supported C++ types to supported JSON t
 | `float` and `double`                                                         | number       |
 | `enum` and `enum class`                                                      | number       |
 | `std::string`                                                                | string       |
-| `const char *`                                                               | string       |
+| `std::string_view`                                                           | string/null  |
+| `const char *`                                                               | string/null  |
 | iteratable lists (`std::vector`, `std::list`, ...)                           | array        |
 | sets (`std::set`, `std::unordered_set`, `std::multiset`, ...)                | array        |
 | `std::pair`, `std::tuple`                                                    | array        |
@@ -69,7 +70,7 @@ The following table shows the mapping of supported C++ types to supported JSON t
 ### Remarks
 * Raw pointer are not supported. This prevents
   forgetting to free memory which would have to be allocated when deserializing.
-* For the same reason `const char *` strings are only supported for serialization.
+* For the same reason `const char *` and `std::string_view` are only supported for serialization.
 * Enums are (de)serialized as their underlying integer value. When deserializing, it is currently *not* checked
   whether the present integer value is a valid enumeration item.
 * The JSON type for smart pointer depends on the type the pointer refers to. It can also be `null`.

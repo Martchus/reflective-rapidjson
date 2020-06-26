@@ -54,14 +54,16 @@ template <typename Type>
 using IsMultiSet
     = Traits::Any<Traits::IsSpecializationOf<Type, std::multiset>, Traits::IsSpecializationOf<Type, std::unordered_multiset>, TreatAsMultiSet<Type>>;
 template <typename Type>
-using IsArrayOrSet = Traits::Any<Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>,
-                                     Traits::Not<IsMapOrHash<Type>>, Traits::Not<IsMultiMapOrHash<Type>>>,
+using IsArrayOrSet = Traits::Any<
+    Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>,
+        Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string_view>>, Traits::Not<IsMapOrHash<Type>>, Traits::Not<IsMultiMapOrHash<Type>>>,
     TreatAsSet<Type>, TreatAsMultiSet<Type>>;
 template <typename Type>
 using IsArray = Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>,
     Traits::Not<IsMapOrHash<Type>>, Traits::Not<IsMultiMapOrHash<Type>>, Traits::Not<IsSet<Type>>, Traits::Not<IsMultiSet<Type>>>;
 template <typename Type>
-using IsIteratableExceptString = Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>;
+using IsIteratableExceptString = Traits::All<Traits::IsIteratable<Type>, Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>,
+    Traits::Not<Traits::IsSpecializationOf<Type, std::basic_string>>>;
 template <typename Type> using IsVariant = Traits::All<Traits::IsSpecializationOf<Type, std::variant>>;
 
 } // namespace ReflectiveRapidJSON

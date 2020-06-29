@@ -166,11 +166,11 @@ inline void push(Type reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
 /*!
  * \brief Pushes the specified C-string to the specified value.
  */
-template <typename Type, Traits::EnableIf<std::is_same<Type, const char *>> * = nullptr>
+template <typename Type, Traits::EnableIfAny<std::is_same<Type, const char *>, std::is_same<Type, const char *const &>> * = nullptr>
 inline void push(Type reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     if (reflectable) {
-        value.SetString(RAPIDJSON_NAMESPACE::StringRef(reflectable), allocator);
+        value.SetString(reflectable, allocator);
     } else {
         value.SetNull();
     }
@@ -183,19 +183,10 @@ template <typename Type, Traits::EnableIf<std::is_same<Type, std::string_view>> 
 inline void push(Type reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     if (reflectable.data()) {
-        value.SetString(RAPIDJSON_NAMESPACE::StringRef(reflectable.data(), reflectable.size()), allocator);
+        value.SetString(reflectable.data(), rapidJsonSize(reflectable.size()), allocator);
     } else {
         value.SetNull();
     }
-}
-
-/*!
- * \brief Pushes the specified constant C-string to the specified value.
- */
-template <typename Type, Traits::EnableIf<std::is_same<Type, const char *const &>> * = nullptr>
-inline void push(const char *const &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
-{
-    value.SetString(RAPIDJSON_NAMESPACE::StringRef(reflectable), allocator);
 }
 
 /*!
@@ -204,7 +195,7 @@ inline void push(const char *const &reflectable, RAPIDJSON_NAMESPACE::Value &val
 template <typename Type, Traits::EnableIf<std::is_same<Type, std::string>> * = nullptr>
 inline void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
-    value.SetString(RAPIDJSON_NAMESPACE::StringRef(reflectable.data(), reflectable.size()), allocator);
+    value.SetString(reflectable.data(), rapidJsonSize(reflectable.size()), allocator);
 }
 
 /*!

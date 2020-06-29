@@ -98,6 +98,7 @@ The following table shows the mapping of supported C++ types to supported JSON t
 * The binary (de)serializer supports approximately the same C++ types but obviously maps them to a platform
   independent binary representation rather than a JSON type.
 
+
 ## Usage
 This example shows how the library can be used to make a `struct` serializable:
 <pre>
@@ -142,6 +143,22 @@ There are further arguments available, see:
 <pre>
 reflective_rapidjson_generator --help
 </pre>
+
+### Mixing with direct RapidJSON usage and further notes
+It is of course possible to mix automatic serialization/deserialization with direct RapidJSON usage. This can be
+done by invoking the `push` and `pull` functions within the `ReflectiveRapidJSON::JsonReflector` namespace directly.
+
+The `push` functions are used on serialization to populate intermediate data structures for the serializer of the
+RapidJSON library. The intermediate JSON document can also easily be obtained via
+`JsonSerializable<Type>::toJsonDocument()`.
+
+Note that this means a copy of the provided data will be made. That includes all strings as well. Currently there
+is no way to use RapidJSON's copy-free `SetString`-overloads instead. As a consequence the mentioned intermediate
+JSON document can be serialized without causing any further read accesses to the actual data structures.
+
+The `pull` functions are used to populate your data structures from intermediate data structures produced by the
+parser of RapidJSON. Also in this case a copy will be made so only owning data structures can be used when
+deserializing (see remarks regarding supported datatypes).
 
 #### Binary (de)serialization
 It works very similar to the example above. Just use the `BinarySerializable` class instead (or in addition):

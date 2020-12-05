@@ -482,10 +482,13 @@ Add eg. `-j$(nproc)` to `make` arguments for using all cores.
 * Arch Linux
     * for PKGBUILDs checkout [my GitHub repository](https://github.com/Martchus/PKGBUILDs) or
       [the AUR](https://aur.archlinux.org/packages?SeB=m&K=Martchus)
-    * for a binary repository checkout [my website](http://martchus.no-ip.biz/website/page.php?name=programming)
+    * there is also a [binary repository](https://martchus.no-ip.biz/repo/arch/ownstuff)
 * Tumbleweed
-    * for RPM \*.spec files and binary repository checkout
-      [openSUSE Build Servide](https://build.opensuse.org/project/show/home:mkittler)
+    * RPM \*.spec files and binaries are available via openSUSE Build Service
+        * latest releases: [download page](https://software.opensuse.org/download.html?project=home:mkittler&package=reflective-rapidjson-devel),
+          [project page](https://build.opensuse.org/project/show/home:mkittler)
+        * Git master: [download page](https://software.opensuse.org/download.html?project=home:mkittler:vcs&package=reflective-rapidjson-devel),
+          [project page](https://build.opensuse.org/project/show/home:mkittler:vcs)
 * Windows
     * for mingw-w64 PKGBUILDs checkout [my GitHub repository](https://github.com/Martchus/PKGBUILDs)
 

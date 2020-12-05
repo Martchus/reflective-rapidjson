@@ -34,8 +34,8 @@ public:
     ~CodeFactory();
 
     const std::vector<std::unique_ptr<CodeGenerator>> &generators() const;
-    template <typename GeneratorType, typename... Args> void addGenerator(Args &&... args);
-    template <typename GeneratorType, typename... Args> auto bindGenerator(Args &&... args);
+    template <typename GeneratorType, typename... Args> void addGenerator(Args &&...args);
+    template <typename GeneratorType, typename... Args> auto bindGenerator(Args &&...args);
 
     bool run();
     clang::CompilerInstance *compilerInstance();
@@ -64,7 +64,7 @@ private:
  * \brief Instantiates a code generator of the specified type and adds it to the current instance.
  * \remarks The specified \a args are forwarded to the generator's constructor.
  */
-template <typename GeneratorType, typename... Args> void CodeFactory::addGenerator(Args &&... args)
+template <typename GeneratorType, typename... Args> void CodeFactory::addGenerator(Args &&...args)
 {
     m_generators.emplace_back(std::make_unique<GeneratorType>(*this, std::forward<Args>(args)...));
 }
@@ -101,7 +101,7 @@ template <typename T> T &&wrapReferences(T &&val)
  * - The specified \a args are forwarded to the generator's constructor.
  * - No copy of \a args passed by reference is made.
  */
-template <typename GeneratorType, typename... Args> auto CodeFactory::bindGenerator(Args &&... args)
+template <typename GeneratorType, typename... Args> auto CodeFactory::bindGenerator(Args &&...args)
 {
     return std::bind(&CodeFactory::addGenerator<GeneratorType, Args...>, this, Detail::wrapReferences(std::forward<Args>(args)...));
 }

@@ -49,7 +49,9 @@ set(CONFIGURATION_PACKAGE_SUFFIX "" CACHE STRING "sets the suffix for find_packa
 find_package(c++utilities${CONFIGURATION_PACKAGE_SUFFIX} 5.0.0 REQUIRED)
 
 # find RapidJSON
-find_package(RapidJSON)
+if(NOT RapidJSON_FOUND)
+    find_package(RapidJSON)
+endif()
 if(NOT RapidJSON_FOUND)
     message(FATAL_ERROR "Unable to find RapidJSON. Since this is the only supported reflection application at this time, it makes no sense to continue.")
 endif()

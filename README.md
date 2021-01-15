@@ -382,7 +382,7 @@ The following dependencies are required at build time. Note that Reflective Rapi
 and *none* of these dependencies are required at runtime by an application which makes use of
 Reflective RapidJSON.
 
-* C++ compiler and C++ standard library supporting at least C++14
+* C++ compiler and C++ standard library supporting at least C++17
 * the [CMake](https://cmake.org) build system
 * LibTooling from [Clang](https://clang.llvm.org) for the code generator (optional when using
   Boost.Hana)

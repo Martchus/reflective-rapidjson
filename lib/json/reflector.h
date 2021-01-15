@@ -177,7 +177,7 @@ inline void push(Type reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
 }
 
 /*!
- * \brief Pushes the specified C-string to the specified value.
+ * \brief Pushes the specified std::string_view to the specified value.
  */
 template <typename Type, Traits::EnableIf<std::is_same<Type, std::string_view>> * = nullptr>
 inline void push(Type reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
@@ -1018,7 +1018,7 @@ RAPIDJSON_NAMESPACE::Document toJsonDocument(const char *reflectable)
 }
 
 /*!
- * \brief Serializes the specified \a reflectable which is a C-string.
+ * \brief Serializes the specified \a reflectable which is an std::string_view.
  */
 template <typename Type, Traits::EnableIf<std::is_same<Type, std::string_view>> * = nullptr>
 RAPIDJSON_NAMESPACE::Document toJsonDocument(std::string_view reflectable)

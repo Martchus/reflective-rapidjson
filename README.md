@@ -401,17 +401,8 @@ Reflective RapidJSON.
   different build system, there is no helper for adding the code generator to the build process
   provided (so far).
 * I usually develop using the latest version of those dependencies. So it is recommend to get the
-  the latest versions as well. I tested the following versions so far:
-    * GCC 7.2.1/7.3.0/8.1.0/9.1.0 or Clang 5.0/6.0/7.0/8.0 as compiler
-    * libstdc++ from GCC 7.2.1/7.3.0/8.1.0/9.1.0
-    * CMake 3.10.x to 3.15.x
-    * Clang 5.x/6.x/7.x/8.x/9.x for LibTooling
-    * RapidJSON 1.1.0
-    * C++ utilities 5.0.0
-    * Boost.Hana 1.65.1, 1.66.0, 1.67.0, 1.68.0, 1.69.0
-    * CppUnit 1.14.0
-    * Doxygen 1.8.13 to 1.8.16
-    * Graphviz 2.40.1
+  the latest versions as well although very likely older versions might work as well. When adapting
+  to new versions of LLVM/Clang I usually take care that it also still works with previous versions.
 * The binary (de)serializer requires C++ utilities at runtime. So when using it, it is required to
   link against C++ utilities.
 

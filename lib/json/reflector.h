@@ -206,7 +206,7 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
 {
     value.SetArray();
     RAPIDJSON_NAMESPACE::Value::Array array(value.GetArray());
-    array.Reserve(reflectable.size(), allocator);
+    array.Reserve(rapidJsonSize(reflectable.size()), allocator);
     for (const auto &item : reflectable) {
         push(item, array, allocator);
     }
@@ -332,7 +332,7 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
     }
 
     RAPIDJSON_NAMESPACE::Value index, data;
-    index.SetInt(reflectable.index());
+    index.SetUint64(reflectable.index());
     std::visit(
         [&data, &allocator](const auto &reflectableOfActualType) {
             if constexpr (!std::is_same_v<std::decay_t<decltype(reflectableOfActualType)>, std::monostate>) {
@@ -745,9 +745,9 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
             continue;
         }
         const auto array = i->value.GetArray();
-        for (const auto &value : array) {
+        for (const auto &arrayValue : array) {
             auto insertedIterator = reflectable.insert(typename Type::value_type(i->name.GetString(), typename Type::mapped_type()));
-            pull(insertedIterator->second, value, errors);
+            pull(insertedIterator->second, arrayValue, errors);
         }
     }
 }
@@ -899,20 +899,14 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
         return;
     }
     const auto &indexValue = indexIterator->value;
-    if (!indexValue.IsInt()) {
+    if (!indexValue.IsUint64()) {
         if (errors) {
             errors->emplace_back(JsonDeserializationErrorKind::InvalidVariantIndex, JsonType::Number, jsonType(indexValue.GetType()),
                 errors->currentRecord, errors->currentMember, errors->currentIndex);
         }
         return;
     }
-    const auto index = indexValue.GetInt();
-    if (index < 0) {
-        errors->emplace_back(JsonDeserializationErrorKind::InvalidVariantIndex, JsonType::Number, JsonType::Number, errors->currentRecord,
-            errors->currentMember, errors->currentIndex);
-        return;
-    }
-    Detail::assignVariantValueByRuntimeIndex(static_cast<std::size_t>(index), reflectable, dataIterator->value, errors);
+    Detail::assignVariantValueByRuntimeIndex(indexValue.GetUint64(), reflectable, dataIterator->value, errors);
 }
 
 /*!

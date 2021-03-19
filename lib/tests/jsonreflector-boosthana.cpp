@@ -160,11 +160,11 @@ void JsonReflectorBoostHanaTests::testDeserializeNestedObjects()
     CPPUNIT_ASSERT_EQUAL(2_st, testObjects.size());
     CPPUNIT_ASSERT_EQUAL(42, testObjects[0].number);
     CPPUNIT_ASSERT_EQUAL(43, testObjects[1].number);
-    for (const TestObjectHana &testObj : testObjects) {
-        CPPUNIT_ASSERT_EQUAL(3.141592653589793, testObj.number2);
-        CPPUNIT_ASSERT_EQUAL(vector<int>({ 1, 2, 3, 4 }), testObj.numbers);
-        CPPUNIT_ASSERT_EQUAL("test"s, testObj.text);
-        CPPUNIT_ASSERT_EQUAL(false, testObj.boolean);
+    for (const TestObjectHana &nestedTestObj : testObjects) {
+        CPPUNIT_ASSERT_EQUAL(3.141592653589793, nestedTestObj.number2);
+        CPPUNIT_ASSERT_EQUAL(vector<int>({ 1, 2, 3, 4 }), nestedTestObj.numbers);
+        CPPUNIT_ASSERT_EQUAL("test"s, nestedTestObj.text);
+        CPPUNIT_ASSERT_EQUAL(false, nestedTestObj.boolean);
     }
 }
 

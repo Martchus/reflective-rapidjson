@@ -125,10 +125,15 @@ void BinarySerializationCodeGenerator::generate(ostream &os) const
             os << "    serializer.write(static_cast<const ::" << baseClass->qualifiedName << " &>(customObject));\n";
         }
         os << "    // write members\n";
+        auto membersWritten = false;
         for (const clang::FieldDecl *field : relevantClass.record->fields()) {
             if (writePrivateMembers || field->getAccess() == clang::AS_public) {
                 os << "    serializer.write(customObject." << field->getName() << ");\n";
+                membersWritten = true;
             }
+        }
+        if (relevantBases.empty() && !membersWritten) {
+            os << "    (void)serializer;\n    (void)customObject;\n";
         }
         os << "}\n";
 
@@ -146,6 +151,7 @@ void BinarySerializationCodeGenerator::generate(ostream &os) const
             os << "    deserializer.read(static_cast<::" << baseClass->qualifiedName << " &>(customObject));\n";
         }
         os << "    // read members\n";
+        auto membersRead = false;
         for (const clang::FieldDecl *field : relevantClass.record->fields()) {
             // skip const members
             if (field->getType().isConstant(field->getASTContext())) {
@@ -153,7 +159,11 @@ void BinarySerializationCodeGenerator::generate(ostream &os) const
             }
             if (readPrivateMembers || field->getAccess() == clang::AS_public) {
                 os << "    deserializer.read(customObject." << field->getName() << ");\n";
+                membersRead = true;
             }
+        }
+        if (relevantBases.empty() && !membersRead) {
+            os << "    (void)deserializer;\n    (void)customObject;\n";
         }
         os << "}\n\n";
     }

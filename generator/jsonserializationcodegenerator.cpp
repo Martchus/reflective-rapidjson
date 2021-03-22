@@ -124,10 +124,15 @@ void JsonSerializationCodeGenerator::generate(ostream &os) const
             os << "    push(static_cast<const ::" << baseClass->qualifiedName << " &>(reflectable), value, allocator);\n";
         }
         os << "    // push members\n";
+        auto pushWritten = false;
         for (const clang::FieldDecl *field : relevantClass.record->fields()) {
             if (pushPrivateMembers || field->getAccess() == clang::AS_public) {
                 os << "    push(reflectable." << field->getName() << ", \"" << field->getName() << "\", value, allocator);\n";
+                pushWritten = true;
             }
+        }
+        if (relevantBases.empty() && !pushWritten) {
+            os << "    (void)reflectable;\n    (void)value;\n";
         }
         os << "}\n";
 
@@ -154,6 +159,7 @@ void JsonSerializationCodeGenerator::generate(ostream &os) const
            << "\";\n"
               "    }\n"
               "    // pull members\n";
+        auto pullWritten = false;
         for (const clang::FieldDecl *field : relevantClass.record->fields()) {
             // skip const members
             if (field->getType().isConstant(field->getASTContext())) {
@@ -161,7 +167,11 @@ void JsonSerializationCodeGenerator::generate(ostream &os) const
             }
             if (pullPrivateMembers || field->getAccess() == clang::AS_public) {
                 os << "    pull(reflectable." << field->getName() << ", \"" << field->getName() << "\", value, errors);\n";
+                pullWritten = true;
             }
+        }
+        if (relevantBases.empty() && !pullWritten) {
+            os << "    (void)reflectable;\n    (void)value;\n";
         }
         os << "    // restore error context for previous record\n"
               "    if (errors) {\n"

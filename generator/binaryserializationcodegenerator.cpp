@@ -127,6 +127,9 @@ void BinarySerializationCodeGenerator::generate(ostream &os) const
         os << "    // write members\n";
         auto membersWritten = false;
         for (const clang::FieldDecl *field : relevantClass.record->fields()) {
+            for (const auto &attr : field->getAttrs()) {
+                cout << "    // annotation: " << readAnnotation(attr) << '\n';
+            }
             if (writePrivateMembers || field->getAccess() == clang::AS_public) {
                 os << "    serializer.write(customObject." << field->getName() << ");\n";
                 membersWritten = true;

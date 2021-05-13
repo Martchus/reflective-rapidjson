@@ -6,6 +6,7 @@
 #include <vector>
 
 namespace clang {
+class Attr;
 class Decl;
 class CXXRecordDecl;
 class SourceManager;
@@ -32,6 +33,8 @@ protected:
     CodeFactory &factory() const;
     void lazyInitializeSourceManager() const;
     bool isOnlyIncluded(const clang::Decl *declaration) const;
+    std::string_view readAnnotation(const clang::Attr *annotation) const;
+    const clang::SourceManager *sourceManager() const;
     static bool inheritsFromInstantiationOf(clang::CXXRecordDecl *record, const char *templateClass);
 
 private:
@@ -48,6 +51,11 @@ inline CodeGenerator::CodeGenerator(CodeFactory &factory)
 inline CodeFactory &CodeGenerator::factory() const
 {
     return m_factory;
+}
+
+inline const clang::SourceManager *CodeGenerator::sourceManager() const
+{
+    return m_sourceManager;
 }
 
 } // namespace ReflectiveRapidJSON

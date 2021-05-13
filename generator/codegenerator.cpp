@@ -3,8 +3,10 @@
 
 #include <c++utilities/application/global.h>
 
+#include <clang/AST/Attr.h>
 #include <clang/AST/DeclCXX.h>
 #include <clang/Frontend/CompilerInstance.h>
+#include <clang/Lex/Lexer.h>
 
 using namespace std;
 
@@ -24,7 +26,7 @@ void CodeGenerator::addDeclaration(clang::Decl *decl)
 
 /*!
  * \brief Lazy initializes the source manager.
- * \remarks This method must be called in generate() when subclassing to make use of isOnlyIncluded().
+ * \remarks This method must be called in generate() when subclassing to make use of isOnlyIncluded() and readAnnotation().
  */
 void CodeGenerator::lazyInitializeSourceManager() const
 {
@@ -40,6 +42,21 @@ bool CodeGenerator::isOnlyIncluded(const clang::Decl *declaration) const
 {
     return m_sourceManager
         && m_sourceManager->getFileID(m_sourceManager->getExpansionLoc(declaration->getSourceRange().getBegin())) != m_sourceManager->getMainFileID();
+}
+
+/*!
+ * \brief Returns the specified \a annotation's text.
+ */
+std::string_view CodeGenerator::readAnnotation(const clang::Attr *annotation) const
+{
+    if (!m_sourceManager) {
+        return std::string_view();
+    }
+    auto text = clang::Lexer::getSourceText(clang::CharSourceRange::getTokenRange(annotation->getRange()), *sourceManager(), clang::LangOptions());
+    if (text.size() >= 12 && text.startswith("annotate(\"") && text.endswith("\")")) {
+        text = text.substr(10, text.size() - 12);
+    }
+    return text;
 }
 
 /*!

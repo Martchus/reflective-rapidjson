@@ -67,4 +67,9 @@ struct PointerStruct : public BinarySerializable<PointerStruct> {
     std::shared_ptr<PointerTarget> s3;
 };
 
+struct AnnotatedStruct : public BinarySerializable<AnnotatedStruct> {
+    int anyVersion;
+    __attribute__((annotate("cond:version >= 1"))) __attribute__((annotate("foo"))) int newInVersion1;
+};
+
 #endif // REFLECTIVE_RAPIDJSON_TESTS_MORE_STRUCTS_H

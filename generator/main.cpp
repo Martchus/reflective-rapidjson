@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
     parser.setMainArguments({ &generateArg, &noColorArg, &helpArg });
 
     // parse arguments
-    parser.parseArgs(argc, argv, ParseArgumentBehavior::CheckConstraints | ParseArgumentBehavior::InvokeCallbacks);
+    parser.parseArgs(argc, argv);
     if (helpArg.isPresent() || !generateArg.isPresent()) {
         return 0;
     }

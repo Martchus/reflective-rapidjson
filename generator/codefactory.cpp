@@ -30,8 +30,8 @@ CodeFactory::ToolInvocation::ToolInvocation(CodeFactory &factory)
  * \brief Constructs a new instance.
  * \remarks The specified arguments are not copied and must remain valid for the live-time of the code factory.
  */
-CodeFactory::CodeFactory(
-    const char *applicationPath, const std::vector<const char *> &sourceFiles, const std::vector<string> &clangOptions, std::ostream &os)
+CodeFactory::CodeFactory(std::string_view applicationPath, const std::vector<const char *> &sourceFiles,
+    const std::vector<std::string_view> &clangOptions, std::ostream &os)
     : m_applicationPath(applicationPath)
     , m_sourceFiles(sourceFiles)
     , m_clangOptions(clangOptions)
@@ -50,7 +50,7 @@ CodeFactory::~CodeFactory()
  */
 std::vector<string> CodeFactory::makeClangArgs() const
 {
-    static const initializer_list<const char *> flags
+    static const initializer_list<std::string_view> flags
         = { m_applicationPath, "-x", "c++", "-Wno-pragma-once-outside-header", "-std=c++14", "-fsyntax-only" };
     vector<string> clangArgs;
     clangArgs.reserve(flags.size() + m_clangOptions.size() + m_sourceFiles.size());

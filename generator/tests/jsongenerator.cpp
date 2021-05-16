@@ -64,13 +64,14 @@ JsonGeneratorTests::JsonGeneratorTests()
  */
 void JsonGeneratorTests::testGeneratorItself()
 {
-    const string inputFilePath(testFilePath("some_structs.h"));
-    const vector<const char *> inputFiles{ inputFilePath.data() };
-    const vector<string> clangOptions{ "-resource-dir", REFLECTION_GENERATOR_CLANG_RESOURCE_DIR, "-std=c++17", "-I", CPP_UTILITIES_INCLUDE_DIRS,
+    const auto inputFilePath = testFilePath("some_structs.h");
+    const auto inputFiles = vector<const char *>{ inputFilePath.data() };
+    const auto clangOptions
+        = vector<std::string_view>{ "-resource-dir", REFLECTION_GENERATOR_CLANG_RESOURCE_DIR, "-std=c++17", "-I", CPP_UTILITIES_INCLUDE_DIRS,
 #ifdef RAPIDJSON_INCLUDE_DIRS
-        "-I", RAPIDJSON_INCLUDE_DIRS
+              "-I", RAPIDJSON_INCLUDE_DIRS
 #endif
-    };
+          };
 
     stringstream buffer;
     JsonSerializationCodeGenerator::Options jsonOptions;

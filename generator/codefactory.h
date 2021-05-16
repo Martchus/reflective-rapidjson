@@ -29,8 +29,8 @@ class CodeFactory {
     friend class Visitor;
 
 public:
-    CodeFactory(
-        const char *applicationPath, const std::vector<const char *> &sourceFiles, const std::vector<std::string> &clangOptions, std::ostream &os);
+    CodeFactory(std::string_view applicationPath, const std::vector<const char *> &sourceFiles, const std::vector<std::string_view> &clangOptions,
+        std::ostream &os);
     ~CodeFactory();
 
     const std::vector<std::unique_ptr<CodeGenerator>> &generators() const;
@@ -50,9 +50,9 @@ private:
     bool generate() const;
     std::vector<std::string> makeClangArgs() const;
 
-    const char *const m_applicationPath;
+    std::string_view m_applicationPath;
     const std::vector<const char *> &m_sourceFiles;
-    const std::vector<std::string> &m_clangOptions;
+    const std::vector<std::string_view> &m_clangOptions;
     std::ostream &m_os;
     std::vector<std::unique_ptr<CodeGenerator>> m_generators;
     std::unique_ptr<ToolInvocation> m_toolInvocation;

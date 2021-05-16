@@ -69,14 +69,16 @@ int main(int argc, char *argv[])
         }
 
         // compose options passed to the clang tool invocation
-        vector<string> clangOptions;
+        auto clangOptions = std::vector<std::string_view>();
         if (clangOptionsArg.isPresent()) {
             // add additional options specified via CLI argument
             for (const auto *const value : clangOptionsArg.values(0)) {
                 // split options by ";" - not nice but this eases using CMake generator expressions
-                const auto splittedValues(splitString<vector<string>>(value, ";", EmptyPartsTreat::Omit));
+                const auto splittedValues = splitStringSimple<std::vector<std::string_view>>(value, ";");
                 for (const auto &splittedValue : splittedValues) {
-                    clangOptions.emplace_back(move(splittedValue));
+                    if (!splittedValue.empty()) {
+                        clangOptions.emplace_back(splittedValue);
+                    }
                 }
             }
         }
@@ -88,7 +90,7 @@ int main(int argc, char *argv[])
         }
 
         // instantiate the code factory and add generators to it
-        CodeFactory factory(parser.executable(), inputFileArg.values(0), clangOptions, *os);
+        auto factory = CodeFactory(parser.executable(), inputFileArg.values(0), clangOptions, *os);
         factory.setErrorResilient(errorResilientArg.isPresent());
         // add specified generators if the --generator argument is present; otherwise add default generators
         if (generatorsArg.isPresent()) {

@@ -2,6 +2,8 @@
 #include "./clangversionabstraction.h"
 #include "./frontendaction.h"
 
+#include "resources/config.h"
+
 #include <clang/Basic/FileManager.h>
 #include <clang/Frontend/FrontendActions.h>
 #include <clang/Tooling/Tooling.h>
@@ -51,7 +53,7 @@ CodeFactory::~CodeFactory()
 std::vector<string> CodeFactory::makeClangArgs() const
 {
     static const initializer_list<std::string_view> flags
-        = { m_applicationPath, "-x", "c++", "-Wno-pragma-once-outside-header", "-std=c++14", "-fsyntax-only" };
+        = { m_applicationPath, "-x", "c++", "-Wno-pragma-once-outside-header", "-std=c++14", "-fsyntax-only", "-D" PROJECT_VARNAME_UPPER };
     vector<string> clangArgs;
     clangArgs.reserve(flags.size() + m_clangOptions.size() + m_sourceFiles.size());
     clangArgs.insert(clangArgs.end(), flags.begin(), flags.end());

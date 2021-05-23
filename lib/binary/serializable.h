@@ -23,6 +23,7 @@ template <typename Type> struct BinarySerializable {
     static Type fromBinary(std::istream &inputStream);
 
     static constexpr const char *qualifiedName = "ReflectiveRapidJSON::BinarySerializable";
+    static constexpr auto version = BinarySerializableMeta<Type>::version;
 };
 
 template <typename Type> inline void BinarySerializable<Type>::toBinary(std::ostream &outputStream) const
@@ -51,6 +52,14 @@ template <typename Type> Type BinarySerializable<Type>::fromBinary(std::istream 
  */
 #define REFLECTIVE_RAPIDJSON_MAKE_BINARY_SERIALIZABLE(T)                                                                                             \
     template <> struct ReflectiveRapidJSON::AdaptedBinarySerializable<T> : Traits::Bool<true> {                                                      \
+    }
+
+/*!
+ * \def The REFLECTIVE_RAPIDJSON_DECLARE_BINARY_SERIALIZABLE_VERSION macro allows to declare the version of a BinarySerializable.
+ */
+#define REFLECTIVE_RAPIDJSON_DECLARE_BINARY_SERIALIZABLE_VERSION(T, v)                                                                               \
+    template <> struct ReflectiveRapidJSON::BinarySerializableMeta<T> {                                                                              \
+        static constexpr std::uint64_t version = v;                                                                                                  \
     }
 
 } // namespace ReflectiveRapidJSON

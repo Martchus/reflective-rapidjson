@@ -35,6 +35,10 @@ template <typename T> struct AdaptedBinarySerializable : public Traits::Bool<fal
 
 template <typename Type> struct BinarySerializable;
 
+template <typename Type> struct BinarySerializableMeta {
+    static constexpr std::uint64_t version = 0;
+};
+
 /*!
  * \brief The BinaryReflector namespace contains BinaryReader and BinaryWriter for automatic binary (de)serialization.
  */

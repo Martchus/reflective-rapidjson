@@ -52,7 +52,7 @@ std::string_view CodeGenerator::readAnnotation(const clang::Attr *annotation) co
     if (!m_sourceManager) {
         return std::string_view();
     }
-    auto text = clang::Lexer::getSourceText(clang::CharSourceRange::getTokenRange(annotation->getRange()), *sourceManager(), clang::LangOptions());
+    auto text = clang::Lexer::getSourceText(sourceManager()->getExpansionRange(annotation->getRange()), *sourceManager(), clang::LangOptions());
     if (text.size() >= 12 && text.startswith("annotate(\"") && text.endswith("\")")) {
         text = text.substr(10, text.size() - 12);
     }

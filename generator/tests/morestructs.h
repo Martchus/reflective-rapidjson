@@ -67,9 +67,26 @@ struct PointerStruct : public BinarySerializable<PointerStruct> {
     std::shared_ptr<PointerTarget> s3;
 };
 
+#ifdef REFLECTIVE_RAPIDJSON_GENERATOR
+#define RR_ATTR(text) __attribute__((annotate(text)))
+#define RR_V1 RR_ATTR("cond: version >= 1")
+#else
+#define RR_ATTR(text)
+#define RR_V1
+#endif
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wattributes"
+#endif
+
 struct AnnotatedStruct : public BinarySerializable<AnnotatedStruct> {
     int anyVersion;
-    __attribute__((annotate("cond:version >= 1"))) __attribute__((annotate("foo"))) int newInVersion1;
+    RR_V1 RR_ATTR("cond: version >= 2") RR_ATTR("foo") __attribute__((annotate("bar"))) int newInVersion1;
 };
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 #endif // REFLECTIVE_RAPIDJSON_TESTS_MORE_STRUCTS_H

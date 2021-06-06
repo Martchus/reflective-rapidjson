@@ -5,6 +5,8 @@
 #include <clang/AST/DeclCXX.h>
 #include <clang/AST/DeclFriend.h>
 #include <clang/AST/DeclTemplate.h>
+#include <clang/AST/PrettyPrinter.h>
+#include <clang/AST/QualTypeNames.h>
 
 #include <iostream>
 
@@ -66,12 +68,12 @@ void SerializationCodeGenerator::addDeclaration(clang::Decl *decl)
     }
 }
 
-SerializationCodeGenerator::IsRelevant SerializationCodeGenerator::isQualifiedNameIfRelevant(
-    clang::CXXRecordDecl *record, const std::string &qualifiedName) const
+void SerializationCodeGenerator::computeRelevantClass(RelevantClass &possiblyRelevantClass) const
 {
     // skip all classes which are only forward-declared
-    if (!record->isCompleteDefinition()) {
-        return IsRelevant::No;
+    if (!possiblyRelevantClass.record->isCompleteDefinition()) {
+        possiblyRelevantClass.isRelevant = IsRelevant::No;
+        return;
     }
 
     // consider all classes for which a specialization of the "AdaptedJsonSerializable" struct is available
@@ -80,31 +82,40 @@ SerializationCodeGenerator::IsRelevant SerializationCodeGenerator::isQualifiedNa
         if (isOnlyIncluded(adaptionRecord.record)) {
             continue;
         }
-        if (adaptionRecord.qualifiedName == qualifiedName) {
-            return IsRelevant::Yes;
+        if (adaptionRecord.qualifiedName == possiblyRelevantClass.qualifiedName) {
+            possiblyRelevantClass.isRelevant = IsRelevant::Yes;
+            return;
         }
     }
 
     // skip all classes which are only included
-    if (isOnlyIncluded(record)) {
-        return IsRelevant::No;
+    if (isOnlyIncluded(possiblyRelevantClass.record)) {
+        possiblyRelevantClass.isRelevant = IsRelevant::No;
+        return;
     }
 
     // consider all classes inheriting from an instantiation of "JsonSerializable" relevant
-    if (inheritsFromInstantiationOf(record, m_qualifiedNameOfRecords)) {
-        return IsRelevant::Yes;
+    if (const auto *const relevantBase = inheritsFromInstantiationOf(possiblyRelevantClass.record, m_qualifiedNameOfRecords)) {
+        auto policy = clang::PrintingPolicy(possiblyRelevantClass.record->getLangOpts());
+        policy.FullyQualifiedName = true;
+        policy.SuppressScope = false;
+        policy.SuppressUnwrittenScope = false;
+        policy.SplitTemplateClosers = false;
+        possiblyRelevantClass.relevantBase
+            = clang::TypeName::getFullyQualifiedName(relevantBase->getType(), possiblyRelevantClass.record->getASTContext(), policy, true);
+        possiblyRelevantClass.isRelevant = IsRelevant::Yes;
+        return;
     }
-
-    return IsRelevant::Maybe;
 }
 
 std::vector<SerializationCodeGenerator::RelevantClass> SerializationCodeGenerator::findRelevantClasses() const
 {
     std::vector<RelevantClass> relevantClasses;
-    for (clang::CXXRecordDecl *record : m_records) {
-        string qualifiedName(qualifiedNameIfRelevant(record));
-        if (!qualifiedName.empty()) {
-            relevantClasses.emplace_back(move(qualifiedName), record);
+    for (clang::CXXRecordDecl *const record : m_records) {
+        auto &relevantClass = relevantClasses.emplace_back(record->getQualifiedNameAsString(), record);
+        computeRelevantClass(relevantClass);
+        if (relevantClass.isRelevant != IsRelevant::Yes) {
+            relevantClasses.pop_back();
         }
     }
     return relevantClasses;

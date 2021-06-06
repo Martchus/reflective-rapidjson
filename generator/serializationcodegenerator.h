@@ -5,6 +5,8 @@
 
 #include <llvm/ADT/StringRef.h>
 
+#include <optional>
+
 namespace ReflectiveRapidJSON {
 
 std::ostream &operator<<(std::ostream &os, llvm::StringRef str);
@@ -15,11 +17,14 @@ std::ostream &operator<<(std::ostream &os, llvm::StringRef str);
  */
 class SerializationCodeGenerator : public CodeGenerator {
 public:
+    enum class IsRelevant { Yes, No, Maybe };
     struct RelevantClass {
         explicit RelevantClass(std::string &&qualifiedName, clang::CXXRecordDecl *record);
 
         std::string qualifiedName;
-        clang::CXXRecordDecl *record;
+        std::string relevantBase;
+        clang::CXXRecordDecl *record = nullptr;
+        IsRelevant isRelevant = IsRelevant::Maybe;
     };
 
     SerializationCodeGenerator(CodeFactory &factory);
@@ -27,9 +32,7 @@ public:
     void addDeclaration(clang::Decl *decl) override;
 
 protected:
-    enum class IsRelevant { Yes, No, Maybe };
-    IsRelevant isQualifiedNameIfRelevant(clang::CXXRecordDecl *record, const std::string &qualifiedName) const;
-    virtual std::string qualifiedNameIfRelevant(clang::CXXRecordDecl *record) const = 0;
+    virtual void computeRelevantClass(RelevantClass &possiblyRelevantClass) const;
     std::vector<RelevantClass> findRelevantClasses() const;
     static std::vector<const RelevantClass *> findRelevantBaseClasses(
         const RelevantClass &relevantClass, const std::vector<RelevantClass> &relevantBases);

@@ -353,6 +353,51 @@ An example for such custom (de)serialization can be found in the file
 `json/reflector-chronoutilities.h`. It provides (de)serialization of `DateTime` and
 `TimeSpan` objects from the C++ utilities library mentioned under dependencies.
 
+### Versioning
+#### JSON (de)serializer
+The JSON (de)serializer doesn't support versioning at this point. It'll simply read/write the
+members present in the struct. Additional members (which were e.g. present in older/newer
+versions of the struct) are ignored when reading and in consequence dropped when writing.
+
+#### Binary (de)serializer
+The binary (de)serializer supports *very* experimental versioning. Otherwise adding/removing
+members is a breaking change. The versioning looks like this:
+
+<pre>
+// enable definition of the macros shown below (otherwise use long macros defined  in
+// `lib/versioning.h`)
+#define REFLECTIVE_RAPIDJSON_SHORT_MACROS
+
+#include &lt;reflective_rapidjson/binary/serializable.h&gt;
+
+// example struct where version is *not* serialized/deserialized; defaults to version from
+// outer scope when reading/writing, defaults to version 0 on top-level
+struct Nested : public BinarySerializable&lt;Nested&gt; { //
+    std::uint32_t foo; // will be read/written in any case
+
+as_of_version(3):
+    std::uint32_t bar; // will be read/written if outer scope version is &gt;= 3
+};
+
+// example struct where version is serialized/deserialized; defaults to version when writing
+struct Example : public BinarySerializable&lt;Example, 3&gt; {
+    Nested nested;      // will be read/written in any case, version is "propagated down"
+    std::uint32_t a, b; // will be read/written in any case
+
+until_version(2):
+    std::uint32_t c, d; // will be read/written if version is &lt;= 2
+
+as_of_version(3):
+    std::uint32_t e, f; // will be read/written if version is &gt;= 3
+
+as_of_version(4):
+    std::uint32_t g;    // will be read/written if version is &gt;= 4
+};
+</pre>
+
+A mechanism to catch unsupported versions during deserialization is yet to be implemented.
+Additionally, the versioning is completely untested at this point.
+
 ### Remarks
 * Static member variables and member functions are currently ignored by the generator.
 * It is currently not possible to ignore a specific member variable.

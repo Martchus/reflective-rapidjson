@@ -5,6 +5,10 @@
 #include <clang/AST/DeclCXX.h>
 #include <clang/AST/DeclFriend.h>
 #include <clang/AST/DeclTemplate.h>
+#include <clang/AST/Expr.h>
+#include <clang/AST/RecursiveASTVisitor.h>
+
+#include <llvm/ADT/APInt.h>
 
 #include <iostream>
 
@@ -35,36 +39,159 @@ BinarySerializationCodeGenerator::BinarySerializationCodeGenerator(CodeFactory &
 }
 
 /*!
- * \brief Returns the qualified name of the specified \a record if it is considered relevant.
+ * \brief Checks whether \a possiblyRelevantClass is actually relevant.
  */
-string BinarySerializationCodeGenerator::qualifiedNameIfRelevant(clang::CXXRecordDecl *record) const
+void BinarySerializationCodeGenerator::computeRelevantClass(RelevantClass &possiblyRelevantClass) const
 {
-    const string qualifiedName(record->getQualifiedNameAsString());
-    switch (isQualifiedNameIfRelevant(record, qualifiedName)) {
-    case IsRelevant::Yes:
-        return qualifiedName;
-    case IsRelevant::No:
-        return string();
-    default:;
+    SerializationCodeGenerator::computeRelevantClass(possiblyRelevantClass);
+    if (possiblyRelevantClass.isRelevant != IsRelevant::Maybe) {
+        return;
     }
 
     // consider all classes specified via "--additional-classes" argument relevant
     if (!m_options.additionalClassesArg.isPresent()) {
-        return string();
+        return;
     }
-    for (const char *className : m_options.additionalClassesArg.values()) {
-        if (className == qualifiedName) {
-            return qualifiedName;
+    for (const char *const className : m_options.additionalClassesArg.values()) {
+        if (className == possiblyRelevantClass.qualifiedName) {
+            possiblyRelevantClass.isRelevant = IsRelevant::Yes;
+            return;
         }
     }
+}
 
-    return string();
+/// \brief The RetrieveIntegerLiteralFromDeclaratorDecl struct is used to traverse a variable declaration to get the integer value.
+struct RetrieveIntegerLiteralFromDeclaratorDecl : public clang::RecursiveASTVisitor<RetrieveIntegerLiteralFromDeclaratorDecl> {
+    explicit RetrieveIntegerLiteralFromDeclaratorDecl(const clang::ASTContext &ctx);
+    bool VisitStmt(clang::Stmt *st);
+    const clang::ASTContext &ctx;
+    std::uint64_t res;
+    bool success;
+};
+
+/// \brief Constructs a new instance for the specified AST context.
+RetrieveIntegerLiteralFromDeclaratorDecl::RetrieveIntegerLiteralFromDeclaratorDecl(const clang::ASTContext &ctx)
+    : ctx(ctx)
+    , res(0)
+    , success(false)
+{
+}
+
+/// \brief Reads the integer value of \a st for integer literals.
+bool RetrieveIntegerLiteralFromDeclaratorDecl::VisitStmt(clang::Stmt *st)
+{
+    if (st->getStmtClass() != clang::Stmt::IntegerLiteralClass) {
+        return true;
+    }
+    const auto *const integerLiteral = static_cast<const clang::IntegerLiteral *>(st);
+    auto evaluation = clang::Expr::EvalResult();
+    integerLiteral->EvaluateAsInt(evaluation, ctx, clang::Expr::SE_NoSideEffects, true);
+    if (!evaluation.Val.isInt()) {
+        return true;
+    }
+    const auto &asInt = evaluation.Val.getInt();
+    if (asInt.getActiveBits() > 64) {
+        return true;
+    }
+    res = asInt.getZExtValue();
+    success = true;
+    return false;
+}
+
+/// \brief The MemberTracking struct is an internal helper for BinarySerializationCodeGenerator::generate().
+struct MemberTracking {
+    bool membersWritten = false, withinCondition = false;
+    BinaryVersion asOfVersion = BinaryVersion(), lastAsOfVersion = BinaryVersion();
+    BinaryVersion untilVersion = BinaryVersion(), lastUntilVersion = BinaryVersion();
+
+    bool checkForVersionMarker(clang::Decl *decl);
+    void concludeCondition(std::ostream &os);
+    void writeVersionCondition(std::ostream &os);
+    void writeExtraPadding(std::ostream &os);
+};
+
+/*!
+ * \brief Returns whether \a delc is a static member variable and processes special static member variables
+ *        for versioning.
+ */
+bool MemberTracking::checkForVersionMarker(clang::Decl *decl)
+{
+    if (decl->getKind() != clang::Decl::Kind::Var) {
+        return false;
+    }
+    auto *const declarator = static_cast<clang::DeclaratorDecl *>(decl);
+    const auto declarationName = declarator->getName();
+    const auto isAsOfVersion = declarationName.startswith("rrjAsOfVersion");
+    if (isAsOfVersion || declarationName.startswith("rrjUntilVersion")) {
+        auto v = RetrieveIntegerLiteralFromDeclaratorDecl(declarator->getASTContext());
+        v.TraverseDecl(declarator);
+        if (v.success) {
+            if (isAsOfVersion) {
+                asOfVersion = v.res;
+                if (asOfVersion > untilVersion) {
+                    untilVersion = 0;
+                }
+            } else {
+                untilVersion = v.res;
+                if (untilVersion < asOfVersion) {
+                    asOfVersion = 0;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+/*!
+ * \brief Concludes an unfinished version condition if-block.
+ */
+void MemberTracking::concludeCondition(std::ostream &os)
+{
+    if (withinCondition) {
+        os << "    }\n";
+    }
+}
+
+/*!
+ * \brief Starts a new version condition if-block if versioning parameters have changed.
+ */
+void MemberTracking::writeVersionCondition(std::ostream &os)
+{
+    if (asOfVersion == lastAsOfVersion && untilVersion == lastUntilVersion) {
+        return;
+    }
+    concludeCondition(os);
+    lastAsOfVersion = asOfVersion;
+    lastUntilVersion = untilVersion;
+    if ((withinCondition = asOfVersion || untilVersion)) {
+        os << "    if (";
+        if (asOfVersion) {
+            os << "version >= " << asOfVersion;
+            if (untilVersion) {
+                os << " && ";
+            }
+        }
+        if (untilVersion) {
+            os << "version <= " << untilVersion;
+        }
+        os << ") {\n";
+    }
+}
+
+/*!
+ * \brief Writes extra padding (if within a version condition).
+ */
+void MemberTracking::writeExtraPadding(std::ostream &os)
+{
+    if (withinCondition) {
+        os << "    ";
+    }
 }
 
 /*!
  * \brief Generates pull() and push() helper functions in the ReflectiveRapidJSON::BinaryReflector namespace for the relevant classes.
  */
-void BinarySerializationCodeGenerator::generate(ostream &os) const
+void BinarySerializationCodeGenerator::generate(std::ostream &os) const
 {
     // initialize source manager to make use of isOnlyIncluded() for skipping records which are only included
     lazyInitializeSourceManager();
@@ -118,22 +245,55 @@ void BinarySerializationCodeGenerator::generate(ostream &os) const
 
         // print writeCustomType method
         os << "template <> " << visibility << " void writeCustomType<::" << relevantClass.qualifiedName
-           << ">(BinarySerializer &serializer, const ::" << relevantClass.qualifiedName
-           << " &customObject)\n{\n"
-              "    // write base classes\n";
+           << ">(BinarySerializer &serializer, const ::" << relevantClass.qualifiedName << " &customObject, BinaryVersion version)\n{\n";
+        if (!relevantClass.relevantBase.empty()) {
+            os << "    // write version\n"
+                  "    using V = Versioning<"
+               << relevantClass.relevantBase
+               << ">;\n"
+                  "    if constexpr (V::enabled) {\n"
+                  "        serializer.writeVariableLengthUIntBE(V::applyDefault(version));\n"
+                  "    }\n";
+        }
+        os << "    // write base classes\n";
         for (const RelevantClass *baseClass : relevantBases) {
-            os << "    serializer.write(static_cast<const ::" << baseClass->qualifiedName << " &>(customObject));\n";
+            os << "    serializer.write(static_cast<const ::" << baseClass->qualifiedName << " &>(customObject), version);\n";
         }
         os << "    // write members\n";
-        auto membersWritten = false;
-        for (const clang::FieldDecl *field : relevantClass.record->fields()) {
-            if (writePrivateMembers || field->getAccess() == clang::AS_public) {
-                os << "    serializer.write(customObject." << field->getName() << ");\n";
-                membersWritten = true;
+        auto mt = MemberTracking();
+        for (clang::Decl *const decl : relevantClass.record->decls()) {
+            // check static member variables for version markers
+            if (mt.checkForVersionMarker(decl)) {
+                continue;
             }
+
+            // skip all further declarations but fields
+            if (decl->getKind() != clang::Decl::Kind::Field) {
+                continue;
+            }
+
+            // skip const members
+            const auto *const field = static_cast<const clang::FieldDecl *>(decl);
+            if (field->getType().isConstant(field->getASTContext())) {
+                continue;
+            }
+
+            // skip private members conditionally
+            if (!writePrivateMembers && field->getAccess() != clang::AS_public) {
+                continue;
+            }
+
+            // write version markers
+            mt.writeVersionCondition(os);
+            mt.writeExtraPadding(os);
+
+            // write actual code for serialization
+            os << "    serializer.write(customObject." << field->getName() << ", version);\n";
+            mt.membersWritten = true;
         }
-        if (relevantBases.empty() && !membersWritten) {
-            os << "    (void)serializer;\n    (void)customObject;\n";
+        mt.concludeCondition(os);
+        if (relevantBases.empty() && !mt.membersWritten) {
+            os << "    (void)serializer;\n    (void)customObject;\n    \n(void)version;";
         }
         os << "}\n";
 
@@ -143,28 +303,53 @@ void BinarySerializationCodeGenerator::generate(ostream &os) const
         }
 
         // print readCustomType method
-        os << "template <> " << visibility << " void readCustomType<::" << relevantClass.qualifiedName
-           << ">(BinaryDeserializer &deserializer, ::" << relevantClass.qualifiedName
-           << " &customObject)\n{\n"
-              "    // read base classes\n";
+        mt = MemberTracking();
+        os << "template <> " << visibility << " BinaryVersion readCustomType<::" << relevantClass.qualifiedName
+           << ">(BinaryDeserializer &deserializer, ::" << relevantClass.qualifiedName << " &customObject, BinaryVersion version)\n{\n";
+        if (!relevantClass.relevantBase.empty()) {
+            os << "    // read version\n"
+                  "    if constexpr (Versioning<"
+               << relevantClass.relevantBase
+               << ">::enabled) {\n"
+                  "        version = deserializer.readVariableLengthUIntBE();\n"
+                  "    }\n";
+        }
+        os << "    // read base classes\n";
         for (const RelevantClass *baseClass : relevantBases) {
             os << "    deserializer.read(static_cast<::" << baseClass->qualifiedName << " &>(customObject));\n";
         }
         os << "    // read members\n";
-        auto membersRead = false;
-        for (const clang::FieldDecl *field : relevantClass.record->fields()) {
+        for (clang::Decl *const decl : relevantClass.record->decls()) {
+            // check static member variables for version markers
+            if (mt.checkForVersionMarker(decl)) {
+                continue;
+            }
+
+            // skip all further declarations but fields
+            if (decl->getKind() != clang::Decl::Kind::Field) {
+                continue;
+            }
+
             // skip const members
+            const auto *const field = static_cast<const clang::FieldDecl *>(decl);
             if (field->getType().isConstant(field->getASTContext())) {
                 continue;
             }
+
+            // write version markers
+            mt.writeVersionCondition(os);
+            mt.writeExtraPadding(os);
+
             if (readPrivateMembers || field->getAccess() == clang::AS_public) {
-                os << "    deserializer.read(customObject." << field->getName() << ");\n";
-                membersRead = true;
+                os << "    deserializer.read(customObject." << field->getName() << ", version);\n";
+                mt.membersWritten = true;
             }
         }
-        if (relevantBases.empty() && !membersRead) {
+        mt.concludeCondition(os);
+        if (relevantBases.empty() && !mt.membersWritten) {
             os << "    (void)deserializer;\n    (void)customObject;\n";
         }
+        os << "    return version;\n";
         os << "}\n\n";
     }
 

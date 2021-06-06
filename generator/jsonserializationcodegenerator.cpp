@@ -35,30 +35,25 @@ JsonSerializationCodeGenerator::JsonSerializationCodeGenerator(CodeFactory &fact
 }
 
 /*!
- * \brief Returns the qualified name of the specified \a record if it is considered relevant.
+ * \brief Checks whether \a possiblyRelevantClass is actually relevant.
  */
-string JsonSerializationCodeGenerator::qualifiedNameIfRelevant(clang::CXXRecordDecl *record) const
+void JsonSerializationCodeGenerator::computeRelevantClass(RelevantClass &possiblyRelevantClass) const
 {
-    const string qualifiedName(record->getQualifiedNameAsString());
-    switch (isQualifiedNameIfRelevant(record, qualifiedName)) {
-    case IsRelevant::Yes:
-        return qualifiedName;
-    case IsRelevant::No:
-        return string();
-    default:;
+    SerializationCodeGenerator::computeRelevantClass(possiblyRelevantClass);
+    if (possiblyRelevantClass.isRelevant != IsRelevant::Maybe) {
+        return;
     }
 
     // consider all classes specified via "--additional-classes" argument relevant
     if (!m_options.additionalClassesArg.isPresent()) {
-        return string();
+        return;
     }
-    for (const char *className : m_options.additionalClassesArg.values()) {
-        if (className == qualifiedName) {
-            return qualifiedName;
+    for (const char *const className : m_options.additionalClassesArg.values()) {
+        if (className == possiblyRelevantClass.qualifiedName) {
+            possiblyRelevantClass.isRelevant = IsRelevant::Yes;
+            return;
         }
     }
-
-    return string();
 }
 
 /*!

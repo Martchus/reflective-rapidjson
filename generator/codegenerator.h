@@ -8,6 +8,7 @@
 namespace clang {
 class Decl;
 class CXXRecordDecl;
+class CXXBaseSpecifier;
 class SourceManager;
 } // namespace clang
 
@@ -32,7 +33,7 @@ protected:
     CodeFactory &factory() const;
     void lazyInitializeSourceManager() const;
     bool isOnlyIncluded(const clang::Decl *declaration) const;
-    static bool inheritsFromInstantiationOf(clang::CXXRecordDecl *record, const char *templateClass);
+    static clang::CXXBaseSpecifier *inheritsFromInstantiationOf(clang::CXXRecordDecl *record, const char *templateClass);
 
 private:
     CodeFactory &m_factory;

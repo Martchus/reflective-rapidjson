@@ -44,17 +44,18 @@ bool CodeGenerator::isOnlyIncluded(const clang::Decl *declaration) const
 
 /*!
  * \brief Returns whether the specified \a record inherits from an instantiation of the specified \a templateClass.
+ * \returns Returns the relevant base class if that's the case and otherwise nullptr.
  * \remarks The specified \a record must be defined (not only forward-declared).
  */
-bool CodeGenerator::inheritsFromInstantiationOf(clang::CXXRecordDecl *const record, const char *const templateClass)
+clang::CXXBaseSpecifier *CodeGenerator::inheritsFromInstantiationOf(clang::CXXRecordDecl *const record, const char *const templateClass)
 {
-    for (const clang::CXXBaseSpecifier &base : record->bases()) {
-        const clang::CXXRecordDecl *const baseDecl = base.getType()->getAsCXXRecordDecl();
+    for (clang::CXXBaseSpecifier &base : record->bases()) {
+        clang::CXXRecordDecl *const baseDecl = base.getType()->getAsCXXRecordDecl();
         if (baseDecl && baseDecl->getQualifiedNameAsString() == templateClass) {
-            return true;
+            return &base;
         }
     }
-    return false;
+    return nullptr;
 }
 
 } // namespace ReflectiveRapidJSON

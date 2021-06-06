@@ -8,6 +8,7 @@
  */
 
 #include "../traits.h"
+#include "../versioning.h"
 
 #include <c++utilities/conversion/conversionexception.h>
 #include <c++utilities/io/binaryreader.h>
@@ -33,7 +34,8 @@ template <typename T> struct AdaptedBinarySerializable : public Traits::Bool<fal
     static constexpr const char *qualifiedName = "ReflectiveRapidJSON::AdaptedBinarySerializable";
 };
 
-template <typename Type> struct BinarySerializable;
+using BinaryVersion = std::uint64_t;
+template <typename Type, BinaryVersion v = 0> struct BinarySerializable;
 
 /*!
  * \brief The BinaryReflector namespace contains BinaryReader and BinaryWriter for automatic binary (de)serialization.
@@ -50,9 +52,22 @@ template <typename Type> using IsCustomType = Traits::Not<IsBuiltInType<Type>>;
 class BinaryDeserializer;
 class BinarySerializer;
 
-template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void readCustomType(BinaryDeserializer &deserializer, Type &customType);
-template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void writeCustomType(BinarySerializer &serializer, const Type &customType);
+/// \brief Reads \a customType via \a deserializer.
+/// \remarks
+/// - If \tp Type is versioned, the version is determined from the data. Otherwise \a version is assumed.
+/// - The specified \a version shall be passed to nested invocations.
+/// \returns  Returns the determined/assumed version.
+template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr>
+BinaryVersion readCustomType(BinaryDeserializer &deserializer, Type &customType, BinaryVersion version = 0);
 
+/// \brief Writes \a customType via \a serializer.
+/// \remarks
+/// - If \tp Type is versioned, \a version is prepended to the data.
+/// - The specified \a version shall be passed to nested invocations.
+template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr>
+void writeCustomType(BinarySerializer &serializer, const Type &customType, BinaryVersion version = 0);
+
+/// \brief The BinaryDeserializer class can read various data types, including custom ones, from an std::istream.
 class BinaryDeserializer : public CppUtilities::BinaryReader {
     friend class ::BinaryReflectorTests;
 
@@ -71,12 +86,14 @@ public:
     void read(Type &iteratable);
     template <typename Type, Traits::EnableIf<std::is_enum<Type>> * = nullptr> void read(Type &enumValue);
     template <typename Type, Traits::EnableIf<IsVariant<Type>> * = nullptr> void read(Type &variant);
-    template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void read(Type &customType);
+    template <typename Type, Traits::EnableIf<IsBuiltInType<Type>> * = nullptr> BinaryVersion read(Type &builtInType, BinaryVersion version);
+    template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> BinaryVersion read(Type &customType, BinaryVersion version = 0);
 
 private:
     std::unordered_map<std::uint64_t, std::any> m_pointer;
 };
 
+/// \brief The BinarySerializer class can write various data types, including custom ones, to an std::ostream.
 class BinarySerializer : public CppUtilities::BinaryWriter {
     friend class ::BinaryReflectorTests;
 
@@ -90,7 +107,8 @@ public:
     template <typename Type, Traits::EnableIf<IsIteratableExceptString<Type>, Traits::HasSize<Type>> * = nullptr> void write(const Type &iteratable);
     template <typename Type, Traits::EnableIf<std::is_enum<Type>> * = nullptr> void write(const Type &enumValue);
     template <typename Type, Traits::EnableIf<IsVariant<Type>> * = nullptr> void write(const Type &variant);
-    template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void write(const Type &customType);
+    template <typename Type, Traits::EnableIf<IsBuiltInType<Type>> * = nullptr> void write(const Type &builtInType, BinaryVersion version);
+    template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void write(const Type &customType, BinaryVersion version = 0);
 
 private:
     std::unordered_map<std::uint64_t, bool> m_pointer;
@@ -207,9 +225,15 @@ template <typename Type, Traits::EnableIf<IsVariant<Type>> *> void BinaryDeseria
     Detail::readVariantValueByRuntimeIndex(readByte(), variant, *this);
 }
 
-template <typename Type, Traits::EnableIf<IsCustomType<Type>> *> void BinaryDeserializer::read(Type &customType)
+template <typename Type, Traits::EnableIf<IsBuiltInType<Type>> *> BinaryVersion BinaryDeserializer::read(Type &builtInType, BinaryVersion version)
 {
-    readCustomType(*this, customType);
+    read(builtInType);
+    return version;
+}
+
+template <typename Type, Traits::EnableIf<IsCustomType<Type>> *> BinaryVersion BinaryDeserializer::read(Type &customType, BinaryVersion version)
+{
+    return readCustomType(*this, customType, version);
 }
 
 inline BinarySerializer::BinarySerializer(std::ostream *stream)
@@ -286,9 +310,15 @@ template <typename Type, Traits::EnableIf<IsVariant<Type>> *> void BinarySeriali
         variant);
 }
 
-template <typename Type, Traits::EnableIf<IsCustomType<Type>> *> void BinarySerializer::write(const Type &customType)
+template <typename Type, Traits::EnableIf<IsBuiltInType<Type>> *> void BinarySerializer::write(const Type &builtInType, BinaryVersion version)
 {
-    writeCustomType(*this, customType);
+    CPP_UTILITIES_UNUSED(version)
+    write(builtInType);
+}
+
+template <typename Type, Traits::EnableIf<IsCustomType<Type>> *> void BinarySerializer::write(const Type &customType, BinaryVersion version)
+{
+    writeCustomType(*this, customType, version);
 }
 
 } // namespace BinaryReflector

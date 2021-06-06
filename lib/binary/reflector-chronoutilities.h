@@ -16,23 +16,33 @@
 namespace ReflectiveRapidJSON {
 namespace BinaryReflector {
 
-template <> inline void readCustomType<CppUtilities::DateTime>(BinaryDeserializer &deserializer, CppUtilities::DateTime &dateTime)
+template <>
+inline BinaryVersion readCustomType<CppUtilities::DateTime>(BinaryDeserializer &deserializer, CppUtilities::DateTime &dateTime, BinaryVersion version)
 {
+    CPP_UTILITIES_UNUSED(version)
     deserializer.read(dateTime.ticks());
+    return 0;
 }
 
-template <> inline void writeCustomType<CppUtilities::DateTime>(BinarySerializer &serializer, const CppUtilities::DateTime &dateTime)
+template <>
+inline void writeCustomType<CppUtilities::DateTime>(BinarySerializer &serializer, const CppUtilities::DateTime &dateTime, BinaryVersion version)
 {
+    CPP_UTILITIES_UNUSED(version)
     serializer.write(dateTime.totalTicks());
 }
 
-template <> inline void readCustomType<CppUtilities::TimeSpan>(BinaryDeserializer &deserializer, CppUtilities::TimeSpan &timeSpan)
+template <>
+inline BinaryVersion readCustomType<CppUtilities::TimeSpan>(BinaryDeserializer &deserializer, CppUtilities::TimeSpan &timeSpan, BinaryVersion version)
 {
+    CPP_UTILITIES_UNUSED(version)
     deserializer.read(timeSpan.ticks());
+    return 0;
 }
 
-template <> inline void writeCustomType<CppUtilities::TimeSpan>(BinarySerializer &serializer, const CppUtilities::TimeSpan &timeSpan)
+template <>
+inline void writeCustomType<CppUtilities::TimeSpan>(BinarySerializer &serializer, const CppUtilities::TimeSpan &timeSpan, BinaryVersion version)
 {
+    CPP_UTILITIES_UNUSED(version)
     serializer.write(timeSpan.totalTicks());
 }
 

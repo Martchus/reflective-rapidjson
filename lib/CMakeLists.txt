@@ -5,7 +5,7 @@ set(META_PROJECT_TYPE library)
 set(META_HEADER_ONLY_LIB ON)
 
 # add project files
-set(HEADER_FILES traits.h)
+set(HEADER_FILES traits.h versioning.h)
 set(SRC_FILES)
 set(TEST_HEADER_FILES)
 set(TEST_SRC_FILES)

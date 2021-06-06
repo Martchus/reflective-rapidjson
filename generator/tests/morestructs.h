@@ -1,8 +1,11 @@
 #ifndef REFLECTIVE_RAPIDJSON_TESTS_MORE_STRUCTS_H
 #define REFLECTIVE_RAPIDJSON_TESTS_MORE_STRUCTS_H
 
+#define REFLECTIVE_RAPIDJSON_SHORT_MACROS
+
 #include "../../lib/binary/serializable.h"
 #include "../../lib/json/serializable.h"
+#include "../../lib/versioning.h"
 
 using namespace std;
 using namespace ReflectiveRapidJSON;
@@ -65,6 +68,19 @@ struct PointerStruct : public BinarySerializable<PointerStruct> {
     std::shared_ptr<PointerTarget> s2;
     std::unique_ptr<PointerTarget> u1;
     std::shared_ptr<PointerTarget> s3;
+};
+
+/*!
+ * \brief The PointerStruct struct is used to test the behavior of the binary (de)serialization with smart pointer.
+ */
+struct VersionedStruct : public BinarySerializable<VersionedStruct> {
+    std::uint32_t a, b;
+
+until_version(2):
+    std::uint32_t c, d;
+
+as_of_version(3):
+    std::uint32_t e, f;
 };
 
 #endif // REFLECTIVE_RAPIDJSON_TESTS_MORE_STRUCTS_H

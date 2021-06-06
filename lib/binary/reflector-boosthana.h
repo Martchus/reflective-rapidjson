@@ -30,7 +30,7 @@ template <typename Type, Traits::EnableIf<IsCustomType<Type>> *> void readCustom
         boost::hana::keys(customType), [&deserializer, &customType](auto key) { deserializer.read(boost::hana::at_key(customType, key)); });
 }
 
-template <typename Type, Traits::EnableIf<IsCustomType<Type>> *> void writeCustomType(BinarySerializer &serializer, const Type &customType)
+template <typename Type, Traits::EnableIf<IsCustomType<Type>> *> void writeCustomType(BinarySerializer &serializer, const Type &customType, BinaryVersion version)
 {
     boost::hana::for_each(
         boost::hana::keys(customType), [&serializer, &customType](auto key) { serializer.write(boost::hana::at_key(customType, key)); });

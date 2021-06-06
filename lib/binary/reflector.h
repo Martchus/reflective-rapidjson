@@ -33,7 +33,9 @@ template <typename T> struct AdaptedBinarySerializable : public Traits::Bool<fal
     static constexpr const char *qualifiedName = "ReflectiveRapidJSON::AdaptedBinarySerializable";
 };
 
-template <typename Type> struct BinarySerializable;
+using BinaryVersion = std::uint64_t;
+
+template <typename Type, BinaryVersion defaultVersion = 0> struct BinarySerializable;
 
 /*!
  * \brief The BinaryReflector namespace contains BinaryReader and BinaryWriter for automatic binary (de)serialization.
@@ -51,7 +53,7 @@ class BinaryDeserializer;
 class BinarySerializer;
 
 template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void readCustomType(BinaryDeserializer &deserializer, Type &customType);
-template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void writeCustomType(BinarySerializer &serializer, const Type &customType);
+template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void writeCustomType(BinarySerializer &serializer, const Type &customType, BinaryVersion version = 0);
 
 class BinaryDeserializer : public CppUtilities::BinaryReader {
     friend class ::BinaryReflectorTests;
@@ -90,7 +92,7 @@ public:
     template <typename Type, Traits::EnableIf<IsIteratableExceptString<Type>, Traits::HasSize<Type>> * = nullptr> void write(const Type &iteratable);
     template <typename Type, Traits::EnableIf<std::is_enum<Type>> * = nullptr> void write(const Type &enumValue);
     template <typename Type, Traits::EnableIf<IsVariant<Type>> * = nullptr> void write(const Type &variant);
-    template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void write(const Type &customType);
+    template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void write(const Type &customType, BinaryVersion version = 0);
 
 private:
     std::unordered_map<std::uint64_t, bool> m_pointer;
@@ -286,9 +288,9 @@ template <typename Type, Traits::EnableIf<IsVariant<Type>> *> void BinarySeriali
         variant);
 }
 
-template <typename Type, Traits::EnableIf<IsCustomType<Type>> *> void BinarySerializer::write(const Type &customType)
+template <typename Type, Traits::EnableIf<IsCustomType<Type>> *> void BinarySerializer::write(const Type &customType, BinaryVersion version)
 {
-    writeCustomType(*this, customType);
+    writeCustomType(*this, customType, version);
 }
 
 } // namespace BinaryReflector

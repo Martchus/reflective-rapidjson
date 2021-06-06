@@ -73,6 +73,7 @@ struct PointerStruct : public BinarySerializable<PointerStruct> {
 /*!
  * \brief The PointerStruct struct is used to test the behavior of the binary (de)serialization with smart pointer.
  */
+// clang-format off
 struct VersionedStruct : public BinarySerializable<VersionedStruct> {
     std::uint32_t a, b;
 
@@ -82,5 +83,6 @@ until_version(2):
 as_of_version(3):
     std::uint32_t e, f;
 };
+// clang-format on
 
 #endif // REFLECTIVE_RAPIDJSON_TESTS_MORE_STRUCTS_H

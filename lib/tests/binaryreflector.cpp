@@ -94,7 +94,7 @@ template <> void readCustomType<TestObjectBinary>(BinaryDeserializer &deserializ
     deserializer.read(customType.dateTime);
 }
 
-template <> void writeCustomType<TestObjectBinary>(BinarySerializer &serializer, const TestObjectBinary &customType)
+template <> void writeCustomType<TestObjectBinary>(BinarySerializer &serializer, const TestObjectBinary &customType, BinaryVersion version)
 {
     serializer.write(customType.number);
     serializer.write(customType.number2);
@@ -119,7 +119,7 @@ template <> void readCustomType<NestingArrayBinary>(BinaryDeserializer &deserial
     deserializer.read(customType.testObjects);
 }
 
-template <> void writeCustomType<NestingArrayBinary>(BinarySerializer &serializer, const NestingArrayBinary &customType)
+template <> void writeCustomType<NestingArrayBinary>(BinarySerializer &serializer, const NestingArrayBinary &customType, BinaryVersion version)
 {
     serializer.write(customType.name);
     serializer.write(customType.testObjects);
@@ -132,7 +132,8 @@ template <> void readCustomType<ObjectWithVariantsBinary>(BinaryDeserializer &de
     deserializer.read(customType.yetAnotherVariant);
 }
 
-template <> void writeCustomType<ObjectWithVariantsBinary>(BinarySerializer &serializer, const ObjectWithVariantsBinary &customType)
+template <>
+void writeCustomType<ObjectWithVariantsBinary>(BinarySerializer &serializer, const ObjectWithVariantsBinary &customType, BinaryVersion version)
 {
     serializer.write(customType.someVariant);
     serializer.write(customType.anotherVariant);

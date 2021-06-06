@@ -21,8 +21,10 @@ template <> inline void readCustomType<CppUtilities::DateTime>(BinaryDeserialize
     deserializer.read(dateTime.ticks());
 }
 
-template <> inline void writeCustomType<CppUtilities::DateTime>(BinarySerializer &serializer, const CppUtilities::DateTime &dateTime)
+template <>
+inline void writeCustomType<CppUtilities::DateTime>(BinarySerializer &serializer, const CppUtilities::DateTime &dateTime, BinaryVersion version)
 {
+    CPP_UTILITIES_UNUSED(version)
     serializer.write(dateTime.totalTicks());
 }
 
@@ -31,8 +33,10 @@ template <> inline void readCustomType<CppUtilities::TimeSpan>(BinaryDeserialize
     deserializer.read(timeSpan.ticks());
 }
 
-template <> inline void writeCustomType<CppUtilities::TimeSpan>(BinarySerializer &serializer, const CppUtilities::TimeSpan &timeSpan)
+template <>
+inline void writeCustomType<CppUtilities::TimeSpan>(BinarySerializer &serializer, const CppUtilities::TimeSpan &timeSpan, BinaryVersion version)
 {
+    CPP_UTILITIES_UNUSED(version)
     serializer.write(timeSpan.totalTicks());
 }
 

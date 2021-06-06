@@ -53,7 +53,8 @@ class BinaryDeserializer;
 class BinarySerializer;
 
 template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void readCustomType(BinaryDeserializer &deserializer, Type &customType);
-template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void writeCustomType(BinarySerializer &serializer, const Type &customType, BinaryVersion version = 0);
+template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr>
+void writeCustomType(BinarySerializer &serializer, const Type &customType, BinaryVersion version = 0);
 
 class BinaryDeserializer : public CppUtilities::BinaryReader {
     friend class ::BinaryReflectorTests;
@@ -92,6 +93,7 @@ public:
     template <typename Type, Traits::EnableIf<IsIteratableExceptString<Type>, Traits::HasSize<Type>> * = nullptr> void write(const Type &iteratable);
     template <typename Type, Traits::EnableIf<std::is_enum<Type>> * = nullptr> void write(const Type &enumValue);
     template <typename Type, Traits::EnableIf<IsVariant<Type>> * = nullptr> void write(const Type &variant);
+    template <typename Type, Traits::EnableIf<IsBuiltInType<Type>> * = nullptr> void write(const Type &builtInType, BinaryVersion version);
     template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void write(const Type &customType, BinaryVersion version = 0);
 
 private:
@@ -286,6 +288,12 @@ template <typename Type, Traits::EnableIf<IsVariant<Type>> *> void BinarySeriali
             }
         },
         variant);
+}
+
+template <typename Type, Traits::EnableIf<IsBuiltInType<Type>> *> void BinarySerializer::write(const Type &builtInType, BinaryVersion version)
+{
+    CPP_UTILITIES_UNUSED(version)
+    write(builtInType);
 }
 
 template <typename Type, Traits::EnableIf<IsCustomType<Type>> *> void BinarySerializer::write(const Type &customType, BinaryVersion version)

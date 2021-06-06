@@ -26,12 +26,14 @@ template <typename Type, BinaryVersion defaultVersion> struct BinarySerializable
     static constexpr auto defaultSerializeVersion = defaultVersion;
 };
 
-template <typename Type, BinaryVersion defaultVersion> inline void BinarySerializable<Type, defaultVersion>::toBinary(std::ostream &outputStream) const
+template <typename Type, BinaryVersion defaultVersion>
+inline void BinarySerializable<Type, defaultVersion>::toBinary(std::ostream &outputStream) const
 {
     BinaryReflector::BinarySerializer(&outputStream).write(static_cast<const Type &>(*this), defaultVersion);
 }
 
-template <typename Type, BinaryVersion defaultVersion> inline void BinarySerializable<Type, defaultVersion>::restoreFromBinary(std::istream &inputStream)
+template <typename Type, BinaryVersion defaultVersion>
+inline void BinarySerializable<Type, defaultVersion>::restoreFromBinary(std::istream &inputStream)
 {
     BinaryReflector::BinaryDeserializer(&inputStream).read(static_cast<Type &>(*this));
 }

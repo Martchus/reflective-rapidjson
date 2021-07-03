@@ -7,14 +7,14 @@
 - [x] Add documentation (install instructions, usage)
 - [x] Allow making 3rdparty classes/structs reflectable
     - [x] Add additional parameter for code generator to allow specifying relevant classes
-          explicitely
+          explicitly
     - [x] Fix traits currently relying on `JsonSerializable` being base class
 - [x] Allow exporting symbols
 - [x] Fix the massive number of warnings which are currently being created by the code generator (missing `-resource-dir` was the problem)
 - [ ] Test with libc++ (currently only tested with libstdc++)
 - [ ] Support templated classes
 - [ ] Allow (de)serialization of static members (if that makes sense?)
-- [ ] Allow ignoring particular members or selecting specificly which member variables should be considered
+- [ ] Allow ignoring particular members or selecting specifically which member variables should be considered
     * This could work similar to Qt's Signals & Slots macros.
     * but there should also be a way to do this for 3rdparty types.
     * Note that currently, *all* public member variables are (de)serialized.

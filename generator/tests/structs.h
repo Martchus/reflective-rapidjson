@@ -128,7 +128,7 @@ REFLECTIVE_RAPIDJSON_MAKE_JSON_SERIALIZABLE(NotJsonSerializable);
 REFLECTIVE_RAPIDJSON_MAKE_JSON_SERIALIZABLE(NestedNotJsonSerializable);
 
 /*!
- * \brief The OtherNotJsonSerializable struct is used to test whether code for (de)serialization is generated for classes explicitely
+ * \brief The OtherNotJsonSerializable struct is used to test whether code for (de)serialization is generated for classes explicitly
  *        specified via CMake macro (despite use of REFLECTIVE_RAPIDJSON_ADAPT_JSON_SERIALIZABLE or JsonSerializable is
  *        missing).
  */

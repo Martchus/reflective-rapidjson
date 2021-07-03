@@ -123,14 +123,14 @@ int main(int argc, char *argv[])
 
         // read AST elements from input files and run the code generator
         if (!factory.run()) {
-            cerr << Phrases::Error << "Errors occured." << Phrases::EndFlush;
+            cerr << Phrases::Error << "Errors occurred." << Phrases::EndFlush;
             return -2;
         }
 
     } catch (const std::ios_base::failure &failure) {
         const char *errorMessage = failure.what();
         if (os) {
-            errorMessage = os->fail() || os->bad() ? "An IO error occured when writing to the output stream." : "An IO error occured.";
+            errorMessage = os->fail() || os->bad() ? "An IO error occurred when writing to the output stream." : "An IO error occurred.";
         } else {
             errorMessage = "An IO error when opening output stream.";
         }

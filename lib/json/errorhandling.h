@@ -110,7 +110,7 @@ struct JsonDeserializationError {
     JsonDeserializationError(JsonDeserializationErrorKind kind, JsonType expectedType, JsonType actualType, const char *record,
         const char *member = nullptr, std::size_t index = noIndex);
 
-    /// \brief Which kind of error occured.
+    /// \brief Which kind of error occurred.
     JsonDeserializationErrorKind kind;
     /// \brief The expected type (might not be relevant for all error kinds).
     JsonType expectedType;
@@ -123,7 +123,7 @@ struct JsonDeserializationError {
     /// \brief The index in the array which was being processed when the error was ascertained.
     std::size_t index;
 
-    /// \brief Indicates no array was being processed when the error occured.
+    /// \brief Indicates no array was being processed when the error occurred.
     static constexpr std::size_t noIndex = std::numeric_limits<std::size_t>::max();
 };
 

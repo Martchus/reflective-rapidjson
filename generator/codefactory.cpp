@@ -85,7 +85,7 @@ bool CodeFactory::generate() const
 }
 
 /*!
- * \brief Reads (relevent) AST elements using Clang and generates code.
+ * \brief Reads (relevant) AST elements using Clang and generates code.
  */
 bool CodeFactory::run()
 {

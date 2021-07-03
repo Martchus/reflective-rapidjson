@@ -3,7 +3,7 @@
 
 /*!
  * \file serializable.h
- * \brief Contains only the definiation of the JsonSerializable template class which makes the reflection
+ * \brief Contains only the definition of the JsonSerializable template class which makes the reflection
  *        accessible. The actual implementation is found in jsonreflector.h and generated files.
  */
 

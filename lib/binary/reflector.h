@@ -128,12 +128,12 @@ template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::
 
     const auto id = (mode & 0x4) ? readUInt64BE() : readVariableLengthUIntBE(); // the 3rd bit being flagged indicates a big ID
     if ((mode & 0x3) == 1) {
-        // first occurence: make a new pointer
+        // first occurrence: make a new pointer
         m_pointer[id] = pointer = std::make_shared<typename Type::element_type>();
         read(*pointer);
         return;
     }
-    // further occurences: copy previous pointer
+    // further occurrences: copy previous pointer
     try {
         pointer = std::any_cast<Type>(m_pointer[id]);
     } catch (const std::bad_any_cast &) {

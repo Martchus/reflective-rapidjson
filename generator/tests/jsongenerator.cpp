@@ -84,7 +84,7 @@ void JsonGeneratorTests::testGeneratorItself()
 }
 
 /*!
- * \brief Tests the generator CLI explicitely.
+ * \brief Tests the generator CLI explicitly.
  * \remarks Only available under UNIX (like) systems so far, because TESTUTILS_ASSERT_EXEC has not been implemented
  *          for other platforms.
  */
@@ -164,7 +164,7 @@ void JsonGeneratorTests::testNesting()
 }
 
 /*!
- * \brief Like testIncludingGeneratedHeader() but also tests single inheritence.
+ * \brief Like testIncludingGeneratedHeader() but also tests single inheritance.
  */
 void JsonGeneratorTests::testSingleInheritence()
 {
@@ -193,7 +193,7 @@ void JsonGeneratorTests::testSingleInheritence()
 }
 
 /*!
- * \brief Like testIncludingGeneratedHeader() but also tests multiple inheritence.
+ * \brief Like testIncludingGeneratedHeader() but also tests multiple inheritance.
  */
 void JsonGeneratorTests::testMultipleInheritence()
 {

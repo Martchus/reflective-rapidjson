@@ -3,7 +3,7 @@
 
 /*!
  * \file serializable.h
- * \brief Contains only the definiation of the BinarySerializable template class which makes the reflection
+ * \brief Contains only the definition of the BinarySerializable template class which makes the reflection
  *        accessible. The actual implementation is found in binaryreflector.h and generated files.
  */
 

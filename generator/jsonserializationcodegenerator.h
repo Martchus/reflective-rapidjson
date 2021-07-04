@@ -27,7 +27,7 @@ public:
     void generate(std::ostream &os) const override;
 
 protected:
-    std::string qualifiedNameIfRelevant(clang::CXXRecordDecl *record) const override;
+    void computeRelevantClass(RelevantClass &possiblyRelevantClass) const override;
 
     const Options &m_options;
 };

@@ -39,30 +39,25 @@ BinarySerializationCodeGenerator::BinarySerializationCodeGenerator(CodeFactory &
 }
 
 /*!
- * \brief Returns the qualified name of the specified \a record if it is considered relevant.
+ * \brief Checks whether \a possiblyRelevantClass is actually relevant.
  */
-string BinarySerializationCodeGenerator::qualifiedNameIfRelevant(clang::CXXRecordDecl *record) const
+void BinarySerializationCodeGenerator::computeRelevantClass(RelevantClass &possiblyRelevantClass) const
 {
-    const string qualifiedName(record->getQualifiedNameAsString());
-    switch (isQualifiedNameIfRelevant(record, qualifiedName)) {
-    case IsRelevant::Yes:
-        return qualifiedName;
-    case IsRelevant::No:
-        return string();
-    default:;
+    SerializationCodeGenerator::computeRelevantClass(possiblyRelevantClass);
+    if (possiblyRelevantClass.isRelevant != IsRelevant::Maybe) {
+        return;
     }
 
     // consider all classes specified via "--additional-classes" argument relevant
     if (!m_options.additionalClassesArg.isPresent()) {
-        return string();
+        return;
     }
-    for (const char *className : m_options.additionalClassesArg.values()) {
-        if (className == qualifiedName) {
-            return qualifiedName;
+    for (const char *const className : m_options.additionalClassesArg.values()) {
+        if (className == possiblyRelevantClass.qualifiedName) {
+            possiblyRelevantClass.isRelevant = IsRelevant::Yes;
+            return;
         }
     }
-
-    return string();
 }
 
 /// \brief The RetrieveIntegerLiteralFromDeclaratorDecl struct is used to traverse a variable declaration to get the integer value.
@@ -250,9 +245,19 @@ void BinarySerializationCodeGenerator::generate(std::ostream &os) const
 
         // print writeCustomType method
         os << "template <> " << visibility << " void writeCustomType<::" << relevantClass.qualifiedName
-           << ">(BinarySerializer &serializer, const ::" << relevantClass.qualifiedName
-           << " &customObject, BinaryVersion version)\n{\n"
-              "    // write base classes\n";
+           << ">(BinarySerializer &serializer, const ::" << relevantClass.qualifiedName << " &customObject, BinaryVersion version)\n{\n";
+        if (!relevantClass.relevantBase.empty()) {
+            os << "    // write version\n"
+                  "    using V = Versioning<"
+               << relevantClass.relevantBase
+               << ">;\n"
+                  "    if constexpr (V::enabled) {\n"
+                  "        serializer.writeVariableLengthUIntBE(V::applyDefault(version));\n"
+                  "    } else {\n"
+                  "        (void)version;\n"
+                  "    }\n";
+        }
+        os << "    // write base classes\n";
         for (const RelevantClass *baseClass : relevantBases) {
             os << "    serializer.write(static_cast<const ::" << baseClass->qualifiedName << " &>(customObject), version);\n";
         }
@@ -260,7 +265,7 @@ void BinarySerializationCodeGenerator::generate(std::ostream &os) const
         auto mt = MemberTracking();
         for (clang::Decl *const decl : relevantClass.record->decls()) {
             // check static member variables for version markers
-            if (mt.checkForVersionMarker(decl))  {
+            if (mt.checkForVersionMarker(decl)) {
                 continue;
             }
 
@@ -301,17 +306,25 @@ void BinarySerializationCodeGenerator::generate(std::ostream &os) const
 
         // print readCustomType method
         mt = MemberTracking();
-        os << "template <> " << visibility << " void readCustomType<::" << relevantClass.qualifiedName
-           << ">(BinaryDeserializer &deserializer, ::" << relevantClass.qualifiedName
-           << " &customObject)\n{\n"
-              "    // read base classes\n";
+        os << "template <> " << visibility << " BinaryVersion readCustomType<::" << relevantClass.qualifiedName
+           << ">(BinaryDeserializer &deserializer, ::" << relevantClass.qualifiedName << " &customObject)\n{\n";
+        if (!relevantClass.relevantBase.empty()) {
+            os << "    // read version\n"
+                  "    auto version = BinaryVersion();\n"
+                  "    if constexpr (Versioning<"
+               << relevantClass.relevantBase
+               << ">::enabled) {\n"
+                  "        version = deserializer.readVariableLengthUIntBE();\n"
+                  "    }\n";
+        }
+        os << "    // read base classes\n";
         for (const RelevantClass *baseClass : relevantBases) {
             os << "    deserializer.read(static_cast<::" << baseClass->qualifiedName << " &>(customObject));\n";
         }
         os << "    // read members\n";
         for (clang::Decl *const decl : relevantClass.record->decls()) {
             // check static member variables for version markers
-            if (mt.checkForVersionMarker(decl))  {
+            if (mt.checkForVersionMarker(decl)) {
                 continue;
             }
 
@@ -339,6 +352,7 @@ void BinarySerializationCodeGenerator::generate(std::ostream &os) const
         if (relevantBases.empty() && !mt.membersWritten) {
             os << "    (void)deserializer;\n    (void)customObject;\n";
         }
+        os << "    return version;\n";
         os << "}\n\n";
     }
 

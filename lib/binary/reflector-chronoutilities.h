@@ -16,9 +16,10 @@
 namespace ReflectiveRapidJSON {
 namespace BinaryReflector {
 
-template <> inline void readCustomType<CppUtilities::DateTime>(BinaryDeserializer &deserializer, CppUtilities::DateTime &dateTime)
+template <> inline BinaryVersion readCustomType<CppUtilities::DateTime>(BinaryDeserializer &deserializer, CppUtilities::DateTime &dateTime)
 {
     deserializer.read(dateTime.ticks());
+    return 0;
 }
 
 template <>
@@ -28,9 +29,10 @@ inline void writeCustomType<CppUtilities::DateTime>(BinarySerializer &serializer
     serializer.write(dateTime.totalTicks());
 }
 
-template <> inline void readCustomType<CppUtilities::TimeSpan>(BinaryDeserializer &deserializer, CppUtilities::TimeSpan &timeSpan)
+template <> inline BinaryVersion readCustomType<CppUtilities::TimeSpan>(BinaryDeserializer &deserializer, CppUtilities::TimeSpan &timeSpan)
 {
     deserializer.read(timeSpan.ticks());
+    return 0;
 }
 
 template <>

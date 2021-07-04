@@ -24,15 +24,17 @@
 namespace ReflectiveRapidJSON {
 namespace BinaryReflector {
 
-template <typename Type, Traits::EnableIf<IsCustomType<Type>> *> void readCustomType(BinaryDeserializer &deserializer, Type &customType)
+template <typename Type, Traits::EnableIf<IsCustomType<Type>> *> BinaryVersion readCustomType(BinaryDeserializer &deserializer, Type &customType)
 {
     boost::hana::for_each(
         boost::hana::keys(customType), [&deserializer, &customType](auto key) { deserializer.read(boost::hana::at_key(customType, key)); });
+    return 0;
 }
 
 template <typename Type, Traits::EnableIf<IsCustomType<Type>> *>
 void writeCustomType(BinarySerializer &serializer, const Type &customType, BinaryVersion version)
 {
+    CPP_UTILITIES_UNUSED(version)
     boost::hana::for_each(
         boost::hana::keys(customType), [&serializer, &customType](auto key) { serializer.write(boost::hana::at_key(customType, key)); });
 }

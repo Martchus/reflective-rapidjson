@@ -17,28 +17,30 @@ namespace ReflectiveRapidJSON {
 /*!
  * \brief The BinarySerializable class provides the CRTP-base for (de)serializable objects.
  */
-template <typename Type, BinaryVersion defaultVersion> struct BinarySerializable {
-    void toBinary(std::ostream &outputStream) const;
-    void restoreFromBinary(std::istream &inputStream);
+template <typename Type, BinaryVersion v> struct BinarySerializable {
+    void toBinary(std::ostream &outputStream, BinaryVersion version = 0) const;
+    BinaryVersion restoreFromBinary(std::istream &inputStream);
     static Type fromBinary(std::istream &inputStream);
 
     static constexpr const char *qualifiedName = "ReflectiveRapidJSON::BinarySerializable";
-    static constexpr auto defaultSerializeVersion = defaultVersion;
+    static constexpr auto version = v;
+    static constexpr auto versioningEnabled(const BinarySerializable<Type, v> &)
+    {
+        return v != 0;
+    }
 };
 
-template <typename Type, BinaryVersion defaultVersion>
-inline void BinarySerializable<Type, defaultVersion>::toBinary(std::ostream &outputStream) const
+template <typename Type, BinaryVersion v> inline void BinarySerializable<Type, v>::toBinary(std::ostream &outputStream, BinaryVersion version) const
 {
-    BinaryReflector::BinarySerializer(&outputStream).write(static_cast<const Type &>(*this), defaultVersion);
+    BinaryReflector::BinarySerializer(&outputStream).write(static_cast<const Type &>(*this), version);
 }
 
-template <typename Type, BinaryVersion defaultVersion>
-inline void BinarySerializable<Type, defaultVersion>::restoreFromBinary(std::istream &inputStream)
+template <typename Type, BinaryVersion v> inline BinaryVersion BinarySerializable<Type, v>::restoreFromBinary(std::istream &inputStream)
 {
-    BinaryReflector::BinaryDeserializer(&inputStream).read(static_cast<Type &>(*this));
+    return BinaryReflector::BinaryDeserializer(&inputStream).read(static_cast<Type &>(*this));
 }
 
-template <typename Type, BinaryVersion defaultVersion> Type BinarySerializable<Type, defaultVersion>::fromBinary(std::istream &inputStream)
+template <typename Type, BinaryVersion v> Type BinarySerializable<Type, v>::fromBinary(std::istream &inputStream)
 {
     Type object;
     static_cast<BinarySerializable<Type> &>(object).restoreFromBinary(inputStream);

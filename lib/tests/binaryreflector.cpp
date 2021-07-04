@@ -75,7 +75,7 @@ struct ObjectWithVariantsBinary : public BinarySerializable<ObjectWithVariantsBi
 namespace ReflectiveRapidJSON {
 namespace BinaryReflector {
 
-template <> void readCustomType<TestObjectBinary>(BinaryDeserializer &deserializer, TestObjectBinary &customType)
+template <> BinaryVersion readCustomType<TestObjectBinary>(BinaryDeserializer &deserializer, TestObjectBinary &customType)
 {
     deserializer.read(customType.number);
     deserializer.read(customType.number2);
@@ -92,10 +92,12 @@ template <> void readCustomType<TestObjectBinary>(BinaryDeserializer &deserializ
     deserializer.read(customType.someEnumClass);
     deserializer.read(customType.timeSpan);
     deserializer.read(customType.dateTime);
+    return 0;
 }
 
 template <> void writeCustomType<TestObjectBinary>(BinarySerializer &serializer, const TestObjectBinary &customType, BinaryVersion version)
 {
+    CPP_UTILITIES_UNUSED(version)
     serializer.write(customType.number);
     serializer.write(customType.number2);
     serializer.write(customType.numbers);
@@ -113,10 +115,11 @@ template <> void writeCustomType<TestObjectBinary>(BinarySerializer &serializer,
     serializer.write(customType.dateTime);
 }
 
-template <> void readCustomType<NestingArrayBinary>(BinaryDeserializer &deserializer, NestingArrayBinary &customType)
+template <> BinaryVersion readCustomType<NestingArrayBinary>(BinaryDeserializer &deserializer, NestingArrayBinary &customType)
 {
     deserializer.read(customType.name);
     deserializer.read(customType.testObjects);
+    return 0;
 }
 
 template <> void writeCustomType<NestingArrayBinary>(BinarySerializer &serializer, const NestingArrayBinary &customType, BinaryVersion version)
@@ -125,16 +128,18 @@ template <> void writeCustomType<NestingArrayBinary>(BinarySerializer &serialize
     serializer.write(customType.testObjects);
 }
 
-template <> void readCustomType<ObjectWithVariantsBinary>(BinaryDeserializer &deserializer, ObjectWithVariantsBinary &customType)
+template <> BinaryVersion readCustomType<ObjectWithVariantsBinary>(BinaryDeserializer &deserializer, ObjectWithVariantsBinary &customType)
 {
     deserializer.read(customType.someVariant);
     deserializer.read(customType.anotherVariant);
     deserializer.read(customType.yetAnotherVariant);
+    return 0;
 }
 
 template <>
 void writeCustomType<ObjectWithVariantsBinary>(BinarySerializer &serializer, const ObjectWithVariantsBinary &customType, BinaryVersion version)
 {
+    CPP_UTILITIES_UNUSED(version)
     serializer.write(customType.someVariant);
     serializer.write(customType.anotherVariant);
     serializer.write(customType.yetAnotherVariant);

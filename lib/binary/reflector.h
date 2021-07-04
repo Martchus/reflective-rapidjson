@@ -35,7 +35,7 @@ template <typename T> struct AdaptedBinarySerializable : public Traits::Bool<fal
 
 using BinaryVersion = std::uint64_t;
 
-template <typename Type, BinaryVersion defaultVersion = 0> struct BinarySerializable;
+template <typename Type, BinaryVersion v = 0> struct BinarySerializable;
 
 /*!
  * \brief The BinaryReflector namespace contains BinaryReader and BinaryWriter for automatic binary (de)serialization.
@@ -52,7 +52,8 @@ template <typename Type> using IsCustomType = Traits::Not<IsBuiltInType<Type>>;
 class BinaryDeserializer;
 class BinarySerializer;
 
-template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void readCustomType(BinaryDeserializer &deserializer, Type &customType);
+template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr>
+BinaryVersion readCustomType(BinaryDeserializer &deserializer, Type &customType);
 template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr>
 void writeCustomType(BinarySerializer &serializer, const Type &customType, BinaryVersion version = 0);
 
@@ -74,7 +75,7 @@ public:
     void read(Type &iteratable);
     template <typename Type, Traits::EnableIf<std::is_enum<Type>> * = nullptr> void read(Type &enumValue);
     template <typename Type, Traits::EnableIf<IsVariant<Type>> * = nullptr> void read(Type &variant);
-    template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> void read(Type &customType);
+    template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr> BinaryVersion read(Type &customType);
 
 private:
     std::unordered_map<std::uint64_t, std::any> m_pointer;
@@ -211,9 +212,9 @@ template <typename Type, Traits::EnableIf<IsVariant<Type>> *> void BinaryDeseria
     Detail::readVariantValueByRuntimeIndex(readByte(), variant, *this);
 }
 
-template <typename Type, Traits::EnableIf<IsCustomType<Type>> *> void BinaryDeserializer::read(Type &customType)
+template <typename Type, Traits::EnableIf<IsCustomType<Type>> *> BinaryVersion BinaryDeserializer::read(Type &customType)
 {
-    readCustomType(*this, customType);
+    return readCustomType(*this, customType);
 }
 
 inline BinarySerializer::BinarySerializer(std::ostream *stream)

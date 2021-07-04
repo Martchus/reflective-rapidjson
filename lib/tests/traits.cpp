@@ -1,13 +1,27 @@
 #include "../traits.h"
+#include "../versioning.h"
+
+#include "../binary/serializable.h"
 
 #include <list>
 #include <vector>
 
-// treat some types differently to test Treat... traits
+// define structs for testing REFLECTIVE_RAPIDJSON_TREAT_AS_…
 struct Foo {
 };
 struct Bar {
 };
+
+// define structs for testing versioning
+struct VersionlessBase : public ReflectiveRapidJSON::BinarySerializable<VersionlessBase> {
+};
+struct VersionedDerived : public VersionlessBase, public ReflectiveRapidJSON::BinarySerializable<VersionedDerived, 1> {
+};
+struct VersionedBase : public ReflectiveRapidJSON::BinarySerializable<VersionlessBase, 1> {
+};
+struct VersionlessDerived : public VersionedBase, public ReflectiveRapidJSON::BinarySerializable<VersionlessDerived> {
+};
+
 namespace ReflectiveRapidJSON {
 REFLECTIVE_RAPIDJSON_TREAT_AS_MAP_OR_HASH(Foo);
 REFLECTIVE_RAPIDJSON_TREAT_AS_MULTI_MAP_OR_HASH(Foo);
@@ -48,3 +62,14 @@ static_assert(IsIteratableExceptString<std::vector<int>>::value, "vector is iter
 static_assert(!IsIteratableExceptString<std::string>::value, "string not iteratable");
 static_assert(!IsIteratableExceptString<std::wstring>::value, "wstring not iteratable");
 static_assert(!IsIteratableExceptString<const std::string>::value, "string not iteratable");
+
+// test versioning traits
+static_assert(!Versioning<int>::enabled, "versioning for built-in types not enabled");
+static_assert(!Versioning<std::string>::enabled, "versioning for standard types not enabled");
+static_assert(!Versioning<VersionlessBase>::enabled, "versioning not enabled by default");
+static_assert(Versioning<BinarySerializable<VersionedDerived, 1>>::enabled, "versioning enabled if non-zero version parameter specified (derived)");
+static_assert(Versioning<VersionedBase>::enabled, "versioning enabled if non-zero version parameter specified (base)");
+static_assert(!Versioning<BinarySerializable<VersionlessDerived>>::enabled, "versioning disabled for derived, even if base is versioned");
+static_assert(!Versioning<BinarySerializable<Foo, 0>>::enabled, "versioning disabled if zero-version specified");
+static_assert(Versioning<BinarySerializable<Foo, 3>>::applyDefault(0) == 3, "default version returned");
+static_assert(Versioning<BinarySerializable<Foo, 3>>::applyDefault(2) == 2, "default version overridden");

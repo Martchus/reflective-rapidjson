@@ -56,7 +56,7 @@ class BinarySerializer;
 /// \remarks
 /// - If \tp Type is versioned, the version is determined from the data. Otherwise \a version is assumed.
 /// - The specified \a version shall be passed to nested invocations.
-/// \returns  Returns the determined/assumed version.
+/// \returns Returns the determined/assumed version.
 template <typename Type, Traits::EnableIf<IsCustomType<Type>> * = nullptr>
 BinaryVersion readCustomType(BinaryDeserializer &deserializer, Type &customType, BinaryVersion version = 0);
 

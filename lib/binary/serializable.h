@@ -14,10 +14,13 @@
 
 namespace ReflectiveRapidJSON {
 
+using BinaryVersionNotSupported = VersionNotSupported<BinaryVersion>;
+
 /*!
  * \brief The BinarySerializable class provides the CRTP-base for (de)serializable objects.
  */
 template <typename Type, BinaryVersion v> struct BinarySerializable {
+    using VersionNotSupported = BinaryVersionNotSupported;
     void toBinary(std::ostream &outputStream, BinaryVersion version = 0) const;
     BinaryVersion restoreFromBinary(std::istream &inputStream);
     static Type fromBinary(std::istream &inputStream);

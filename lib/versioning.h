@@ -26,6 +26,11 @@ public
 
 CPP_UTILITIES_TRAITS_DEFINE_TYPE_CHECK(IsVersioned, T::version);
 
+template <typename VersionType> struct VersionNotSupported {
+    VersionType presentVersion = 0, maxVersion = 0;
+    const char *record = nullptr;
+};
+
 template <typename Type, bool Condition = IsVersioned<Type>::value> struct Versioning {
     static constexpr auto enabled = false;
 };
@@ -33,9 +38,20 @@ template <typename Type, bool Condition = IsVersioned<Type>::value> struct Versi
 template <typename Type> struct Versioning<Type, true> {
     static constexpr auto enabled = Type::version != 0;
     static constexpr auto serializationDefault = Type::version;
+    static constexpr auto maxSupported = Type::version;
     static constexpr auto applyDefault(decltype(serializationDefault) version)
     {
         return version ? version : serializationDefault;
+    }
+    static constexpr auto isSupported(decltype(maxSupported) version)
+    {
+        return version <= maxSupported;
+    }
+    static constexpr auto assertVersion(decltype(maxSupported) version, const char *record = nullptr)
+    {
+        if (!isSupported(version)) {
+            throw typename Type::VersionNotSupported({ .presentVersion = version, .maxVersion = maxSupported, .record = record });
+        }
     }
 };
 

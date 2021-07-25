@@ -308,10 +308,13 @@ void BinarySerializationCodeGenerator::generate(std::ostream &os) const
            << ">(BinaryDeserializer &deserializer, ::" << relevantClass.qualifiedName << " &customObject, BinaryVersion version)\n{\n";
         if (!relevantClass.relevantBase.empty()) {
             os << "    // read version\n"
-                  "    if constexpr (Versioning<"
+                  "    using V = Versioning<"
                << relevantClass.relevantBase
-               << ">::enabled) {\n"
-                  "        version = deserializer.readVariableLengthUIntBE();\n"
+               << ">;\n"
+                  "    if constexpr (V::enabled) {\n"
+                  "        V::assertVersion(version = deserializer.readVariableLengthUIntBE(), \""
+               << relevantClass.qualifiedName
+               << "\");\n"
                   "    }\n";
         }
         os << "    // read base classes\n";

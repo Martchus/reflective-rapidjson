@@ -364,7 +364,7 @@ The binary (de)serializer supports *very* experimental versioning. Otherwise add
 members is a breaking change. The versioning looks like this:
 
 <pre>
-// enable definition of the macros shown below (otherwise use long macros defined  in
+// enable definition of the macros shown below (otherwise use long macros defined in
 // `lib/versioning.h`)
 #define REFLECTIVE_RAPIDJSON_SHORT_MACROS
 
@@ -379,7 +379,7 @@ as_of_version(3):
     std::uint32_t bar; // will be read/written if outer scope version is &gt;= 3
 };
 
-// example struct where version is serialized/deserialized; defaults to version when writing
+// example struct where version is serialized/deserialized; defaults to version 3 when writing
 struct Example : public BinarySerializable&lt;Example, 3&gt; {
     Nested nested;      // will be read/written in any case, version is "propagated down"
     std::uint32_t a, b; // will be read/written in any case
@@ -395,8 +395,11 @@ as_of_version(4):
 };
 </pre>
 
-A mechanism to catch unsupported versions during deserialization is yet to be implemented.
-Additionally, the versioning is completely untested at this point.
+The version specified as template argument is also assumed to be the highest supported version.
+If a higher version is encountered during deserialization, `BinaryVersionNotSupported` is thrown
+and the deserialization aborted.
+
+Note that the versioning is mostly untested at this point.
 
 ### Remarks
 * Static member variables and member functions are currently ignored by the generator.

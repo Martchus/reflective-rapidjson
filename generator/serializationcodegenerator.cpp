@@ -96,7 +96,7 @@ void SerializationCodeGenerator::computeRelevantClass(RelevantClass &possiblyRel
 
     // consider all classes inheriting from an instantiation of "JsonSerializable" relevant
     if (const auto *const relevantBase = inheritsFromInstantiationOf(possiblyRelevantClass.record, m_qualifiedNameOfRecords)) {
-        auto policy = clang::PrintingPolicy(possiblyRelevantClass.record->getLangOpts());
+        auto policy = clang::PrintingPolicy(possiblyRelevantClass.record->getASTContext().getLangOpts());
         policy.FullyQualifiedName = true;
         policy.SuppressScope = false;
         policy.SuppressUnwrittenScope = false;

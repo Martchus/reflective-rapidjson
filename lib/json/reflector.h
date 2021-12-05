@@ -24,6 +24,7 @@
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <variant>
 
 #include "./errorhandling.h"
@@ -668,7 +669,7 @@ void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<c
         ++index;
         typename Type::value_type itemObj;
         pull(itemObj, item, errors);
-        reflectable.emplace(move(itemObj));
+        reflectable.emplace(std::move(itemObj));
     }
 
     // clear error context
@@ -696,7 +697,7 @@ void pull(Type &reflectable, rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<c
         ++index;
         typename Type::value_type itemObj;
         pull(itemObj, item, errors);
-        if (!reflectable.emplace(move(itemObj)).second) {
+        if (!reflectable.emplace(std::move(itemObj)).second) {
             errors->reportUnexpectedDuplicate(JsonType::Array);
         }
     }

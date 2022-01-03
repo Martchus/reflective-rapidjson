@@ -155,6 +155,7 @@ struct JsonDeserializationErrors : public std::vector<JsonDeserializationError> 
     JsonDeserializationErrors();
 
     template <typename ExpectedType> void reportTypeMismatch(RAPIDJSON_NAMESPACE::Type presentType);
+    template <RAPIDJSON_NAMESPACE::Type expectedType> void reportTypeMismatch(RAPIDJSON_NAMESPACE::Type presentType);
     void reportArraySizeMismatch();
     void reportConversionError(JsonType jsonType);
     void reportUnexpectedDuplicate(JsonType jsonType);
@@ -217,6 +218,16 @@ template <typename ExpectedType> inline void JsonDeserializationErrors::reportTy
 {
     emplace_back(
         JsonDeserializationErrorKind::TypeMismatch, jsonType<ExpectedType>(), jsonType(presentType), currentRecord, currentMember, currentIndex);
+    throwMaybe(ThrowOn::TypeMismatch);
+}
+
+/*!
+ * \brief Reports a type mismatch between \tparam expectedType and \a presentType within the current context.
+ */
+template <RAPIDJSON_NAMESPACE::Type expectedType> inline void JsonDeserializationErrors::reportTypeMismatch(RAPIDJSON_NAMESPACE::Type presentType)
+{
+    emplace_back(
+        JsonDeserializationErrorKind::TypeMismatch, jsonType(expectedType), jsonType(presentType), currentRecord, currentMember, currentIndex);
     throwMaybe(ThrowOn::TypeMismatch);
 }
 

@@ -936,7 +936,7 @@ inline void pull(Type &reflectable, const char *name, const rapidjson::GenericVa
     }
 
     // set error context for current member
-    const char *previousMember;
+    const char *previousMember = nullptr;
     if (errors) {
         previousMember = errors->currentMember;
         errors->currentMember = name;

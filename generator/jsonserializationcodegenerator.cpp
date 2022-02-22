@@ -146,7 +146,7 @@ void JsonSerializationCodeGenerator::generate(ostream &os) const
             os << "    pull(static_cast<::" << baseClass->qualifiedName << " &>(reflectable), value, errors);\n";
         }
         os << "    // set error context for current record\n"
-              "    const char *previousRecord;\n"
+              "    const char *previousRecord = nullptr;\n"
               "    if (errors) {\n"
               "        previousRecord = errors->currentRecord;\n"
               "        errors->currentRecord = \""

@@ -112,7 +112,7 @@ template <> inline void push<NestingArray>(const NestingArray &reflectable, Valu
 template <>
 inline void pull<TestObject>(TestObject &reflectable, const GenericValue<UTF8<char>>::ConstObject &value, JsonDeserializationErrors *errors)
 {
-    const char *previousRecord;
+    const char *previousRecord = nullptr;
     if (errors) {
         previousRecord = errors->currentRecord;
         errors->currentRecord = "TestObject";
@@ -141,7 +141,7 @@ inline void pull<TestObject>(TestObject &reflectable, const GenericValue<UTF8<ch
 template <>
 inline void pull<NestingObject>(NestingObject &reflectable, const GenericValue<UTF8<char>>::ConstObject &value, JsonDeserializationErrors *errors)
 {
-    const char *previousRecord;
+    const char *previousRecord = nullptr;
     if (errors) {
         previousRecord = errors->currentRecord;
         errors->currentRecord = "NestingObject";
@@ -156,7 +156,7 @@ inline void pull<NestingObject>(NestingObject &reflectable, const GenericValue<U
 template <>
 inline void pull<NestingArray>(NestingArray &reflectable, const GenericValue<UTF8<char>>::ConstObject &value, JsonDeserializationErrors *errors)
 {
-    const char *previousRecord;
+    const char *previousRecord = nullptr;
     if (errors) {
         previousRecord = errors->currentRecord;
         errors->currentRecord = "NestingArray";

@@ -533,3 +533,6 @@ Add eg. `-j$(nproc)` to `make` arguments for using all cores.
 
 These packages shows the required dependencies and commands to build in a plain way. So they might be useful for
 making Reflective RapidJSON available under other platforms, too.
+
+## License
+All code is licensed under [GPL-2-or-later](LICENSE).

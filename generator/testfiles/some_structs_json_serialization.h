@@ -13,7 +13,7 @@ template <>  void pull<::TestNamespace1::Person>(::TestNamespace1::Person &refle
 {
     // pull base classes
     // set error context for current record
-    const char *previousRecord;
+    const char *previousRecord = nullptr;
     if (errors) {
         previousRecord = errors->currentRecord;
         errors->currentRecord = "TestNamespace1::Person";
@@ -39,7 +39,7 @@ template <>  void pull<::TestNamespace2::ThirdPartyStruct>(::TestNamespace2::Thi
 {
     // pull base classes
     // set error context for current record
-    const char *previousRecord;
+    const char *previousRecord = nullptr;
     if (errors) {
         previousRecord = errors->currentRecord;
         errors->currentRecord = "TestNamespace2::ThirdPartyStruct";

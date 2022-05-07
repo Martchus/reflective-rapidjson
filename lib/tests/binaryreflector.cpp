@@ -170,6 +170,7 @@ class BinaryReflectorTests : public TestFixture {
     CPPUNIT_TEST(testSmallSharedPointer);
     CPPUNIT_TEST(testBigSharedPointer);
     CPPUNIT_TEST(testVariant);
+    CPPUNIT_TEST(testOptional);
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -187,6 +188,7 @@ public:
     void testSmallSharedPointer();
     void testBigSharedPointer();
     void testVariant();
+    void testOptional();
 
 private:
     vector<unsigned char> m_buffer;
@@ -390,4 +392,29 @@ void BinaryReflectorTests::testVariant()
     CPPUNIT_ASSERT_EQUAL(1_st, deserializedVariants.yetAnotherVariant.index());
     CPPUNIT_ASSERT_EQUAL("foo"s, get<0>(deserializedVariants.anotherVariant));
     CPPUNIT_ASSERT_EQUAL(42, get<1>(deserializedVariants.yetAnotherVariant));
+}
+
+void BinaryReflectorTests::testOptional()
+{
+    // create test objects
+    const auto str = std::make_optional<std::string>("foo");
+    const auto nullStr = std::optional<std::string>();
+
+    // serialize test object
+    auto stream = std::stringstream(std::ios_base::in | std::ios_base::out | std::ios_base::binary);
+    stream.exceptions(std::ios_base::failbit | std::ios_base::badbit);
+    auto ser = BinaryReflector::BinarySerializer(&stream);
+    ser.write(str);
+    ser.write(nullStr);
+
+    // deserialize the object again
+    auto deser = BinaryReflector::BinaryDeserializer(&stream);
+    auto deserStr = std::optional<std::string>();
+    auto deserNullStr = std::optional<std::string>();
+    deser.read(deserStr);
+    deser.read(deserNullStr);
+
+    CPPUNIT_ASSERT(deserStr.has_value());
+    CPPUNIT_ASSERT_EQUAL("foo"s, deserStr.value());
+    CPPUNIT_ASSERT(!nullStr.has_value());
 }

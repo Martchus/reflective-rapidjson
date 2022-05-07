@@ -186,11 +186,13 @@ class JsonReflectorTests : public TestFixture {
     CPPUNIT_TEST(testSerializeNestedObjects);
     CPPUNIT_TEST(testSerializeUniquePtr);
     CPPUNIT_TEST(testSerializeSharedPtr);
+    CPPUNIT_TEST(testSerializeOptional);
     CPPUNIT_TEST(testDeserializePrimitives);
     CPPUNIT_TEST(testDeserializeSimpleObjects);
     CPPUNIT_TEST(testDeserializeNestedObjects);
     CPPUNIT_TEST(testDeserializeUniquePtr);
     CPPUNIT_TEST(testDeserializeSharedPtr);
+    CPPUNIT_TEST(testDeserializeOptional);
     CPPUNIT_TEST(testHandlingParseError);
     CPPUNIT_TEST(testHandlingTypeMismatch);
     CPPUNIT_TEST_SUITE_END();
@@ -205,11 +207,13 @@ public:
     void testSerializeNestedObjects();
     void testSerializeUniquePtr();
     void testSerializeSharedPtr();
+    void testSerializeOptional();
     void testDeserializePrimitives();
     void testDeserializeSimpleObjects();
     void testDeserializeNestedObjects();
     void testDeserializeUniquePtr();
     void testDeserializeSharedPtr();
+    void testDeserializeOptional();
     void testHandlingParseError();
     void testHandlingTypeMismatch();
 
@@ -380,6 +384,28 @@ void JsonReflectorTests::testSerializeSharedPtr()
 }
 
 /*!
+ * \brief Tests serializing std::optional.
+ */
+void JsonReflectorTests::testSerializeOptional()
+{
+    Document doc(kArrayType);
+    Document::AllocatorType &alloc = doc.GetAllocator();
+    doc.SetArray();
+    Document::Array array(doc.GetArray());
+
+    const auto str = make_optional<std::string>("foo");
+    const auto nullStr = std::optional<std::string>();
+
+    JsonReflector::push(str, array, alloc);
+    JsonReflector::push(nullStr, array, alloc);
+
+    StringBuffer strbuf;
+    Writer<StringBuffer> jsonWriter(strbuf);
+    doc.Accept(jsonWriter);
+    CPPUNIT_ASSERT_EQUAL("[\"foo\",null]"s, std::string(strbuf.GetString()));
+}
+
+/*!
  * \brief Tests deserializing strings, numbers (int, float, double) and boolean.
  */
 void JsonReflectorTests::testDeserializePrimitives()
@@ -517,6 +543,9 @@ void JsonReflectorTests::testDeserializeNestedObjects()
     CPPUNIT_ASSERT_EQUAL("test"s, nestedInVector[0].text);
 }
 
+/*!
+ * \brief Tests deserializing std::optional.
+ */
 void JsonReflectorTests::testDeserializeUniquePtr()
 {
     Document doc(kArrayType);
@@ -559,6 +588,22 @@ void JsonReflectorTests::testDeserializeSharedPtr()
     CPPUNIT_ASSERT(!nullStr);
     CPPUNIT_ASSERT(obj);
     CPPUNIT_ASSERT_EQUAL("bar"s, obj->text);
+}
+
+void JsonReflectorTests::testDeserializeOptional()
+{
+    Document doc(kArrayType);
+    doc.Parse("[\"foo\",null]");
+    auto array = doc.GetArray().begin();
+
+    optional<string> str = "foo"s;
+    optional<string> nullStr;
+    JsonDeserializationErrors errors;
+    JsonReflector::pull(str, array, &errors);
+    CPPUNIT_ASSERT_EQUAL(0_st, errors.size());
+    CPPUNIT_ASSERT(str.has_value());
+    CPPUNIT_ASSERT_EQUAL("foo"s, *str);
+    CPPUNIT_ASSERT(!nullStr.has_value());
 }
 
 /*!

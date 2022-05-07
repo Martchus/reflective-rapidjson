@@ -17,6 +17,7 @@
 #include <any>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 #include <variant>
 
@@ -46,7 +47,8 @@ namespace BinaryReflector {
 template <typename Type>
 using IsBuiltInType = Traits::Any<Traits::IsAnyOf<Type, char, std::uint8_t, bool, std::string, std::int16_t, std::uint16_t, std::int32_t,
                                       std::uint32_t, std::int64_t, std::uint64_t, float, double>,
-    Traits::IsIteratable<Type>, Traits::IsSpecializingAnyOf<Type, std::pair, std::unique_ptr, std::shared_ptr>, std::is_enum<Type>, IsVariant<Type>>;
+    Traits::IsIteratable<Type>, Traits::IsSpecializingAnyOf<Type, std::pair, std::unique_ptr, std::shared_ptr, std::optional>, std::is_enum<Type>,
+    IsVariant<Type>>;
 template <typename Type> using IsCustomType = Traits::Not<IsBuiltInType<Type>>;
 
 class BinaryDeserializer;
@@ -78,6 +80,7 @@ public:
     template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::pair>> * = nullptr> void read(Type &pair);
     template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::unique_ptr>> * = nullptr> void read(Type &pointer);
     template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::shared_ptr>> * = nullptr> void read(Type &pointer);
+    template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::optional>> * = nullptr> void read(Type &pointer);
     template <typename Type, Traits::EnableIf<IsArray<Type>, Traits::IsResizable<Type>> * = nullptr> void read(Type &iteratable);
     template <typename Type, Traits::EnableIfAny<IsMapOrHash<Type>, IsMultiMapOrHash<Type>> * = nullptr> void read(Type &iteratable);
     template <typename Type,
@@ -102,7 +105,8 @@ public:
 
     using CppUtilities::BinaryWriter::write;
     template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::pair>> * = nullptr> void write(const Type &pair);
-    template <typename Type, Traits::EnableIf<Traits::IsSpecializingAnyOf<Type, std::unique_ptr>> * = nullptr> void write(const Type &pointer);
+    template <typename Type, Traits::EnableIf<Traits::IsSpecializingAnyOf<Type, std::unique_ptr, std::optional>> * = nullptr>
+    void write(const Type &pointer);
     template <typename Type, Traits::EnableIf<Traits::IsSpecializingAnyOf<Type, std::shared_ptr>> * = nullptr> void write(const Type &pointer);
     template <typename Type, Traits::EnableIf<IsIteratableExceptString<Type>, Traits::HasSize<Type>> * = nullptr> void write(const Type &iteratable);
     template <typename Type, Traits::EnableIf<std::is_enum<Type>> * = nullptr> void write(const Type &enumValue);
@@ -157,6 +161,16 @@ template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::
     } catch (const std::bad_any_cast &) {
         throw CppUtilities::ConversionException("Referenced pointer type does not match");
     }
+}
+
+template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::optional>> *> void BinaryDeserializer::read(Type &opt)
+{
+    if (!readBool()) {
+        opt.reset();
+        return;
+    }
+    opt = std::make_optional<typename Type::value_type>();
+    read(*opt);
 }
 
 template <typename Type, Traits::EnableIf<IsArray<Type>, Traits::IsResizable<Type>> *> void BinaryDeserializer::read(Type &iteratable)
@@ -247,12 +261,12 @@ template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::
     write(pair.second);
 }
 
-template <typename Type, Traits::EnableIf<Traits::IsSpecializingAnyOf<Type, std::unique_ptr>> *> void BinarySerializer::write(const Type &pointer)
+template <typename Type, Traits::EnableIf<Traits::IsSpecializingAnyOf<Type, std::unique_ptr, std::optional>> *>
+void BinarySerializer::write(const Type &opt)
 {
-    const bool hasValue = pointer != nullptr;
-    writeBool(hasValue);
-    if (hasValue) {
-        write(*pointer);
+    writeBool(static_cast<bool>(opt));
+    if (opt) {
+        write(*opt);
     }
 }
 

@@ -62,7 +62,7 @@ The following table shows the mapping of supported C++ types to supported JSON t
 | iteratable lists (`std::vector`, `std::list`, ...)                           | array        |
 | sets (`std::set`, `std::unordered_set`, `std::multiset`, ...)                | array        |
 | `std::pair`, `std::tuple`                                                    | array        |
-| `std::unique_ptr`, `std::shared_ptr`                                         | depends/null |
+| `std::unique_ptr`, `std::shared_ptr`, `std::optional`                        | depends/null |
 | `std::map`, `std::unordered_map`, `std::multimap`, `std::unordered_multimap` | object       |
 | `std::variant`                                                               | object       |
 | `JsonSerializable`                                                           | object       |
@@ -73,7 +73,8 @@ The following table shows the mapping of supported C++ types to supported JSON t
 * For the same reason `const char *` and `std::string_view` are only supported for serialization.
 * Enums are (de)serialized as their underlying integer value. When deserializing, it is currently *not* checked
   whether the present integer value is a valid enumeration item.
-* The JSON type for smart pointers depends on the type the pointer refers to. It can also be `null`.
+* The JSON type for smart pointers and `std::optional` depends on the type the pointer/optional refers to.
+  It can also be `null` for null pointers or `std::optional` without value.
 * If multiple `std::shared_ptr` instances point to the same object this object is serialized multiple times.
   When deserializing those identical objects, it is currently not possible to share the memory (again). So each
   `std::shared_ptr` will point to its own copy. Note that this limitation is *not* present when using binary

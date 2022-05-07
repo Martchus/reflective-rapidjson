@@ -19,6 +19,7 @@
 #include <limits>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <tuple>
@@ -83,7 +84,7 @@ inline RAPIDJSON_NAMESPACE::Document parseJsonDocFromString(const char *json, st
 template <typename Type>
 using IsBuiltInType = Traits::Any<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>, std::is_enum<Type>,
     Traits::IsSpecializingAnyOf<Type, std::tuple, std::pair>, Traits::IsIteratable<Type>,
-    Traits::IsSpecializingAnyOf<Type, std::unique_ptr, std::shared_ptr, std::weak_ptr>, IsVariant<Type>>;
+    Traits::IsSpecializingAnyOf<Type, std::unique_ptr, std::shared_ptr, std::weak_ptr, std::optional>, IsVariant<Type>>;
 template <typename Type> using IsCustomType = Traits::Not<IsBuiltInType<Type>>;
 
 // define trait to check for custom structs/classes which are JSON serializable
@@ -306,10 +307,10 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
 }
 
 /*!
- * \brief Pushes the specified unique_ptr, shared_ptr or weak_ptr to the specified value.
+ * \brief Pushes the specified unique_ptr, shared_ptr, weak_ptr or optional to the specified value.
  */
 template <typename Type,
-    Traits::EnableIfAny<Traits::IsSpecializingAnyOf<Type, std::unique_ptr, std::shared_ptr, std::weak_ptr>> * = nullptr>
+    Traits::EnableIfAny<Traits::IsSpecializingAnyOf<Type, std::unique_ptr, std::shared_ptr, std::weak_ptr, std::optional>> * = nullptr>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     if (!reflectable) {
@@ -476,6 +477,12 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
  * \brief Pulls the specified \a reflectable which is a shared_ptr from the specified value which might be null.
  */
 template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::shared_ptr>> * = nullptr>
+void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors);
+
+/*!
+ * \brief Pulls the specified \a reflectable which is an std::optional from the specified value which might be null.
+ */
+template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::optional>> * = nullptr>
 void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors);
 
 /*!
@@ -845,6 +852,20 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
         return;
     }
     reflectable = std::make_shared<typename Type::element_type>();
+    pull(*reflectable, value, errors);
+}
+
+/*!
+ * \brief Pulls the specified \a reflectable which is an std::optional from the specified value which might be null.
+ */
+template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::optional>> *>
+void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
+{
+    if (value.IsNull()) {
+        reflectable.reset();
+        return;
+    }
+    reflectable = std::make_optional<typename Type::value_type>();
     pull(*reflectable, value, errors);
 }
 

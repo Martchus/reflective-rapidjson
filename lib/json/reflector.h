@@ -82,9 +82,8 @@ inline RAPIDJSON_NAMESPACE::Document parseJsonDocFromString(const char *json, st
 // define traits to distinguish between "built-in" types like int, std::string, std::vector, ... and custom structs/classes
 template <typename Type>
 using IsBuiltInType = Traits::Any<std::is_integral<Type>, std::is_floating_point<Type>, std::is_pointer<Type>, std::is_enum<Type>,
-    Traits::IsSpecializationOf<Type, std::tuple>, Traits::IsSpecializationOf<Type, std::pair>, Traits::IsIteratable<Type>,
-    Traits::IsSpecializationOf<Type, std::unique_ptr>, Traits::IsSpecializationOf<Type, std::shared_ptr>,
-    Traits::IsSpecializationOf<Type, std::weak_ptr>, IsVariant<Type>>;
+    Traits::IsSpecializingAnyOf<Type, std::tuple, std::pair>, Traits::IsIteratable<Type>,
+    Traits::IsSpecializingAnyOf<Type, std::unique_ptr, std::shared_ptr, std::weak_ptr>, IsVariant<Type>>;
 template <typename Type> using IsCustomType = Traits::Not<IsBuiltInType<Type>>;
 
 // define trait to check for custom structs/classes which are JSON serializable
@@ -310,8 +309,7 @@ void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_
  * \brief Pushes the specified unique_ptr, shared_ptr or weak_ptr to the specified value.
  */
 template <typename Type,
-    Traits::EnableIfAny<Traits::IsSpecializationOf<Type, std::unique_ptr>, Traits::IsSpecializationOf<Type, std::shared_ptr>,
-        Traits::IsSpecializationOf<Type, std::weak_ptr>> * = nullptr>
+    Traits::EnableIfAny<Traits::IsSpecializingAnyOf<Type, std::unique_ptr, std::shared_ptr, std::weak_ptr>> * = nullptr>
 void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     if (!reflectable) {

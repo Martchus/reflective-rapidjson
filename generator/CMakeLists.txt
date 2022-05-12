@@ -60,6 +60,9 @@ endif ()
 # also add reflective_rapidjson which is header-only but might pull additional include dirs for RapidJSON
 list(APPEND PRIVATE_LIBRARIES "${REFLECTIVE_RAPIDJSON_TARGET_NAME}")
 
+# avoid warning "'this' pointer is null" from GCC 12 about code included from libclang
+list(APPEND META_PRIVATE_COMPILE_OPTIONS "-Wno-error=nonnull")
+
 # include modules to apply configuration
 include(BasicConfig)
 include(WindowsResources)

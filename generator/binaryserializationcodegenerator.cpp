@@ -319,7 +319,7 @@ void BinarySerializationCodeGenerator::generate(std::ostream &os) const
         }
         os << "    // read base classes\n";
         for (const RelevantClass *baseClass : relevantBases) {
-            os << "    deserializer.read(static_cast<::" << baseClass->qualifiedName << " &>(customObject));\n";
+            os << "    deserializer.read(static_cast<::" << baseClass->qualifiedName << " &>(customObject), version);\n";
         }
         os << "    // read members\n";
         for (clang::Decl *const decl : relevantClass.record->decls()) {

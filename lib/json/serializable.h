@@ -31,6 +31,10 @@ template <typename Type> struct JsonSerializable {
     static Type fromJson(const std::string &json, JsonDeserializationErrors *errors = nullptr);
 
     static constexpr const char *qualifiedName = "ReflectiveRapidJSON::JsonSerializable";
+
+#if __cplusplus > 201707L
+    bool operator==(const JsonSerializable<Type> &) const = default;
+#endif
 };
 
 /*!

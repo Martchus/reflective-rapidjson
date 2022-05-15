@@ -27,6 +27,10 @@ template <typename Type, BinaryVersion v> struct BinarySerializable {
 
     static constexpr const char *qualifiedName = "ReflectiveRapidJSON::BinarySerializable";
     static constexpr auto version = v;
+
+#if __cplusplus > 201707L
+    bool operator==(const BinarySerializable<Type, v> &) const = default;
+#endif
 };
 
 template <typename Type, BinaryVersion v> inline void BinarySerializable<Type, v>::toBinary(std::ostream &outputStream, BinaryVersion version) const

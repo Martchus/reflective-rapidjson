@@ -127,7 +127,7 @@ void JsonSerializationCodeGenerator::generate(ostream &os) const
             }
         }
         if (relevantBases.empty() && !pushWritten) {
-            os << "    (void)reflectable;\n    (void)value;\n";
+            os << "    (void)reflectable;\n    (void)value;\n    (void)allocator;\n";
         }
         os << "}\n";
 

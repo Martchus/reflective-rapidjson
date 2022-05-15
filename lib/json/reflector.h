@@ -148,10 +148,22 @@ inline void push(const Type &reflectable, RAPIDJSON_NAMESPACE::Value &value, RAP
 /*!
  * \brief Pushes the specified integer/float/boolean to the specified value.
  */
-template <typename Type, Traits::EnableIfAny<std::is_integral<Type>, std::is_floating_point<Type>> * = nullptr>
+template <typename Type,
+    Traits::EnableIfAny<
+        Traits::All<std::is_integral<Type>, Traits::Not<std::is_same<Type, std::uint8_t>>, Traits::Not<std::is_same<Type, std::int8_t>>>,
+        std::is_floating_point<Type>> * = nullptr>
 inline void push(Type reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
 {
     value.Set(reflectable, allocator);
+}
+
+/*!
+ * \brief Pushes the specified 8-bit integer to the specified value.
+ */
+template <typename Type, Traits::EnableIfAny<std::is_same<Type, std::uint8_t>, std::is_same<Type, std::int8_t>> * = nullptr>
+inline void push(Type reflectable, RAPIDJSON_NAMESPACE::Value &value, RAPIDJSON_NAMESPACE::Document::AllocatorType &allocator)
+{
+    value.Set(static_cast<int>(reflectable), allocator);
 }
 
 /*!
@@ -517,7 +529,8 @@ void pull(Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_N
  * \brief Pulls the integer or float from the specified value which is supposed and checked to contain the right type.
  */
 template <typename Type,
-    Traits::EnableIf<Traits::Not<std::is_same<Type, bool>>, Traits::Any<std::is_integral<Type>, std::is_floating_point<Type>>> * = nullptr>
+    Traits::EnableIf<Traits::Not<std::is_same<Type, bool>>, Traits::Not<std::is_same<Type, std::uint8_t>>,
+        Traits::Not<std::is_same<Type, std::int8_t>>, Traits::Any<std::is_integral<Type>, std::is_floating_point<Type>>> * = nullptr>
 inline void pull(
     Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
 {
@@ -528,6 +541,20 @@ inline void pull(
         return;
     }
     reflectable = value.Is<Type>() ? value.Get<Type>() : static_cast<Type>(value.GetDouble());
+}
+
+/*!
+ * \brief Pulls the integer or float from the specified value which is supposed and checked to contain the right type.
+ */
+template <typename Type, Traits::EnableIfAny<std::is_same<Type, std::uint8_t>, std::is_same<Type, std::int8_t>> * = nullptr>
+inline void pull(
+    Type &reflectable, const RAPIDJSON_NAMESPACE::GenericValue<RAPIDJSON_NAMESPACE::UTF8<char>> &value, JsonDeserializationErrors *errors)
+{
+    int i = 0;
+    pull(i, value, errors);
+    if (value.IsNumber()) {
+        reflectable = static_cast<Type>(i);
+    }
 }
 
 /*!

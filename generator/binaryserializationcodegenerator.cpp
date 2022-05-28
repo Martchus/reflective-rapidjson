@@ -246,6 +246,10 @@ void BinarySerializationCodeGenerator::generate(std::ostream &os) const
         // print writeCustomType method
         os << "template <> " << visibility << " void writeCustomType<::" << relevantClass.qualifiedName
            << ">(BinarySerializer &serializer, const ::" << relevantClass.qualifiedName << " &customObject, BinaryVersion version)\n{\n";
+        os << "    // write base classes\n";
+        for (const RelevantClass *baseClass : relevantBases) {
+            os << "    serializer.write(static_cast<const ::" << baseClass->qualifiedName << " &>(customObject), version);\n";
+        }
         if (!relevantClass.relevantBase.empty()) {
             os << "    // write version\n"
                   "    using V = Versioning<"
@@ -254,10 +258,6 @@ void BinarySerializationCodeGenerator::generate(std::ostream &os) const
                   "    if constexpr (V::enabled) {\n"
                   "        serializer.writeVariableLengthUIntBE(V::applyDefault(version));\n"
                   "    }\n";
-        }
-        os << "    // write base classes\n";
-        for (const RelevantClass *baseClass : relevantBases) {
-            os << "    serializer.write(static_cast<const ::" << baseClass->qualifiedName << " &>(customObject), version);\n";
         }
         os << "    // write members\n";
         auto mt = MemberTracking();
@@ -306,6 +306,10 @@ void BinarySerializationCodeGenerator::generate(std::ostream &os) const
         mt = MemberTracking();
         os << "template <> " << visibility << " BinaryVersion readCustomType<::" << relevantClass.qualifiedName
            << ">(BinaryDeserializer &deserializer, ::" << relevantClass.qualifiedName << " &customObject, BinaryVersion version)\n{\n";
+        os << "    // read base classes\n";
+        for (const RelevantClass *baseClass : relevantBases) {
+            os << "    deserializer.read(static_cast<::" << baseClass->qualifiedName << " &>(customObject), version);\n";
+        }
         if (!relevantClass.relevantBase.empty()) {
             os << "    // read version\n"
                   "    using V = Versioning<"
@@ -316,10 +320,6 @@ void BinarySerializationCodeGenerator::generate(std::ostream &os) const
                << relevantClass.qualifiedName
                << "\");\n"
                   "    }\n";
-        }
-        os << "    // read base classes\n";
-        for (const RelevantClass *baseClass : relevantBases) {
-            os << "    deserializer.read(static_cast<::" << baseClass->qualifiedName << " &>(customObject), version);\n";
         }
         os << "    // read members\n";
         for (clang::Decl *const decl : relevantClass.record->decls()) {

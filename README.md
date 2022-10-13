@@ -511,7 +511,7 @@ make
 make check
 # build tests but do not run them (optional, requires CppUnit)
 make tests
-# generate API documentation (optional, reqquires Doxygen)
+# generate API documentation (optional, requires Doxygen)
 make apidoc
 # install header files, libraries and generator
 make install DESTDIR="/temporary/install/location"

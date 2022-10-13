@@ -7,20 +7,14 @@
 #include <vector>
 
 // define structs for testing REFLECTIVE_RAPIDJSON_TREAT_AS_…
-struct Foo {
-};
-struct Bar {
-};
+struct Foo {};
+struct Bar {};
 
 // define structs for testing versioning
-struct VersionlessBase : public ReflectiveRapidJSON::BinarySerializable<VersionlessBase> {
-};
-struct VersionedDerived : public VersionlessBase, public ReflectiveRapidJSON::BinarySerializable<VersionedDerived, 1> {
-};
-struct VersionedBase : public ReflectiveRapidJSON::BinarySerializable<VersionlessBase, 1> {
-};
-struct VersionlessDerived : public VersionedBase, public ReflectiveRapidJSON::BinarySerializable<VersionlessDerived> {
-};
+struct VersionlessBase : public ReflectiveRapidJSON::BinarySerializable<VersionlessBase> {};
+struct VersionedDerived : public VersionlessBase, public ReflectiveRapidJSON::BinarySerializable<VersionedDerived, 1> {};
+struct VersionedBase : public ReflectiveRapidJSON::BinarySerializable<VersionlessBase, 1> {};
+struct VersionlessDerived : public VersionedBase, public ReflectiveRapidJSON::BinarySerializable<VersionlessDerived> {};
 
 namespace ReflectiveRapidJSON {
 REFLECTIVE_RAPIDJSON_TREAT_AS_MAP_OR_HASH(Foo);

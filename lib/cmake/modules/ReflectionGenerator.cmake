@@ -142,8 +142,10 @@ function (add_reflection_generator_invocation)
         foreach (TARGET_NAME ${ARGS_CLANG_OPTIONS_FROM_TARGETS})
             # set c++ standard
             list(APPEND ARGS_CLANG_OPTIONS "-std=c++$<TARGET_PROPERTY:${TARGET_NAME},CXX_STANDARD>")
-            # add compile flags
+            # add compile flags and options
             _reflective_rapidjson_set_prop("${TARGET_NAME}" COMPILE_FLAGS)
+            list(APPEND ARGS_CLANG_OPTIONS "$<$<BOOL:${PROP}>:$<JOIN:${PROP},$<SEMICOLON>>>")
+            _reflective_rapidjson_set_prop("${TARGET_NAME}" COMPILE_OPTIONS)
             list(APPEND ARGS_CLANG_OPTIONS "$<$<BOOL:${PROP}>:$<JOIN:${PROP},$<SEMICOLON>>>")
             # add compile definitions
             _reflective_rapidjson_set_prop("${TARGET_NAME}" COMPILE_DEFINITIONS)

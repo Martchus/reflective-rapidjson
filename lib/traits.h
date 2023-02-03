@@ -16,30 +16,22 @@ namespace Traits = ::CppUtilities::Traits;
 
 // define structs and macros to allow treating custom data types as std::map, std::set, ...
 /// \brief \brief The TreatAsMapOrHash class allows treating custom classes as std::map or std::unordered_map.
-template <typename T> struct TreatAsMapOrHash : public Traits::Bool<false> {
-};
+template <typename T> struct TreatAsMapOrHash : public Traits::Bool<false> {};
 /// \brief \brief The TreatAsMultiMapOrHash class allows treating custom classes as std::multimap or std::unordered_multimap.
-template <typename T> struct TreatAsMultiMapOrHash : public Traits::Bool<false> {
-};
+template <typename T> struct TreatAsMultiMapOrHash : public Traits::Bool<false> {};
 /// \brief \brief The TreatAsSet class allows treating custom classes as std::set or std::unordered_set.
-template <typename T> struct TreatAsSet : public Traits::Bool<false> {
-};
+template <typename T> struct TreatAsSet : public Traits::Bool<false> {};
 /// \brief \brief The TreatAsMultiSet class allows treating custom classes as std::multiset or std::unordered_multiset.
-template <typename T> struct TreatAsMultiSet : public Traits::Bool<false> {
-};
+template <typename T> struct TreatAsMultiSet : public Traits::Bool<false> {};
 
 #define REFLECTIVE_RAPIDJSON_TREAT_AS_MAP_OR_HASH(T)                                                                                                 \
-    template <> struct TreatAsMapOrHash<T> : public Traits::Bool<true> {                                                                             \
-    }
+    template <> struct TreatAsMapOrHash<T> : public Traits::Bool<true> {}
 #define REFLECTIVE_RAPIDJSON_TREAT_AS_MULTI_MAP_OR_HASH(T)                                                                                           \
-    template <> struct TreatAsMultiMapOrHash<T> : public Traits::Bool<true> {                                                                        \
-    }
+    template <> struct TreatAsMultiMapOrHash<T> : public Traits::Bool<true> {}
 #define REFLECTIVE_RAPIDJSON_TREAT_AS_SET(T)                                                                                                         \
-    template <> struct TreatAsSet<T> : public Traits::Bool<true> {                                                                                   \
-    }
+    template <> struct TreatAsSet<T> : public Traits::Bool<true> {}
 #define REFLECTIVE_RAPIDJSON_TREAT_AS_MULTI_SET(T)                                                                                                   \
-    template <> struct TreatAsMultiSet<T> : public Traits::Bool<true> {                                                                              \
-    }
+    template <> struct TreatAsMultiSet<T> : public Traits::Bool<true> {}
 
 // define traits to check for arrays, sets and maps
 template <typename Type>

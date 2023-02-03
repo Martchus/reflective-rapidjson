@@ -58,8 +58,7 @@ template <typename Type, BinaryVersion v> Type BinarySerializable<Type, v>::from
  *       Find out whether this is a compiler bug or a correct error message.
  */
 #define REFLECTIVE_RAPIDJSON_MAKE_BINARY_SERIALIZABLE(T)                                                                                             \
-    template <> struct ReflectiveRapidJSON::AdaptedBinarySerializable<T> : Traits::Bool<true> {                                                      \
-    }
+    template <> struct ReflectiveRapidJSON::AdaptedBinarySerializable<T> : Traits::Bool<true> {}
 
 } // namespace ReflectiveRapidJSON
 

@@ -120,8 +120,7 @@ const JsonSerializable<Type> &as(const Type &serializable)
  *       Find out whether this is a compiler bug or a correct error message.
  */
 #define REFLECTIVE_RAPIDJSON_MAKE_JSON_SERIALIZABLE(T)                                                                                               \
-    template <> struct ReflectiveRapidJSON::AdaptedJsonSerializable<T> : Traits::Bool<true> {                                                        \
-    }
+    template <> struct ReflectiveRapidJSON::AdaptedJsonSerializable<T> : Traits::Bool<true> {}
 
 /*!
  * \def The REFLECTIVE_RAPIDJSON_PUSH_PRIVATE_MEMBERS macro enables serialization of private members.

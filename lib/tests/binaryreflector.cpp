@@ -273,13 +273,44 @@ void BinaryReflectorTests::tearDown()
 {
 }
 
+static void setBuffer(std::stringstream &stream, unsigned char *buffer, std::size_t bufferSize)
+{
+#if defined(__GLIBCXX__) && !defined(_LIBCPP_VERSION)
+    stream.rdbuf()->pubsetbuf(reinterpret_cast<char *>(buffer), static_cast<std::streamsize>(bufferSize));
+#else
+    CPP_UTILITIES_UNUSED(stream)
+    CPP_UTILITIES_UNUSED(buffer)
+    CPP_UTILITIES_UNUSED(bufferSize)
+#endif
+}
+
+static void readBuffer(std::stringstream &stream, unsigned char *buffer, std::size_t bufferSize)
+{
+#if defined(__GLIBCXX__) && !defined(_LIBCPP_VERSION)
+    CPP_UTILITIES_UNUSED(stream)
+    CPP_UTILITIES_UNUSED(buffer)
+    CPP_UTILITIES_UNUSED(bufferSize)
+#else
+    stream.read(reinterpret_cast<char *>(buffer), static_cast<std::streamsize>(bufferSize));
+#endif
+}
+static void writeBuffer(std::stringstream &stream, unsigned char *buffer, std::size_t bufferSize)
+{
+#if defined(__GLIBCXX__) && !defined(_LIBCPP_VERSION)
+    stream.rdbuf()->pubsetbuf(reinterpret_cast<char *>(buffer), static_cast<std::streamsize>(bufferSize));
+#else
+    stream.write(reinterpret_cast<const char *>(buffer), static_cast<std::streamsize>(bufferSize));
+#endif
+}
+
 void BinaryReflectorTests::testSerializeSimpleStruct()
 {
     stringstream stream(ios_base::out | ios_base::binary);
     stream.exceptions(ios_base::failbit | ios_base::badbit);
     m_buffer.resize(m_expectedTestObj.size());
-    stream.rdbuf()->pubsetbuf(reinterpret_cast<char *>(m_buffer.data()), static_cast<streamsize>(m_buffer.size()));
+    setBuffer(stream, m_buffer.data(), m_buffer.size());
     m_testObj.toBinary(stream);
+    readBuffer(stream, m_buffer.data(), m_buffer.size());
 
     CPPUNIT_ASSERT_EQUAL(m_expectedTestObj, m_buffer);
 }
@@ -288,7 +319,7 @@ void BinaryReflectorTests::testDeserializeSimpleStruct()
 {
     stringstream stream(ios_base::in | ios_base::binary);
     stream.exceptions(ios_base::failbit | ios_base::badbit);
-    stream.rdbuf()->pubsetbuf(reinterpret_cast<char *>(m_expectedTestObj.data()), static_cast<streamsize>(m_expectedTestObj.size()));
+    writeBuffer(stream, m_expectedTestObj.data(), m_expectedTestObj.size());
     const auto deserialized(TestObjectBinary::fromBinary(stream));
     assertTestObject(deserialized);
 }
@@ -298,8 +329,9 @@ void BinaryReflectorTests::testSerializeNestedStruct()
     stringstream stream(ios_base::out | ios_base::binary);
     stream.exceptions(ios_base::failbit | ios_base::badbit);
     m_buffer.resize(m_expectedNestedTestObj.size());
-    stream.rdbuf()->pubsetbuf(reinterpret_cast<char *>(m_buffer.data()), static_cast<streamsize>(m_buffer.size()));
+    setBuffer(stream, m_buffer.data(), m_buffer.size());
     m_nestedTestObj.toBinary(stream);
+    readBuffer(stream, m_buffer.data(), m_buffer.size());
 
     CPPUNIT_ASSERT_EQUAL(m_expectedNestedTestObj, m_buffer);
 }
@@ -308,7 +340,7 @@ void BinaryReflectorTests::testDeserializeNestedStruct()
 {
     stringstream stream(ios_base::in | ios_base::binary);
     stream.exceptions(ios_base::failbit | ios_base::badbit);
-    stream.rdbuf()->pubsetbuf(reinterpret_cast<char *>(m_expectedNestedTestObj.data()), static_cast<streamsize>(m_expectedNestedTestObj.size()));
+    writeBuffer(stream, m_expectedNestedTestObj.data(), m_expectedNestedTestObj.size());
 
     const auto deserialized(NestingArrayBinary::fromBinary(stream));
     CPPUNIT_ASSERT_EQUAL(m_nestedTestObj.name, deserialized.name);

@@ -87,7 +87,7 @@ endfunction ()
 include(CMakeParseArguments)
 function (add_reflection_generator_invocation)
     # parse arguments
-    set(OPTIONAL_ARGS)
+    set(OPTIONAL_ARGS ERROR_RESILIENT)
     set(ONE_VALUE_ARGS OUTPUT_DIRECTORY JSON_VISIBILITY BINARY_VISBILITY)
     set(MULTI_VALUE_ARGS
         INPUT_FILES
@@ -200,6 +200,9 @@ function (add_reflection_generator_invocation)
         endif ()
         if (ARGS_BINARY_VISBILITY)
             list(APPEND CLI_ARGUMENTS --binary-visibility "${ARGS_BINARY_VISBILITY}")
+        endif ()
+        if (ARGS_ERROR_RESILIENT)
+            list(APPEND CLI_ARGUMENTS --error-resilient)
         endif ()
         add_custom_command(
             OUTPUT "${OUTPUT_FILE}"

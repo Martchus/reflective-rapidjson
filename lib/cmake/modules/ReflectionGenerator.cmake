@@ -121,20 +121,9 @@ function (add_reflection_generator_invocation)
         list(APPEND ARGS_CLANG_OPTIONS -I "${INCLUDE_DIR}")
     endforeach ()
 
-    # add workaround for cross compiling with mingw-w64 to prevent host stdlib.h being included (not sure why specifying
-    # REFLECTION_GENERATOR_INCLUDE_DIRECTORIES is not enough to let it find this particular header file)
-    if (MINGW)
-        # find MinGW version of stdlib.h
-        find_file(MINGW_W64_STDLIB_H stdlib.h ${REFLECTION_GENERATOR_INCLUDE_DIRECTORIES})
-        if (NOT EXISTS "${MINGW_W64_STDLIB_H}")
-            message(
-                FATAL_ERROR
-                    "Unable to locate MinGW version of stdlib.h. Ensure it is in REFLECTION_GENERATOR_INCLUDE_DIRECTORIES.")
-        endif ()
-
-        # ensure libtooling includes the MinGW version of stdlib.h rather than the host version
-        list(APPEND ARGS_CLANG_OPTIONS -include "${MINGW_W64_STDLIB_H}" -D_STDLIB_H # prevent processing of host stdlib.h
-        )
+    # avoid including headers from host when cross compiling
+    if (CMAKE_CROSSCOMPILING)
+        list(APPEND ARGS_CLANG_OPTIONS -nostdinc)
     endif ()
 
     # add options to be passed to clang from the specified targets

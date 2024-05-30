@@ -536,6 +536,6 @@ These packages shows the required dependencies and commands to build in a plain 
 making Reflective RapidJSON available under other platforms, too.
 
 ## Copyright notice and license
-Copyright © 2017-2023 Marius Kittler
+Copyright © 2017-2024 Marius Kittler
 
 All code is licensed under [GPL-2-or-later](LICENSE).

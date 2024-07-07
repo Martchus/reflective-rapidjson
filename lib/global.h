@@ -4,6 +4,7 @@
 #ifndef REFLECTIVE_RAPIDJSON_GLOBAL
 #define REFLECTIVE_RAPIDJSON_GLOBAL
 
+#include "reflective_rapidjson-definitions.h"
 #include <c++utilities/application/global.h>
 
 #ifdef REFLECTIVE_RAPIDJSON_STATIC

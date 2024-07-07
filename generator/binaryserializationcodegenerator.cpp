@@ -1,4 +1,5 @@
 #include "./binaryserializationcodegenerator.h"
+#include "./clangversionabstraction.h"
 
 #include "../lib/binary/serializable.h"
 
@@ -121,8 +122,8 @@ bool MemberTracking::checkForVersionMarker(clang::Decl *decl)
     }
     auto *const declarator = static_cast<clang::DeclaratorDecl *>(decl);
     const auto declarationName = declarator->getName();
-    const auto isAsOfVersion = declarationName.startswith("rrjAsOfVersion");
-    if (isAsOfVersion || declarationName.startswith("rrjUntilVersion")) {
+    const auto isAsOfVersion = startsStrRefWith<llvm::StringRef>(declarationName, "rrjAsOfVersion");
+    if (isAsOfVersion || startsStrRefWith<llvm::StringRef>(declarationName, "rrjUntilVersion")) {
         auto v = RetrieveIntegerLiteralFromDeclaratorDecl(declarator->getASTContext());
         v.TraverseDecl(declarator);
         if (v.success) {

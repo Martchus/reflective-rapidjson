@@ -45,6 +45,18 @@ template <typename T> MaybeUnique<T> maybe_unique(std::unique_ptr<T> val)
 #define REFLECTIVE_RAPIDJSON_MAYBE_UNIQUE(t) std::unique_ptr<t>
 #endif
 
+/*!
+ * \brief Tests whether an llvm::StringRef starts with another llvm::StringRef.
+ */
+template <typename T> bool startsStrRefWith(T stringRef1, T stringRef2)
+{
+#if CLANG_VERSION_MAJOR >= 16
+    return stringRef1.starts_with(stringRef2);
+#else
+    return stringRef1.startswith(stringRef2);
+#endif
+}
+
 } // namespace ReflectiveRapidJSON
 
 #endif // REFLECTIVE_RAPIDJSON_CLANG_VERSION_ABSTRACTION_H

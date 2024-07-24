@@ -9,7 +9,7 @@ A serializer/deserializer for a platform independent binary format has already b
 It would also be possible to extend the library/generator to provide generic reflection (not implemented yet).
 
 The following documentation focuses on the JSON (de)serializer. However, most of it is also true for the mentioned
-binary (de)serializer which works quite similar.
+binary (de)serializer which works quite similarly.
 
 ## Open for other reflection approaches
 The reflection implementation used behind the scenes of this library is exchangeable:
@@ -35,7 +35,7 @@ There are still things missing which would likely be very useful in practise. Th
 open TODOs which are supposed to be most relevant in practise:
 
 * [ ] Allow to specify which member variables should be considered
-    * This could work similar to Qt's Signals & Slots macros.
+    * This could work similarly to Qt's Signals & Slots macros.
     * But there should also be a way to do this for 3rdparty types.
     * Note that currently all public, non-static member variables are (de)serialized.
 * [ ] Support getter/setter methods
@@ -347,7 +347,7 @@ private:
 
 ### Custom (de)serialization
 Sometimes it is appropriate to implement custom (de)serialization. For instance, a
-custom object representing a time value should likey be serialized as a string rather
+custom object representing a time value should likely be serialized as a string rather
 than an object containing the internal structure.
 
 An example for such custom (de)serialization can be found in the file
@@ -419,7 +419,7 @@ Note that the versioning is mostly untested at this point.
 The following diagram gives an overview about the architecture of the code generator and wrapper library
 around RapidJSON:
 
-![Architectue overview](./doc/arch.svg)
+![Architecture overview](./doc/arch.svg)
 
 * blue: classes from LibTooling/Clang
 * grey: conceivable extension or use

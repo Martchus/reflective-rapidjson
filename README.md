@@ -532,7 +532,7 @@ Add eg. `-j$(nproc)` to `make` arguments for using all cores.
 * Windows
     * for mingw-w64 PKGBUILDs checkout [my GitHub repository](https://github.com/Martchus/PKGBUILDs)
 
-These packages shows the required dependencies and commands to build in a plain way. So they might be useful for
+These packages show the required dependencies and commands to build. So they might be useful for
 making Reflective RapidJSON available under other platforms, too.
 
 ## Copyright notice and license

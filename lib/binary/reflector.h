@@ -165,12 +165,11 @@ template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::
 
 template <typename Type, Traits::EnableIf<Traits::IsSpecializationOf<Type, std::optional>> *> void BinaryDeserializer::read(Type &opt)
 {
-    if (!readBool()) {
+    if (readBool()) {
+        read(opt.emplace());
+    } else {
         opt.reset();
-        return;
     }
-    opt = std::make_optional<typename Type::value_type>();
-    read(*opt);
 }
 
 template <typename Type, Traits::EnableIf<IsArray<Type>, Traits::IsResizable<Type>> *> void BinaryDeserializer::read(Type &iteratable)

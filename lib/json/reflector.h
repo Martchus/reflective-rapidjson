@@ -890,10 +890,9 @@ void pull(Type &reflectable, const rapidjson::GenericValue<RAPIDJSON_NAMESPACE::
 {
     if (value.IsNull()) {
         reflectable.reset();
-        return;
+    } else {
+        pull(reflectable.emplace(), value, errors);
     }
-    reflectable = std::make_optional<typename Type::value_type>();
-    pull(*reflectable, value, errors);
 }
 
 /// \cond

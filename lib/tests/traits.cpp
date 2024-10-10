@@ -65,5 +65,5 @@ static_assert(Versioning<BinarySerializable<VersionedDerived, 1>>::enabled, "ver
 static_assert(Versioning<VersionedBase>::enabled, "versioning enabled if non-zero version parameter specified (base)");
 static_assert(!Versioning<BinarySerializable<VersionlessDerived>>::enabled, "versioning disabled for derived, even if base is versioned");
 static_assert(!Versioning<BinarySerializable<Foo, 0>>::enabled, "versioning disabled if zero-version specified");
-static_assert(Versioning<BinarySerializable<Foo, 3>>::applyDefault(0) == 3, "default version returned");
-static_assert(Versioning<BinarySerializable<Foo, 3>>::applyDefault(2) == 2, "default version overridden");
+static_assert(Versioning<BinarySerializable<Foo, 3>>::applyDefaultValue(0) == 3, "default version returned");
+static_assert(Versioning<BinarySerializable<Foo, 3>>::applyDefaultValue(2) == 2, "default version overridden");

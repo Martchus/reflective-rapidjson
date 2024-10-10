@@ -39,9 +39,16 @@ template <typename Type> struct Versioning<Type, true> {
     static constexpr auto enabled = Type::version != 0;
     static constexpr auto serializationDefault = Type::version;
     static constexpr auto maxSupported = Type::version;
-    static constexpr auto applyDefault(decltype(serializationDefault) version)
+    static constexpr auto &applyDefault(std::remove_const_t<decltype(serializationDefault)> &version)
     {
-        return version ? version : serializationDefault;
+        if (!version) {
+            version = serializationDefault;
+        }
+        return version;
+    }
+    static constexpr auto applyDefaultValue(std::remove_const_t<decltype(serializationDefault)> version)
+    {
+        return applyDefault(version);
     }
     static constexpr auto isSupported(decltype(maxSupported) version)
     {

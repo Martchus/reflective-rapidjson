@@ -110,7 +110,15 @@ function (add_reflection_generator_invocation)
 
     # apply specified REFLECTION_GENERATOR_TRIPLET
     if (REFLECTION_GENERATOR_TRIPLE)
-        list(APPEND ARGS_CLANG_OPTIONS -target "${REFLECTION_GENERATOR_TRIPLE}" -Xclang -triple -Xclang "${REFLECTION_GENERATOR_TRIPLE}")
+        list(
+            APPEND
+            ARGS_CLANG_OPTIONS
+            -target
+            "${REFLECTION_GENERATOR_TRIPLE}"
+            -Xclang
+            -triple
+            -Xclang
+            "${REFLECTION_GENERATOR_TRIPLE}")
     endif ()
 
     # apply specified REFLECTION_GENERATOR_INCLUDE_DIRECTORIES

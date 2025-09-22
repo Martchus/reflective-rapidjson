@@ -46,7 +46,13 @@ endif()
 
 # find c++utilities
 set(CONFIGURATION_PACKAGE_SUFFIX "" CACHE STRING "sets the suffix for find_package() calls to packages configured via c++utilities")
-find_package(c++utilities${CONFIGURATION_PACKAGE_SUFFIX} 5.10.0 REQUIRED)
+set(PACKAGE_NAMESPACE
+    ""
+    CACHE STRING "sets the prefix for find_package() calls to packages configured via c++utilities")
+if (PACKAGE_NAMESPACE)
+    set(PACKAGE_NAMESPACE_PREFIX "${PACKAGE_NAMESPACE}-")
+endif ()
+find_package(${PACKAGE_NAMESPACE_PREFIX}c++utilities${CONFIGURATION_PACKAGE_SUFFIX} 5.10.0 REQUIRED)
 
 # find RapidJSON
 if(NOT RapidJSON_FOUND)

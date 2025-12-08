@@ -407,7 +407,7 @@ Note that the versioning is mostly untested at this point.
 * It is currently not possible to ignore a specific member variable.
 
 ### Further examples
-* Checkout the test cases for further examples. Relevant files are in
+* Check out the test cases for further examples. Relevant files are in
   the directories `lib/tests` and `generator/tests`.
 * There's also my
   [tag editor](https://github.com/Martchus/tageditor), which uses Reflective RapidJSON to provide
@@ -493,7 +493,7 @@ git clone https://github.com/Martchus/cpp-utilities.git c++utilities
 git clone https://github.com/Martchus/reflective-rapidjson.git
 </pre>
 
-If you don't want to build the development version, just checkout the desired version tag.
+If you don't want to build the development version, just check out the desired version tag.
 
 #### 4. Run the build script
 Here is an example for building with GNU Make:
@@ -520,7 +520,7 @@ Add eg. `-j$(nproc)` to `make` arguments for using all cores.
 
 ### Packages
 * Arch Linux
-    * for PKGBUILDs checkout [my GitHub repository](https://github.com/Martchus/PKGBUILDs) or
+    * for PKGBUILDs check out [my GitHub repository](https://github.com/Martchus/PKGBUILDs) or
       [the AUR](https://aur.archlinux.org/packages?SeB=m&K=Martchus)
     * there is also a [binary repository](https://martchus.dyn.f3l.de/repo/arch/ownstuff)
 * Tumbleweed
@@ -530,7 +530,7 @@ Add eg. `-j$(nproc)` to `make` arguments for using all cores.
         * Git master: [download page](https://software.opensuse.org/download.html?project=home:mkittler:vcs&package=reflective-rapidjson-devel),
           [project page](https://build.opensuse.org/project/show/home:mkittler:vcs)
 * Windows
-    * for mingw-w64 PKGBUILDs checkout [my GitHub repository](https://github.com/Martchus/PKGBUILDs)
+    * for mingw-w64 PKGBUILDs check out [my GitHub repository](https://github.com/Martchus/PKGBUILDs)
 
 These packages show the required dependencies and commands to build. So they might be useful for
 making Reflective RapidJSON available under other platforms, too.

@@ -1,11 +1,11 @@
 ## Reflection-related: requires extending generator
 - [x] Test with (multiple) inheritance
 - [x] Test multiple input files
-- [x] Add appropriate error handling for de-serialization
+- [x] Add appropriate error handling for deserialization
 - [x] Add reflector based on Boost.Hana
-- [ ] Add another generator to prove expandability: maybe for getting members by name in general, similar to one of the proposals
+- [ ] Add another generator to prove extensibility: maybe for getting members by name in general, similar to one of the proposals
 - [x] Add documentation (install instructions, usage)
-- [x] Allow making 3rdparty classes/structs reflectable
+- [x] Allow making 3rd-party classes/structs reflectable
     - [x] Add additional parameter for code generator to allow specifying relevant classes
           explicitly
     - [x] Fix traits currently relying on `JsonSerializable` being base class
@@ -16,7 +16,7 @@
 - [ ] Allow (de)serialization of static members (if that makes sense?)
 - [ ] Allow ignoring particular members or selecting specifically which member variables should be considered
     * This could work similar to Qt's Signals & Slots macros.
-    * but there should also be a way to do this for 3rdparty types.
+    * but there should also be a way to do this for 3rd-party types.
     * Note that currently, *all* public member variables are (de)serialized.
 - [ ] Allow using getter and setter methods
     * [ ] Allow to serialize the result of methods.

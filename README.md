@@ -15,7 +15,7 @@ binary (de)serializer which works quite similarly.
 The reflection implementation used behind the scenes of this library is exchangeable:
 
 * This repository already provides a small, additional header to use RapidJSON with Boost.Hana. This allows to
-  serialize or dezerialize simple data structures declared using the `BOOST_HANA_DEFINE_STRUCT` macro rather than
+  serialize or deserialize simple data structures declared using the `BOOST_HANA_DEFINE_STRUCT` macro rather than
   requiring the code generator.
 * When native reflection becomes standardized, it would be possible to make use of it as well. In this case,
   the code generator could still act as a fallback.
@@ -25,18 +25,18 @@ The basic functionality is implemented, tested and documented:
 
 * Serialization and deserialization of datatypes listed under "Supported datatypes"
     * Nesting and inheritance is possible
-    * Adapting 3rdparty structs/classes is supported
+    * Adapting 3rd-party structs/classes is supported
 * Basic error handling when deserializing
 * CMake macro to conveniently include the code generator into the build process
 * Allow to use Boost.Hana
 
 ### Planned features and TODOs
-There are still things missing which would likely be very useful in practise. The following list contains the
-open TODOs which are supposed to be most relevant in practise:
+There are still things missing which would likely be very useful in practice. The following list contains the
+open TODOs which are supposed to be most relevant in practice:
 
 * [ ] Allow to specify which member variables should be considered
     * This could work similarly to Qt's Signals & Slots macros.
-    * But there should also be a way to do this for 3rdparty types.
+    * But there should also be a way to do this for 3rd-party types.
     * Note that currently all public, non-static member variables are (de)serialized.
 * [ ] Support getter/setter methods
     * [ ] Allow to serialize the result of methods
@@ -59,7 +59,7 @@ The following table shows the mapping of supported C++ types to supported JSON t
 | `std::string`                                                                | string       |
 | `std::string_view`                                                           | string/null  |
 | `const char *`                                                               | string/null  |
-| iteratable lists (`std::vector`, `std::list`, ...)                           | array        |
+| iterable lists (`std::vector`, `std::list`, ...)                             | array        |
 | sets (`std::set`, `std::unordered_set`, `std::multiset`, ...)                | array        |
 | `std::pair`, `std::tuple`                                                    | array        |
 | `std::unique_ptr`, `std::shared_ptr`, `std::optional`                        | depends/null |
@@ -80,7 +80,7 @@ The following table shows the mapping of supported C++ types to supported JSON t
   `std::shared_ptr` will point to its own copy. Note that this limitation is *not* present when using binary
   (de)serialization instead of JSON.
 * For deserialization
-    * iteratables must provide an `emplace_back` method. So deserialization of eg. `std::forward_list`
+    * iterables must provide an `emplace_back` method. So deserialization of eg. `std::forward_list`
       is currently not supported.
     * custom types must provide a default constructor.
     * constant member variables are skipped.
@@ -305,15 +305,15 @@ in the `ReflectiveRapidJSON::JsonReflector` namespace:
 
 <pre>
 // somewhere in included header
-struct ThridPartyStruct
+struct ThirdPartyStruct
 { ... };
 
 // somewhere in own header or source file
-REFLECTIVE_RAPIDJSON_MAKE_JSON_SERIALIZABLE(ThridPartyStruct)
+REFLECTIVE_RAPIDJSON_MAKE_JSON_SERIALIZABLE(ThirdPartyStruct)
 
 // (de)serialization
 ReflectiveRapidJSON::JsonReflector::toJson(...).GetString();
-ReflectiveRapidJSON::JsonReflector::fromJson&lt;ThridPartyStruct&gt;("...");
+ReflectiveRapidJSON::JsonReflector::fromJson&lt;ThirdPartyStruct&gt;("...");
 </pre>
 
 The code generator will emit the code in the same way as if `JsonSerializable` was
@@ -468,7 +468,7 @@ examples.)
 
 #### 2. Make dependencies available
 
-When installing (some) of the dependencies at custom locations, it is likely neccassary to tell
+When installing (some) of the dependencies at custom locations, it is likely necessary to tell
 CMake where to find them. If you installed everything using packages provided by the system,
 you can skip this step of course.
 

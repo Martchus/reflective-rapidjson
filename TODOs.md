@@ -19,8 +19,8 @@
     * but there should also be a way to do this for 3rd-party types.
     * Note that currently, *all* public member variables are (de)serialized.
 - [ ] Allow using getter and setter methods
-    * [ ] Allow to serialize the result of methods.
-    * [ ] Allow to pass a deserialized value to a method.
+    * [ ] Allow serializing the result of methods.
+    * [ ] Allow passing a deserialized value to a method.
 * [ ] Validate enum values when deserializing
     * Likely undoable with Boost.Hana
 * [ ] Untie serialization and deserialization

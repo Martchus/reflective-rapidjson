@@ -14,9 +14,9 @@ binary (de)serializer which works quite similarly.
 ## Open for other reflection approaches
 The reflection implementation used behind the scenes of this library is exchangeable:
 
-* This repository already provides a small, additional header to use RapidJSON with Boost.Hana. This allows to
-  serialize or deserialize simple data structures declared using the `BOOST_HANA_DEFINE_STRUCT` macro rather than
-  requiring the code generator.
+* This repository already provides a small, additional header to use RapidJSON with Boost.Hana. This allows
+  serialization and deserialization of simple data structures declared using the `BOOST_HANA_DEFINE_STRUCT` macro
+  rather than requiring the code generator.
 * When native reflection becomes standardized, it would be possible to make use of it as well. In this case,
   the code generator could still act as a fallback.
 
@@ -28,19 +28,19 @@ The basic functionality is implemented, tested and documented:
     * Adapting 3rd-party structs/classes is supported
 * Basic error handling when deserializing
 * CMake macro to conveniently include the code generator into the build process
-* Allow to use Boost.Hana
+* Allow use of Boost.Hana
 
 ### Planned features and TODOs
 There are still things missing which would likely be very useful in practice. The following list contains the
 open TODOs which are supposed to be most relevant in practice:
 
-* [ ] Allow to specify which member variables should be considered
+* [ ] Allow specifying which member variables should be considered
     * This could work similarly to Qt's Signals & Slots macros.
     * But there should also be a way to do this for 3rd-party types.
     * Note that currently all public, non-static member variables are (de)serialized.
 * [ ] Support getter/setter methods
-    * [ ] Allow to serialize the result of methods
-    * [ ] Allow to pass a deserialized value to a method
+    * [ ] Allow serializing the result of methods
+    * [ ] Allow passing a deserialized value to a method
 * [ ] Validate enum values when deserializing
 * [ ] Untie serialization and deserialization
 

@@ -51,10 +51,12 @@ void DiagConsumer::EndSourceFile()
     m_proxy->EndSourceFile();
 }
 
+#if CLANG_VERSION_MAJOR <= 22
 void DiagConsumer::finish()
 {
     m_proxy->finish();
 }
+#endif
 
 /*!
  * \brief Turns most errors into warnings so the code generator can even work when parsing incomplete headers.

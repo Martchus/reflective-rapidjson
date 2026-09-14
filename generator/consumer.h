@@ -6,6 +6,7 @@
 #include <clang/AST/ASTConsumer.h>
 #include <clang/AST/Decl.h>
 #include <clang/Basic/DiagnosticIDs.h>
+#include <clang/Basic/Version.h>
 #include <clang/Frontend/CompilerInstance.h>
 #include <clang/Lex/LexDiagnostic.h>
 
@@ -56,7 +57,9 @@ public:
     void BeginSourceFile(const clang::LangOptions &langOpts, const clang::Preprocessor *pp = nullptr) override;
     void clear() override;
     void EndSourceFile() override;
+#if CLANG_VERSION_MAJOR <= 22
     void finish() override;
+#endif
     void HandleDiagnostic(clang::DiagnosticsEngine::Level diagLevel, const clang::Diagnostic &info) override;
 
 private:

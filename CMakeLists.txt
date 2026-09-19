@@ -13,7 +13,6 @@ set(META_VERSION_MAJOR 0)
 set(META_VERSION_MINOR 0)
 set(META_VERSION_PATCH 17)
 set(META_APP_VERSION ${META_VERSION_MAJOR}.${META_VERSION_MINOR}.${META_VERSION_PATCH})
-set(META_CXX_STANDARD 17)
 set(META_ADD_DEFAULT_CPP_UNIT_TEST_APPLICATION ON)
 
 # ensure testing is enabled at this level (and not only for particular sub directories)

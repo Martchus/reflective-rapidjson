@@ -103,9 +103,9 @@ endif ()
 # add paths for include dirs of c++utilities and RapidJSON to config header so test cases can use it
 if (CPP_UTILITIES_SOURCE_DIR)
     set(META_CUSTOM_CONFIG "#define CPP_UTILITIES_INCLUDE_DIRS \"${CPP_UTILITIES_SOURCE_DIR}/..\"\n")
-else()
+else ()
     set(META_CUSTOM_CONFIG "#define CPP_UTILITIES_INCLUDE_DIRS \"${CPP_UTILITIES_INCLUDE_DIRS}\"\n")
-endif()
+endif ()
 if (RapidJSON_FOUND)
     # add include dirs either from RapidJSON_INCLUDE_DIRS or RAPIDJSON_INCLUDE_DIRS
     if (RapidJSON_INCLUDE_DIRS)

@@ -78,7 +78,7 @@ function (_reflective_rapidjson_set_prop TARGET_NAME PROPERTY_NAME)
         )
     else ()
         set(PROP
-            "$<FILTER:$<TARGET_PROPERTY:${TARGET_NAME},${PROPERTY_NAME}>,EXCLUDE,^$>"
+            "$<FILTER:$<TARGET_PROPERTY:${TARGET_NAME},${PROPERTY_NAME}>,EXCLUDE,(^$|^-W)>"
             PARENT_SCOPE)
     endif ()
 endfunction ()

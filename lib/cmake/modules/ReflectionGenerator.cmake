@@ -87,7 +87,7 @@ endfunction ()
 include(CMakeParseArguments)
 function (add_reflection_generator_invocation)
     # parse arguments
-    set(OPTIONAL_ARGS ERROR_RESILIENT)
+    set(OPTIONAL_ARGS ERROR_RESILIENT SKIP_COMPILE_FLAGS SKIP_COMPILE_OPTIONS)
     set(ONE_VALUE_ARGS OUTPUT_DIRECTORY JSON_VISIBILITY BINARY_VISBILITY)
     set(MULTI_VALUE_ARGS
         INPUT_FILES
@@ -144,10 +144,14 @@ function (add_reflection_generator_invocation)
                 "$<$<BOOL:$<TARGET_PROPERTY:${TARGET_NAME},CXX_STANDARD>>:-std=c++$<TARGET_PROPERTY:${TARGET_NAME},CXX_STANDARD>>"
             )
             # add compile flags and options
-            _reflective_rapidjson_set_prop("${TARGET_NAME}" COMPILE_FLAGS)
-            list(APPEND ARGS_CLANG_OPTIONS "$<$<BOOL:${PROP}>:$<JOIN:${PROP},$<SEMICOLON>>>")
-            _reflective_rapidjson_set_prop("${TARGET_NAME}" COMPILE_OPTIONS)
-            list(APPEND ARGS_CLANG_OPTIONS "$<$<BOOL:${PROP}>:$<JOIN:${PROP},$<SEMICOLON>>>")
+            if (NOT ARGS_SKIP_COMPILE_FLAGS)
+                _reflective_rapidjson_set_prop("${TARGET_NAME}" COMPILE_FLAGS)
+                list(APPEND ARGS_CLANG_OPTIONS "$<$<BOOL:${PROP}>:$<JOIN:${PROP},$<SEMICOLON>>>")
+            endif ()
+            if (NOT ARGS_SKIP_COMPILE_OPTIONS)
+                _reflective_rapidjson_set_prop("${TARGET_NAME}" COMPILE_OPTIONS)
+                list(APPEND ARGS_CLANG_OPTIONS "$<$<BOOL:${PROP}>:$<JOIN:${PROP},$<SEMICOLON>>>")
+            endif ()
             # add compile definitions
             _reflective_rapidjson_set_prop("${TARGET_NAME}" COMPILE_DEFINITIONS)
             list(APPEND ARGS_CLANG_OPTIONS "$<$<BOOL:${PROP}>:-D$<JOIN:${PROP},$<SEMICOLON>-D>>")
@@ -162,8 +166,10 @@ function (add_reflection_generator_invocation)
                 continue()
             endif ()
             # add interface compile options
-            _reflective_rapidjson_set_prop("${TARGET_NAME}" INTERFACE_COMPILE_OPTIONS)
-            list(APPEND ARGS_CLANG_OPTIONS "$<$<BOOL:${PROP}>:$<JOIN:${PROP},$<SEMICOLON>>>")
+            if (NOT ARGS_SKIP_COMPILE_OPTIONS)
+                _reflective_rapidjson_set_prop("${TARGET_NAME}" INTERFACE_COMPILE_OPTIONS)
+                list(APPEND ARGS_CLANG_OPTIONS "$<$<BOOL:${PROP}>:$<JOIN:${PROP},$<SEMICOLON>>>")
+            endif ()
             # add interface compile definitions
             _reflective_rapidjson_set_prop("${TARGET_NAME}" INTERFACE_COMPILE_DEFINITIONS)
             list(APPEND ARGS_CLANG_OPTIONS "$<$<BOOL:${PROP}>:-D$<JOIN:${PROP},$<SEMICOLON>-D>>")
